@@ -1,3 +1,9 @@
+# data test files
+*.csv
+
+#output ODT files
+tmp/*.odt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
