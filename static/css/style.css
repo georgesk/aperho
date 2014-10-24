@@ -1,0 +1,39 @@
+body {
+    background: wheat;
+}
+
+li.eleve {
+    background: PeachPuff;
+    color: navy;
+    border: 2px solid Lavender;
+    border-radius: 5px;
+}
+
+button.rounded {
+    background: wheat;
+    color: navy;
+    border: 2px solid Lavender;
+    border-radius: 5px;
+}
+
+p.h1 {
+    font-size: 200%;
+    font-weight: bold;
+}
+p.h2 {
+    font-size: 140%;
+    font-weight: bold;
+}
+
+#feedback {
+    border: 2px grey solid;
+    border-radius: 5px;
+    background: Lavender;
+    color: Tomato;
+    font-size: 300%;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    left: auto;
+    transparency: 0;
+}
