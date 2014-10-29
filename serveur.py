@@ -32,6 +32,13 @@ class APserveur(object):
         @param kw un dictionnaire paramètres => valeurs
         @return le code html d'une page web
         """
+        header_elements=""
+        header_elements+=templates.cssLink("style.css")
+        header_elements+=templates.cssLink("smoothness/jquery-ui.css")
+        header_elements+=templates.jsScript("jquery/jquery.js")
+        header_elements+=templates.jsScript("jquery-ui/jquery-ui.js")
+        header_elements+=templates.jsScript("programme.js")
+
         if "groupes" in cherrypy.session and "call" in kw:
             groupes=cherrypy.session["groupes"]
             # un appel de routine a eu lieu, on traite la routine
@@ -39,6 +46,8 @@ class APserveur(object):
             if kw["call"]=="reset":
                 # effacement des groupes de la session
                 del cherrypy.session["groupes"]
+                del cherrypy.session["fichEleves"]
+                del cherrypy.session["fichGroupes"]
             elif kw["call"]=="delete":
                 eleveId=kw["eleveId"]
                 i=int(kw["groupe"])
@@ -92,25 +101,193 @@ class APserveur(object):
             elif kw["call"]=="makeODF":
                 return self.makeODF()
 
-        if "groupes" not in cherrypy.session and \
-           ("csvEleves" not in kw or "csvGroupes" not in kw):
-            body_elements=self.csvForm()
+        if "groupes" not in cherrypy.session and not self.assezDeDonnees():
+            ######################################
+            # on est dans le cas où il n'y a pas encore assez de données
+            ######################################
+            body_elements="""
+<form action="#" id="fichForm" method="post"  enctype="multipart/form-data">
+Fichier : <input type="file" name="leFichier" onchange="$('#fichForm').submit()"/>
+</form>
+<div id="fichEleves"></div>
+<div id="fichGroupes"></div>
+"""
+            if "leFichier" in kw:
+                # un fichier a été expédié
+                leFichier=kw["leFichier"]
+                # nettoie les fichiers de texte trop anciens
+                self.unlinkObsoleted()
+                if leFichier is not str and leFichier.filename:
+                    tempName="tmp/WIMS{0:f}.csv".format(time.time())
+                    with open(tempName,"wb") as tempOutfile:
+                        while True:
+                            data=leFichier.file.read(8192)
+                            if not data: break
+                            tempOutfile.write(data)
+
+                    fichEleves=""
+                    fichGroupes=""
+                    if wimsdata.checkCsvEleves(tempName)=='OK':
+                        cherrypy.session["fichEleves"]=tempName
+                    if wimsdata.checkCsvGroupes(tempName)=='OK':
+                        cherrypy.session["fichGroupes"]=tempName
+
+                    if "fichEleves" in cherrypy.session:
+                        fichEleves=cherrypy.session["fichEleves"]
+                    if "fichGroupes" in cherrypy.session:
+                        fichGroupes=cherrypy.session["fichGroupes"]
+
+                    if not self.assezDeDonnees():
+                        # ce script est inutile si les deux données sont là
+                        header_elements+="""
+<script type="text/javascript">
+  function alertAboutFile(){
+    var fichEleves="%s";
+    var fichGroupes="%s";
+    if (fichEleves.length==0 && fichGroupes.length==0){
+      alert("Fichier « %s » non reconnu.");
+    }
+    if (fichEleves.length>0){
+      $("#fichEleves").text("Le fichier des élèves a été chargé. Il reste à envoyer le fichier des choix de groupes.");
+    }
+    if (fichGroupes.length>0){
+      $("#fichGroupes").text("Le fichier des choix de groupes a été chargé. Il reste à envoyer le fichier des noms d'élèves.");
+    }
+  }
+  window.addEventListener("load", alertAboutFile, false);
+</script>
+""" % (fichEleves,
+       fichGroupes,
+       leFichier.filename)
+                        return self.pageTelechargement(
+                            header_elements=header_elements,
+                            body_elements=body_elements,
+                            )
+                    else:
+                        # il y a assez de données !
+                        cherrypy.session["groupes"]=wimsdata.groupesAp(
+                            cherrypy.session["fichEleves"],
+                            cherrypy.session["fichGroupes"])
+                        return self.pageDesOnglets(
+                            header_elements=header_elements)
         else:
             if "groupes" not in cherrypy.session:
-                # à ce stade, kw contient les clés qui vont bien
-                # donc on charge cherrypy.session["groupes"] depuis les fichiers CSV
-                cherrypy.session["groupes"]=wimsdata.groupesAp(kw["csvEleves"],
-                                                kw["csvGroupes"])
-            body_elements=self.groupe2tabs()
+                # donc on charge cherrypy.session["groupes"] 
+                # depuis les fichiers temporaires
+                cherrypy.session["groupes"]=wimsdata.groupesAp(
+                    cherrypy.session["fichEleves"],
+                    cherrypy.session["fichGroupes"])
+            return self.pageDesOnglets(
+                header_elements=header_elements)
 
+
+        return templates.webpage().format(
+            title="Gestion de groupes d'AP",
+            header_elements=header_elements,
+            body_elements=body_elements,
+            )
+
+    def pageDesOnglets(self, header_elements="", body_elements="",
+                       title="..:: Aperho -- gestion de groupes d'AP ::.."):
+        """
+        Fabrique une page web interactive avec des onglets
+        contenant les groupes d'AP pré-remplis.
+        @param header_elements éléments d'entête hérités
+        @param body_elements éléments de la page hérités
+        @param title titre de la page web
+        """
+        body_elements+=self.groupe2tabs()
+        return templates.webpage().format(
+            title=title,
+            header_elements=header_elements,
+            body_elements=body_elements,
+            )
+
+    def pageTelechargement(
+        self, header_elements="", body_elements="",
+        title="..:: APERHO : mise en place des fichiers de WIMS ::.."):
+        """
+        Fabrique une page web interactive pour mettre en place deux
+        fichiers de données de WIMS au formats CSV.
+        @param header_elements éléments d'entête hérités
+        @param body_elements éléments de la page hérités
+        @param title titre de la page web
+        """
+        return templates.webpage().format(
+            title="title",
+            header_elements=header_elements,
+            body_elements=body_elements,
+            )
+
+    def assezDeDonnees(self):
+        """
+        vérifie si on dispose de données suffisantes pour créer
+        les groupes d'AP.
+        @return vrai si les deux fichiers temporaires nécessaires sont déjà là
+        """
+        return "fichEleves" in cherrypy.session and \
+            "fichGroupes" in cherrypy.session
+
+    @cherrypy.expose
+    def test_fileUpload(self, leFichier=None):
+        """
+        un essai pour récupérer des fichiers, les analyser et passer à
+        la constitution de groupes automatiquement.
+        @param leFichier enregistreent renvoyé par le champ de saisie
+        """
+        additionalScript="" # script à ajouter dans l'en-tête si nécessaire
+        if leFichier:
+            # nettoie les fichiers de texte trop anciens
+            self.unlinkObsoleted()
+            if leFichier is not str and leFichier.filename:
+                tempName="tmp/WIMS{0:f}.csv".format(time.time())
+                with open(tempName,"wb") as tempOutfile:
+                    while True:
+                        data=leFichier.file.read(8192)
+                        if not data: break
+                        tempOutfile.write(data)
+                recog=""
+                
+                if wimsdata.checkCsvEleves(tempName)=='OK':
+                    recog="OK_E"
+                    cherrypy.session["fichEleves"]=tempName
+                if wimsdata.checkCsvGroupes(tempName)=='OK':
+                    recog="OK_G"
+                    cherrypy.session["fichGroupes"]=tempName
+                additionalScript="""
+<script type="text/javascript">
+  function alertAboutFile(){
+    var recog="%s";
+    if (recog==""){
+      alert("Fichier « %s » non reconnu.");
+    }
+    if (recog=="OK_E"){
+      $("#fichEleves").text("Le fichier des élèves a été chargé. Il reste à envoyer le fichier des choix de groupes.");
+    }
+    if (recog=="OK_G"){
+      $("#fichEleves").text("Le fichier des choix de groupes a été chargé. Il reste à envoyer le fichier des noms d'élèves.");
+    }
+  }
+  window.addEventListener("load", alertAboutFile, false);
+</script>
+""" % (recog, leFichier.filename)
         header_elements=templates.cssLink("style.css")
         header_elements+=templates.cssLink("smoothness/jquery-ui.css")
         header_elements+=templates.jsScript("jquery/jquery.js")
         header_elements+=templates.jsScript("jquery-ui/jquery-ui.js")
         header_elements+=templates.jsScript("programme.js")
+        header_elements+=additionalScript
+        
+        body_elements="""
+<form action="#" id="fichForm" method="post"  enctype="multipart/form-data">
+  Fichier : <input type="file" name="leFichier" onchange="$('#fichForm').submit()"/>
+</form>
+<div id="fichEleves"></div>
+<div id="fichGroupes"></div>
 
+"""
         return templates.webpage().format(
-            title="Gestion de groupes d'AP",
+            title="Mise en place des fichiers de WIMS",
             header_elements=header_elements,
             body_elements=body_elements,
             )
@@ -206,21 +383,33 @@ Vous pouvez trouver le texte complet de la licence AGPL version 3.0 sur le site
         reponse=wimsdata.checkCsvGroupes(q)
         return reponse
 
-    def makeODF(self):
+    @staticmethod
+    def unlinkObsoleted(timeout=600, tmpdir="tmp"):
         """
-        fabrique un fichier ODT pour l'affichage des groupes
-        @return le contenu binaire du fichier odt
+        efface les fichiers trop anciens dans le répertoire des 
+        fichiers temporaires
+        @param timeout durée en secondes avant qu'un fichier ne soit
+        considéré comme obsolète (10 minutes par défaut)
+        @param tmpdir répertoire des fichiers temporaires ("tmp" par défaut)
         """
-        # nettoie les anciens fichiers de texte
-        # passé dix minutes, ils sont sûrement téléchargés
-        timeout=600
         # on fait une liste de doublets (date, fichier)
-        l=[ (os.stat(os.path.join("tmp",f)).st_ctime, f) for f in os.listdir("tmp")]
+        l=[ (os.stat(os.path.join(tmpdir,f)).st_ctime, f) \
+                for f in os.listdir(tmpdir)]
         # on filtre ceux qui sont plus vieux que dix minutes
         obsoleted=filter(lambda x: time.time()-x[0] >= timeout, l)
         for o in obsoleted:
             # on efface ces fichiers-là
             os.unlink(os.path.join("tmp",o[1]))
+        return
+
+    def makeODF(self):
+        """
+        fabrique un fichier ODT pour l'affichage des groupes
+        @return le contenu binaire du fichier odt
+        """
+        # nettoie les fichiers de texte trop anciens
+        self.unlinkObsoleted()
+
         cherrypy.response.headers['Content-type'] = "application/vnd.oasis.opendocument.text"
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=ap.odt"
         nomfichier = "AP_{0:f}.odt".format(time.time())
@@ -361,9 +550,8 @@ if __name__ == '__main__':
         'global': {
             'server.socket_host': '0.0.0.0',
             'server.socket_port': 8123,
-            'environment': 'production',
-            'log.error_file': os.path.join(os.path.abspath(os.getcwd()),
-                                           'aperho.log'),
+            #'environment': 'production',
+            #'log.error_file': os.path.join(os.path.abspath(os.getcwd()), 'aperho.log'),
             },
         '/': {
             'tools.sessions.on': True,

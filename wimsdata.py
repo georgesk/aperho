@@ -11,14 +11,18 @@ def checkCsvEleves(data):
     Vérification qu'un fichier contient bien une liste d'élèves
     @param data
     """
-    reader = csv.DictReader(open(data, encoding='latin-1'), delimiter=',')
     result="Aucune donnée valide dans ce fichier"
-    for d in reader:
-        if set(('regnum', 'firstname', 'login', 'lastname')) == set (d.keys()):
-            if not d['login']:
-                result="Structure du fichier valide, mais pas d'élèves"
-            else:
-                result="OK"
+    try:
+        reader = csv.DictReader(open(data, encoding='latin-1'), delimiter=',')
+        for d in reader:
+            if set(('regnum', 'firstname', 'login', 'lastname')) == \
+                    set (d.keys()):
+                if not d['login']:
+                    result="Structure du fichier valide, mais pas d'élèves"
+                else:
+                    result="OK"
+    except:
+        pass
     return result
 
 def checkCsvGroupes(data):
@@ -26,15 +30,18 @@ def checkCsvGroupes(data):
     Vérification qu'un fichier contient bien une liste d'élèves
     @param data
     """
-    reader = csv.DictReader(open(data, encoding='latin-1'), delimiter=',')
     result="Aucune donnée valide dans ce fichier"
-    for d in reader:
-        items=list(d.items())[0]
-        if 'Questionnaire' in items[0]:
-            if '_' not in items[1]: # pas de soulignement : pas de choix
-                result="Structure du fichier valide, mais pas de groupes"
-            else:
-                result="OK"
+    try:
+        reader = csv.DictReader(open(data, encoding='latin-1'), delimiter=',')
+        for d in reader:
+            items=list(d.items())[0]
+            if items and items[0] and 'Questionnaire' in items[0]:
+                if '_' not in items[1]: # pas de soulignement : pas de choix
+                    result="Structure du fichier valide, mais pas de groupes"
+                else:
+                    result="OK"
+    except:
+        pass
     return result
 
 class groupesAp(OrderedDict):
