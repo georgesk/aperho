@@ -9,18 +9,19 @@ from odf.text import H, P, Span, SoftPageBreak
 def checkCsvEleves(data):
     """
     Vérification qu'un fichier contient bien une liste d'élèves
-    @param data
+    @param data un nom de fichier censément de type CSV
+    @return vrai si la vérification est faite
     """
-    result="Aucune donnée valide dans ce fichier"
+    champsAttendus = set(('firstname', 'login', 'lastname'))
+    WimsEncoding   = 'latin-1'
+    WimsDelimiter  = ','
+    result=False
     try:
-        reader = csv.DictReader(open(data, encoding='latin-1'), delimiter=',')
+        reader = csv.DictReader(open(data, encoding=WimsEncoding), 
+                                delimiter=WimsDelimiter)
         for d in reader:
-            if set(('regnum', 'firstname', 'login', 'lastname')) == \
-                    set (d.keys()):
-                if not d['login']:
-                    result="Structure du fichier valide, mais pas d'élèves"
-                else:
-                    result="OK"
+            if set (d.keys()) >= champsAttendus and d['login']:
+                    result=True
     except:
         pass
     return result
@@ -28,18 +29,19 @@ def checkCsvEleves(data):
 def checkCsvGroupes(data):
     """
     Vérification qu'un fichier contient bien une liste d'élèves
-    @param data
+    @param data un nom de fichier censément de type CSV
+    @return vrai si la vérification est faite
     """
-    result="Aucune donnée valide dans ce fichier"
+    WimsEncoding   = 'latin-1'
+    WimsDelimiter  = ','
+    result=False
     try:
-        reader = csv.DictReader(open(data, encoding='latin-1'), delimiter=',')
+        reader = csv.DictReader(open(data,  encoding=WimsEncoding), 
+                                delimiter=WimsDelimiter)
         for d in reader:
             items=list(d.items())[0]
-            if items and items[0] and 'Questionnaire' in items[0]:
-                if '_' not in items[1]: # pas de soulignement : pas de choix
-                    result="Structure du fichier valide, mais pas de groupes"
-                else:
-                    result="OK"
+            if 'Questionnaire' in items[0] and '_' in items[1]: 
+                    result=True
     except:
         pass
     return result

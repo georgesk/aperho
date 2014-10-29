@@ -25,6 +25,49 @@ p.h2 {
     font-weight: bold;
 }
 
+#accueilTitre {
+    border: 2px grey solid;
+    margin: 2px;
+    border-radius: 5px;
+    background: Lavender;
+    padding: 1ex;
+    text-align: center;
+}
+
+#explication {
+    border: 2px grey solid;
+    margin: 2px;
+    border-radius: 5px;
+    background: Lavender;
+    padding: 1ex;
+}
+
+#fichWims {
+    border: 2px grey solid;
+    border-radius: 5px;
+    background: Lavender;
+}
+
+#fichWims legend {
+    border: 2px grey solid;
+    margin: 2px;
+    border-radius: 5px;
+    background: Lavender;   
+}
+
+#fichEleves, #fichGroupes {
+    border: 2px grey solid;
+    margin: 2px;
+    padding: 2px;
+    border-radius: 5px;
+    background: Lavender; 
+}
+
+#fichEleves:empty, #fichGroupes:empty {
+    display: none;
+}
+
+
 #feedback {
     border: 2px grey solid;
     border-radius: 5px;

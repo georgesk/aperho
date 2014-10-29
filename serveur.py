@@ -32,114 +32,122 @@ class APserveur(object):
         @param kw un dictionnaire paramètres => valeurs
         @return le code html d'une page web
         """
-        header_elements=""
-        header_elements+=templates.cssLink("style.css")
-        header_elements+=templates.cssLink("smoothness/jquery-ui.css")
-        header_elements+=templates.jsScript("jquery/jquery.js")
-        header_elements+=templates.jsScript("jquery-ui/jquery-ui.js")
-        header_elements+=templates.jsScript("programme.js")
+        result="Quelque chose s'est mal passé, ce texte ne doit pas apparaître"
+        self.unlinkObsoleted()
+        if self.ODFdemande(kw):
+            return self.makeODF()
+        if self.resetDemande(kw):
+            return self.reset()
+        if not self.assezDeDonnees():
+            result = self.demandePlusDeDonnees(kw)
+        else:
+            self.instancieGroupeSiNecessaire()
+            if "call" in kw:
+                self.bidouilleGroupes(
+                    cherrypy.session["groupes"], 
+                    kw["call"], 
+                    kw)
+            result = self.pageDesOnglets(header_elements=self.headersCommuns())
+        return result
 
-        if "groupes" in cherrypy.session and "call" in kw:
-            groupes=cherrypy.session["groupes"]
-            # un appel de routine a eu lieu, on traite la routine
-            # avant de réafficher la page
-            if kw["call"]=="reset":
-                # effacement des groupes de la session
-                del cherrypy.session["groupes"]
-                del cherrypy.session["fichEleves"]
-                del cherrypy.session["fichGroupes"]
-            elif kw["call"]=="delete":
-                eleveId=kw["eleveId"]
-                i=int(kw["groupe"])
-                if i==0:
-                    # cas des élèves non-inscrits, on supprime vraiment
-                    # ce serait bien d'afficher un dialogue garde-fou
-                    groupes.supprimeEleve(eleveId,0)
+    def ODFdemande(self, kw):
+        """
+        Vérifie s'il y a une demande de fichier ODF en cours
+        @param kw un dictionnaire de paramètres issus d'une requête
+        @return vrai si c'est bien le cas
+        """
+        return "call" in kw and kw["call"]=="makeODF"
+
+    def instancieGroupeSiNecessaire(self):
+        """
+        Permet d'instancier la variable de session "groupes"
+        quand on dispose des données suffisantes, quand celle-ci
+        n'existe pas encore.
+        """
+        if "groupes" not in cherrypy.session:
+            cherrypy.session["groupes"]=wimsdata.groupesAp(
+                cherrypy.session["fichEleves"],
+                cherrypy.session["fichGroupes"])
+        return
+
+    def headersCommuns(self):
+        """
+        Renvoie des en-têtes communs à toutes les pages
+        @return une suite déléments valides dans l'en-tête d'une page HTML
+        """
+        return templates.cssLink("style.css") + \
+            templates.cssLink("smoothness/jquery-ui.css") + \
+            templates.jsScript("jquery/jquery.js") + \
+            templates.jsScript("jquery-ui/jquery-ui.js") + \
+            templates.jsScript("programme.js")
+
+    def demandePlusDeDonnees(self, kw=dict()):
+        """
+        Renvoie la page qui demande plus de données pour pouvoir
+        gérer les groupes d'AP, et éventuellement si le dictionnaire kw
+        apporte les données manquantes, renvoie directement la
+        page de gestion
+        @param kw dictionnaires de données issues de requêtes précédentes.
+        Par défaut, c'est un dictionnaire vide (nécessaire pour l'opération
+        reset)
+        @return du code HTML valide
+        """
+        result="Problème avec demandePlusDeDonnees : ce texte ne doit pas apparaître."
+        if "leFichier" in kw:
+            leFichier=kw["leFichier"]
+            if leFichier is not str and leFichier.filename:
+                tempName="tmp/WIMS{0:f}.csv".format(time.time())
+                with open(tempName,"wb") as tempOutfile:
+                    while True:
+                        data=leFichier.file.read(8192)
+                        if not data: break
+                        tempOutfile.write(data)
+
+                fichEleves=""
+                fichGroupes=""
+                if wimsdata.checkCsvEleves(tempName):
+                    cherrypy.session["fichEleves"]=tempName
+                if wimsdata.checkCsvGroupes(tempName):
+                    cherrypy.session["fichGroupes"]=tempName
+
+                if "fichEleves" in cherrypy.session:
+                    fichEleves=cherrypy.session["fichEleves"]
+                if "fichGroupes" in cherrypy.session:
+                    fichGroupes=cherrypy.session["fichGroupes"]
+
+                if not self.assezDeDonnees():
+                    # ce script est inutile si les deux données sont là
+                    result = self.pageTelechargement(
+                        header_elements=self.headersCommuns()+\
+                            self.feedbackDonnees(
+                                fichEleves, fichGroupes, leFichier.filename),
+                        body_elements=self.csvForm(),
+                        )
                 else:
-                    # cas des élèves inscrits, on ne suprime pas vraiment
-                    # on déplace l'élève vers le groupe des non-inscrits
-                    groupes.changeDeGroupe(eleveId,i,0)
-            elif kw["call"]=="change":
-                eleveId=kw["eleveId"]
-                i=int(kw["groupe"])
-                try:
-                    j=int(kw["dest"])
-                except:
-                    j=i # si on a mal sélectionné la classe de destination
-                    # la clé "dest" est indéfinie : on ne fait rien.
-                groupes.changeDeGroupe(eleveId,i,j)
-            elif kw["call"]=="newEleve":
-                nom=kw["nom"].upper()
-                prenom=kw["prenom"]
-                classe=kw["classe"]
-                ident=nom+prenom+classe
-                groupes.ajouteEleve(wimsdata.idEleve(ident, nom, prenom, classe))
-            elif kw["call"]=="changeTitre":
-                i=int(kw["i"])
-                titre=kw["titre"]
-                groupes.details[i]["titre"]=titre
-            elif kw["call"]=="changeSalle":
-                i=int(kw["i"])
-                salle=kw["salle"]
-                groupes.details[i]["salle"]=salle
-            elif kw["call"]=="creeGroupe":
-                titre=kw["titre"]
-                salle=kw["salle"]
-                i=self.groupeMax()+1
-                groupes[i]=[]
-                groupes.details[i]={"titre": titre, "salle": salle}
-            elif kw["call"]=="supprimeGroupe":
-                titre=kw["dest"]
-                found=[i for i in groupes if groupes.details[i]["titre"]==titre]
-                if found:
-                    i=found[0]
-                    for e in copy.copy(groupes[i]):
-                        #désinscrire tous les élèves du groupe
-                        groupes.changeDeGroupe(e,i,0)
-                    del(groupes[i])
-                    del(groupes.details[i])
-            elif kw["call"]=="makeODF":
-                return self.makeODF()
+                    # il y a assez de données !
+                    cherrypy.session["groupes"]=wimsdata.groupesAp(
+                        cherrypy.session["fichEleves"],
+                        cherrypy.session["fichGroupes"])
+                    result = self.pageDesOnglets(
+                        header_elements=self.headersCommuns())
+        else: # il n'y a pas de paramètre "leFichier"
+            result = self.pageTelechargement(
+                header_elements=self.headersCommuns(),
+                body_elements=self.csvForm(),
+                )
+        return result
 
-        if "groupes" not in cherrypy.session and not self.assezDeDonnees():
-            ######################################
-            # on est dans le cas où il n'y a pas encore assez de données
-            ######################################
-            body_elements="""
-<form action="#" id="fichForm" method="post"  enctype="multipart/form-data">
-Fichier : <input type="file" name="leFichier" onchange="$('#fichForm').submit()"/>
-</form>
-<div id="fichEleves"></div>
-<div id="fichGroupes"></div>
-"""
-            if "leFichier" in kw:
-                # un fichier a été expédié
-                leFichier=kw["leFichier"]
-                # nettoie les fichiers de texte trop anciens
-                self.unlinkObsoleted()
-                if leFichier is not str and leFichier.filename:
-                    tempName="tmp/WIMS{0:f}.csv".format(time.time())
-                    with open(tempName,"wb") as tempOutfile:
-                        while True:
-                            data=leFichier.file.read(8192)
-                            if not data: break
-                            tempOutfile.write(data)
-
-                    fichEleves=""
-                    fichGroupes=""
-                    if wimsdata.checkCsvEleves(tempName)=='OK':
-                        cherrypy.session["fichEleves"]=tempName
-                    if wimsdata.checkCsvGroupes(tempName)=='OK':
-                        cherrypy.session["fichGroupes"]=tempName
-
-                    if "fichEleves" in cherrypy.session:
-                        fichEleves=cherrypy.session["fichEleves"]
-                    if "fichGroupes" in cherrypy.session:
-                        fichGroupes=cherrypy.session["fichGroupes"]
-
-                    if not self.assezDeDonnees():
-                        # ce script est inutile si les deux données sont là
-                        header_elements+="""
+    def feedbackDonnees(self, fichEleves, fichGroupes, filename):
+        """
+        Produit un script de type Javascript qui s'occupe d'afficher
+        un feedback au sujet du fichier de données téléchargé
+        @param fichEleves nom du fichier contenant les données des élèves,
+        ou une chaîne vide
+        @param fichGroupes nom du fichier contenant les données des groupes,
+        ou une chaîne vide
+        @param filename nom du fichier qu'on a essayé de télécharger
+        """
+        return """
 <script type="text/javascript">
   function alertAboutFile(){
     var fichEleves="%s";
@@ -158,34 +166,81 @@ Fichier : <input type="file" name="leFichier" onchange="$('#fichForm').submit()"
 </script>
 """ % (fichEleves,
        fichGroupes,
-       leFichier.filename)
-                        return self.pageTelechargement(
-                            header_elements=header_elements,
-                            body_elements=body_elements,
-                            )
-                    else:
-                        # il y a assez de données !
-                        cherrypy.session["groupes"]=wimsdata.groupesAp(
-                            cherrypy.session["fichEleves"],
-                            cherrypy.session["fichGroupes"])
-                        return self.pageDesOnglets(
-                            header_elements=header_elements)
-        else:
-            if "groupes" not in cherrypy.session:
-                # donc on charge cherrypy.session["groupes"] 
-                # depuis les fichiers temporaires
-                cherrypy.session["groupes"]=wimsdata.groupesAp(
-                    cherrypy.session["fichEleves"],
-                    cherrypy.session["fichGroupes"])
-            return self.pageDesOnglets(
-                header_elements=header_elements)
+       filename)
 
+    def resetDemande(self, kw):
+        return "call" in kw and kw["call"]=="reset"
 
-        return templates.webpage().format(
-            title="Gestion de groupes d'AP",
-            header_elements=header_elements,
-            body_elements=body_elements,
-            )
+    def reset(self):
+        """
+        redémarre le service au niveau de la demande de fichiers
+        efface les données de session
+        @return le code HTML de la page initiale
+        """
+        del cherrypy.session["groupes"]
+        del cherrypy.session["fichEleves"]
+        del cherrypy.session["fichGroupes"]
+        return self.demandePlusDeDonnees()
+
+    def bidouilleGroupes(self,groupes, routine, kw):
+        """
+        modifie en place l'objet qui représente les groupes
+        @param groupes une instance de groupesAp
+        @param routine une chaîne qui identifie le traitement à faire
+        @param kw dictionnaire contenant d'autres paramètres issus de
+        requêtes.
+        """
+        if routine=="delete":
+            eleveId=kw["eleveId"]
+            i=int(kw["groupe"])
+            if i==0:
+                # cas des élèves non-inscrits, on supprime vraiment
+                # ce serait bien d'afficher un dialogue garde-fou
+                groupes.supprimeEleve(eleveId,0)
+            else:
+                # cas des élèves inscrits, on ne suprime pas vraiment
+                # on déplace l'élève vers le groupe des non-inscrits
+                groupes.changeDeGroupe(eleveId,i,0)
+        elif routine=="change":
+            eleveId=kw["eleveId"]
+            i=int(kw["groupe"])
+            try:
+                j=int(kw["dest"])
+            except:
+                j=i # si on a mal sélectionné la classe de destination
+                # la clé "dest" est indéfinie : on ne fait rien.
+            groupes.changeDeGroupe(eleveId,i,j)
+        elif routine=="newEleve":
+            nom=kw["nom"].upper()
+            prenom=kw["prenom"]
+            classe=kw["classe"]
+            ident=nom+prenom+classe
+            groupes.ajouteEleve(wimsdata.idEleve(ident, nom, prenom, classe))
+        elif routine=="changeTitre":
+            i=int(kw["i"])
+            titre=kw["titre"]
+            groupes.details[i]["titre"]=titre
+        elif routine=="changeSalle":
+            i=int(kw["i"])
+            salle=kw["salle"]
+            groupes.details[i]["salle"]=salle
+        elif routine=="creeGroupe":
+            titre=kw["titre"]
+            salle=kw["salle"]
+            i=self.groupeMax()+1
+            groupes[i]=[]
+            groupes.details[i]={"titre": titre, "salle": salle}
+        elif routine=="supprimeGroupe":
+            titre=kw["dest"]
+            found=[i for i in groupes if groupes.details[i]["titre"]==titre]
+            if found:
+                i=found[0]
+                for e in copy.copy(groupes[i]):
+                    #désinscrire tous les élèves du groupe
+                    groupes.changeDeGroupe(e,i,0)
+                del(groupes[i])
+                del(groupes.details[i])
+        return
 
     def pageDesOnglets(self, header_elements="", body_elements="",
                        title="..:: Aperho -- gestion de groupes d'AP ::.."):
@@ -237,8 +292,6 @@ Fichier : <input type="file" name="leFichier" onchange="$('#fichForm').submit()"
         """
         additionalScript="" # script à ajouter dans l'en-tête si nécessaire
         if leFichier:
-            # nettoie les fichiers de texte trop anciens
-            self.unlinkObsoleted()
             if leFichier is not str and leFichier.filename:
                 tempName="tmp/WIMS{0:f}.csv".format(time.time())
                 with open(tempName,"wb") as tempOutfile:
@@ -407,9 +460,6 @@ Vous pouvez trouver le texte complet de la licence AGPL version 3.0 sur le site
         fabrique un fichier ODT pour l'affichage des groupes
         @return le contenu binaire du fichier odt
         """
-        # nettoie les fichiers de texte trop anciens
-        self.unlinkObsoleted()
-
         cherrypy.response.headers['Content-type'] = "application/vnd.oasis.opendocument.text"
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=ap.odt"
         nomfichier = "AP_{0:f}.odt".format(time.time())
@@ -419,20 +469,28 @@ Vous pouvez trouver le texte complet de la licence AGPL version 3.0 sur le site
 
     def csvForm(self):
         """
-        Fabrique un formulaire pour demander les fichiers CSV
+        Fabrique la page pour demander les fichiers CSV concernant
+        les élèves et les groupes
         @return du code HTML valide
         """
-        form_elements="""
-    <p>Fichier CSV : liste d'élèves (exemple data-127342_3.csv)
-    <input type="file" name="csvEleves" accept="text/csv" id="csvEleves" required="required" onchange="checkEleves(document.location)"/>
-    </p>
-    <p>Fichier CSV : liste de groupes (exemple data-127342_3-vote-2.csv)
-    <input type="file" name="csvGroupes" accept="text/csv" id="csvGroupes"required="required" onchange="checkGroupes(document.location)"/>
-    </p>
-    <input type="submit" value="Former les groupes d'AP"/>
-    <div id="feedback"></div>
+        return """
+<h1 id="accueilTitre">APERHO : mise en place des fichiers exportés par WIMS</h1>
+<div id="explication">À l'aide du bouton de recherche de fichiers ci-dessous, 
+il vous faut remonter au serveur AP-rho une série de deux fichiers :
+<ol>
+  <li>Un fichier qui contient la liste des élèves de la barrette d'AP&nbsp;;</li>
+  <li>Un fichier qui contient la liste des choix faits par les élèves&nbsp;;<br/><i>N.B.&nbsp;: cette sorte de fichier contient le mot « vote ».</i></li>
+</ol>
+Vous pouvez aussi <a href="/static/manuel.html" target="_manuel_">lire l'aide en ligne</a>, ou <a href="/static/manuel.odt">télécharger un fichier d'aide</a>.
+</div>
+<form action="index" id="fichForm" method="post"  enctype="multipart/form-data">
+<fieldset id="fichWims">
+  <legend>Recherche des fichiers exportés par WIMS</legend>
+  <input type="file" id="leFichier" name="leFichier" onchange="$('#fichForm').submit()"/>
+</form>
+<div id="fichEleves"></div>
+<div id="fichGroupes"></div>
 """
-        return templates.form(form_elements=form_elements, method="post", action="index")
 
     def groupe2tabs(self):
         """
