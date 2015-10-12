@@ -309,7 +309,11 @@ class idEleve:
         @param dico un dictionnaire
         @return une instance de idEleve
         """
-        classe, nom = dico["lastname"].split('-',1)
+        try:
+            classe, nom = dico["lastname"].split('-',1)
+        except:
+            classe="????"
+            nom=dico["lastname"]
         prenom = dico["firstname"]
         idt = dico["login"]
         return idEleve(idt, nom, prenom, classe)
