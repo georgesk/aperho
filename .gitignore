@@ -58,3 +58,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Emacs
+*~
+
+# no database
+*.sqlite3

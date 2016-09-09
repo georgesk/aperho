@@ -1,0 +1,16 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Aperho : ajout d'élèves</title>
+  </head>
+  <body>
+    <h1>Aperho : ajout d'élèves</h1>
+    <p>
+      Choisissez une ou plusieurs classes ci-dessous :
+    </p>
+    <select multiple="1" style="height: 30ex;">
+      {% for option in classes %}
+      <option value="{{option.gid}}">{{option.classe}}</option>
+      {% endfor %}
+    </select>
+  </body>
+</html>
