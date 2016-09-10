@@ -1,16 +1,46 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Aperho : ajout d'élèves</title>
+    <link rel="stylesheet" href="/static/votes/css/stylevotes.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/votes/js/jquery-ui/themes/smoothness/jquery-ui.css" type="text/css"/>
+    <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
+    </script>
+    <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
+    </script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $( "#accordeon" ).accordion({
+          collapsible: true,
+	  active: -1,
+	});
+      });
+    </script>
   </head>
   <body>
     <h1>Aperho : ajout d'élèves</h1>
-    <p>
-      Choisissez une ou plusieurs classes ci-dessous :
-    </p>
-    <select multiple="1" style="height: 30ex;">
-      {% for option in classes %}
-      <option value="{{option.gid}}">{{option.classe}}</option>
-      {% endfor %}
-    </select>
+    <div id="accordeon">
+      {% if eleves %}
+      <h2>{{ eleves|length }} élèves ont été ajoutés </h2>
+      <table style="joli">
+	<tr><th>Classe</th><th>Nom</th><th>Prénom</th><th>Uid</th></tr>
+	{% for e in eleves %}
+	<tr><td>{{e.classe}}</td><td>{{e.nom}}</td><td>{{e.prenom}}</td><td>{{e.uid}}</td></tr>
+	{% endfor %}
+      </table>
+      {% endif %}
+      <h2>Nouvelles classes à ajouter </h2>
+      <form method="post" action="#">
+	<fieldset class="joli">
+	  <legend>Choisissez une ou <br/>plusieurs classes ci-dessous :</legend>
+	  {% csrf_token %}
+	  <select name="classes" multiple="multiple" style="height: 30ex;">
+	    {% for option in classes %}
+	    <option value="{{option.gid}}">{{option.classe}}</option>
+	    {% endfor %}
+	  </select>
+	  <input type="submit" value="Ajouter les élèves"/>
+	</fieldset>
+      </form>
+    </div>
   </body>
 </html>

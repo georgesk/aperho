@@ -15,6 +15,9 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.conf import settings
+from django.contrib.staticfiles import views
+
 from . import home
 
 urlpatterns = [
@@ -22,3 +25,8 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^votes/', include('votes.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        url(r'^static/(?P<path>.*)$', views.serve),
+    ]
