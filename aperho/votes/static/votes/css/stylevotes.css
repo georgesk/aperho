@@ -1,0 +1,23 @@
+fieldset.joli {
+    background:    yellow;
+    border:        1px navy solid;
+    border-radius: 5px;
+    padding:       10px;
+    display:       inline-block;
+}
+
+fieldset.joli legend {
+    background:    gold;
+    border:        2px navy solid;
+    border-radius: 5px;
+    padding:       5px;
+}
+
+table.joli {
+    border-collapse: collapse;
+}
+
+table.joli, th, td {
+    border: 1px navy solid;
+    background: lightyellow;
+}
