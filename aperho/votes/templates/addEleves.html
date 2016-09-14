@@ -7,6 +7,8 @@
     </script>
     <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
     </script>
+    <script type="text/javascript" src="/static/votes/js/addEleves.js">
+    </script>
     <script type="text/javascript">
       $(document).ready(function() {
         $( "#accordeon" ).accordion({
@@ -33,14 +35,30 @@
 	<fieldset class="joli">
 	  <legend>Choisissez une ou <br/>plusieurs classes ci-dessous :</legend>
 	  {% csrf_token %}
-	  <select name="classes" multiple="multiple" style="height: 30ex;">
-	    {% for option in classes %}
-	    <option value="{{option.gid}}">{{option.classe}}</option>
+	  <div style="float:left; width:25%;">
+	    <select name="classes" multiple="multiple" style="height: 30ex;">
+	      {% for option in classes %}
+	      <option value="{{option.gid}}">{{option.classe}}</option>
+	      {% endfor %}
+	    </select><br/>
+	    <input type="submit" value="Ajouter les élèves"/>
+	  </div>
+	  <div style="float:right; width:70%;">
+	    {% if classesDansDb %}
+	    <h3 style="text-align: center;">Classes déjà importées</h3>
+	    {% endif %}
+	    {% for c in classesDansDb %}
+	    <div class="classeConnue">
+	      <h3>{{c}}</h3>
+	      <button type="button" onclick="voirClasse('{{c}}')">Voir</button><br/>
+	      <button type="button" onclick="effacerClasse('{{c}}')">Effacer</button>
+	    </div>
 	    {% endfor %}
-	  </select>
-	  <input type="submit" value="Ajouter les élèves"/>
+	  </div>
 	</fieldset>
       </form>
+    </div>
+    <div id="dialog">
     </div>
   </body>
 </html>

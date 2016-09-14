@@ -21,3 +21,11 @@ table.joli, th, td {
     border: 1px navy solid;
     background: lightyellow;
 }
+
+div.classeConnue {
+    display: inline-flex;
+    background: wheat;
+    padding: 0.5ex;
+    border: 1px orange solid;
+    border-radius: 0.5ex;
+}

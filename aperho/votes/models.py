@@ -28,6 +28,7 @@ class Etudiant(models.Model):
     uid    = models.IntegerField(unique=True)
     nom    = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
+    classe = models.CharField(max_length=10)
 
     def __str__(self):
         return "{} {} {}".format(self.nom, self.prenom, self.uid)

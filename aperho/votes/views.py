@@ -57,10 +57,11 @@ def addEleves(request):
             etudiant=Etudiant.objects.filter(uid=e["uid"])
             if not etudiant:
                 ## création d'un nouvel enregistrement
-                etudiant=Etudiant(uid=e["uid"], nom=e["nom"], prenom=e["prenom"])
+                etudiant=Etudiant(uid=e["uid"], nom=e["nom"],
+                                  prenom=e["prenom"], classe=e["classe"])
                 etudiant.save()
     base_dn = 'ou=Groups,dc=lycee,dc=jb'
-    filtre = '(&(|(cn=prof*)(&(cn=c*)(!(cn=*smbadm))))(objectclass=kwartzGroup))'
+    filtre = '(&(cn=c*)(!(cn=*smbadm))(objectclass=kwartzGroup))'
     connection.search(
         search_base = base_dn,
         search_filter = filtre,
@@ -72,10 +73,14 @@ def addEleves(request):
             'gid':entry['attributes']['gidNumber'][0],
             'classe':nomClasse(entry['attributes']['cn'][0]),
         })
+    ### Liste des classes déjà connues dans la base de données
+    etudiants=list(Etudiant.objects.all())
+    classesDansDb=list(set([nomClasse(e.classe) for e in Etudiant.objects.all()]))
     return render(
         request, "addEleves.html",
         context={
             "classes": classes,
             "eleves":  eleves,
+            "classesDansDb" : classesDansDb,
         }
     )
