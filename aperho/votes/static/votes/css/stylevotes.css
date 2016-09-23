@@ -51,3 +51,8 @@ div.classeConnue {
     font-size: 160%;
     background: wheat;
 }
+
+input[disabled].btn:hover, input[disabled].btn:active, input[disabled].btn:focus{
+   color: green;
+   background: white;						   
+}
