@@ -36,6 +36,8 @@ class Etudiant(models.Model):
         return "{} {} {}".format(self.nom, self.prenom, self.uid)
     
 class Cours(models.Model):
+    class Meta:
+        verbose_name_plural = "cours"
     enseignant = models.ForeignKey('Enseignant')
     horaire    = models.ForeignKey('Horaire')
     formation  = models.ForeignKey('Formation')
