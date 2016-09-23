@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Aperho : ajout de professeurs</title>
+    <link rel="stylesheet" href="/static/votes/css/stylevotes.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/votes/js/jquery-ui/themes/smoothness/jquery-ui.css" type="text/css"/>
+    <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
+    </script>
+    <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
+    </script>
+    <script type="text/javascript" src="/static/votes/js/addEleves.js">
+    </script>
+  </head>
+  <body>
+    <h1>Aperho : Les professeurs ont été ajoutés à la barrette</h1>
+    <p>
+      <a href="/">Retour au menu.</a>
+    </p>
+    <div>
+      {% if profs %}
+      <table>
+	<tr><th>Professeur</th><th>salle ou bâtiment</th></tr>
+	{% for p in profs %}
+	<tr>
+	  <th>{{p.nom}} {{p.prenom}}</th>
+	  <td>{{p.salle}}</td>
+	</tr>
+	{% endfor %}
+      </table>
+      {% endif %}
+    </div>
+    <div id="dialog">
+    </div>
+  </body>
+</html>

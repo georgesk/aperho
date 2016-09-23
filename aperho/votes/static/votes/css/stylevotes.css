@@ -29,3 +29,25 @@ div.classeConnue {
     border: 1px orange solid;
     border-radius: 0.5ex;
 }
+
+.profAcocher {
+    display: inline-flex;
+    background: wheat;
+    padding: 0.5ex;
+    border: 1px orange solid;
+    border-radius: 0.5ex;
+    margin-right: 1em;
+    margin-bottom: 0.5ex;
+}
+
+#profAvalider{
+    position: fixed;
+    top : 20px;
+    right: 20px;
+    background: wheat;
+}
+
+#profAvalider input {
+    font-size: 160%;
+    background: wheat;
+}

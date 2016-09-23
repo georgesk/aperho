@@ -1,7 +1,9 @@
 from django.db import models
 
 class Enseignant(models.Model):
+    uid    = models.IntegerField(unique=True)
     nom   = models.CharField(max_length=50)
+    prenom = models.CharField(max_length=50)
     salle = models.CharField(max_length=50)
 
     def __str__(self):
