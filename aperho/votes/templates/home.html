@@ -1,16 +1,33 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Aperho : inscriptions</title>
+    <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
+    </script>
+    <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
+    </script>
+    <script>
+      $( function() { // lancement après le chargement
+      $( "#userinfo" ).accordion({
+        collapsible: true,
+        active: false,
+      });
+      } );
+  </script>
+
+    <link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-ui/css/smoothness/jquery-ui.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/votes/css/stylevotes.css"/>
   </head>
   <body>
-    <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
-    <p>
-      Une authentification est nécessaire.
-      {% if user.is_authenticated %}
-      Vous êtes authentifié : {{user.username}} {{user.first_name}} {{user.last_name}}
-      {% else %}
-      Vous n'êtes pas authentifié
-      {% endif %}
-    </p>
+    {% if user.is_authenticated %}
+    <div id="userinfo">
+      <h3>
+	Bienvenue {{user.first_name}} {{user.last_name}}
+      </h3>
+      <ul>
+	<li><a href="/logout/">Déconnexion</a></li>
+      </ul>
+    </div>
+    <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
+    {% endif %}
   </body>
 </html>

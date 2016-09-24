@@ -56,3 +56,9 @@ input[disabled].btn:hover, input[disabled].btn:active, input[disabled].btn:focus
    color: green;
    background: white;						   
 }
+
+#userinfo {
+    float:right;
+    margin: 10px;
+    width: 15em;
+}
