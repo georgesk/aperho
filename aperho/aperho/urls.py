@@ -17,11 +17,15 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
 from django.contrib.staticfiles import views
+import django.contrib.auth.views
 
 from . import home
 
 urlpatterns = [
     url(r'^$', home.index, name='home'),
+    #url(r'^login/$', home.login, name='login'),
+    url(r'^login/$', django.contrib.auth.views.login, name='login'),
+    url(r'^preparation/$', home.index_admin, name='home_admin'),
     url(r'^admin/', admin.site.urls),
     url(r'^votes/', include('votes.urls')),
 ]

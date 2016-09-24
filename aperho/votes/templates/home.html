@@ -1,15 +1,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Aperho : page d'accueil</title>
+    <title>Aperho : inscriptions</title>
   </head>
   <body>
-    <h1>Aperho : page d'accueil</h1>
-    <ul>
-      <li><a href="/votes/addEleves">Ajout d'élèves à la barrette d'AP</a></li>
-      <li><a href="/votes/addProfs">Ajout de profs à la barrette d'AP</a></li>
-      <li><a href="/votes/addFormation">Ajout de formation à la barrette d'AP</a></li>
-      <li><a href="/admin/votes/cours/add/">Mise en place d'un cours d'AP</a></li>
-      <li><a href="/admin">Autres fonctions d'administration : lister, modifier, effacer, etc.</a></li>
-    </ul>
+    <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
+    <p>
+      Une authentification est nécessaire.
+      {% if user.is_authenticated %}
+      Vous êtes authentifié : {{user.username}} {{user.first_name}} {{user.last_name}}
+      {% else %}
+      Vous n'êtes pas authentifié
+      {% endif %}
+    </p>
   </body>
 </html>
