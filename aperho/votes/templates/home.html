@@ -5,14 +5,16 @@
     </script>
     <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
     </script>
-    <script>
+    <script type="text/javascript">
       $( function() { // lancement après le chargement
       $( "#userinfo" ).accordion({
         collapsible: true,
         active: false,
       });
       } );
-  </script>
+    </script>
+    <script type="text/javascript" src="/static/votes/js/changeCours.js">
+    </script>
 
     <link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-ui/css/smoothness/jquery-ui.css"/>
     <link rel="stylesheet" type="text/css" href="/static/votes/css/stylevotes.css"/>
@@ -27,7 +29,50 @@
 	<li><a href="/logout/">Déconnexion</a></li>
       </ul>
     </div>
+    {% if user.is_superuser %}
+    <a href="/admin/">administration</a>
+    {% endif %}
     <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
+    <h2>Cours disponibles</h2>
+    cocher les cases à gauche, et ...<br/>
+    <button type="button" onclick="valideCours()">
+      Valider les inscriptions
+    </button>
+    ou
+    <button type="button" onclick="annuleCours()">
+      Annuler les inscriptions
+    </button>
+    {% for coursHoraire in tousLesCours %}
+    <h3>Cours commençant à {{coursHoraire.horaire}}</h3>
+    <table style="width: 100%">
+     {% for c in coursHoraire.cours %}
+     <tr>
+       <td colspan="2">
+	 Remplissage
+       </td>
+       <th colspan="3" class="profsalle">
+	 {{c.enseignant}}
+       </th>
+      </tr>
+      <tr>
+	<td rowspan="2">
+	  <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})"/>
+	</td>
+	<td>
+	  {{c.inscriptions| length}}/{{c.capacite}}
+	</td>
+	<td>{{c.horaire}}</td>
+	<td>{{c.formation.duree}} h</td>
+	<td style="font-weight: bold;">
+	  {{c.formation.titre}}
+	</td>
+      </tr>
+      <tr>
+	<td colspan="5" class="contenuap">{{c.formation.contenu}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endfor %}
     {% endif %}
   </body>
 </html>

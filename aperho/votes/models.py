@@ -41,9 +41,10 @@ class Cours(models.Model):
     enseignant = models.ForeignKey('Enseignant')
     horaire    = models.ForeignKey('Horaire')
     formation  = models.ForeignKey('Formation')
+    capacite   = models.IntegerField(default=18)
 
     def __str__(self):
-        return "{} {} {}".format(self.horaire, self.enseignant, self.formation)
+        return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
 
 class Inscription(models.Model):
     etudiant   = models.ForeignKey('Etudiant')
