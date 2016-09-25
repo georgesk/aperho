@@ -13,6 +13,7 @@ class Formation(models.Model):
     titre   = models.CharField(max_length=80)
     contenu = models.TextField()
     duree   = models.IntegerField(default=1)
+    public_designe = models.BooleanField(default=False, verbose_name="Public désigné")
 
     def __str__(self):
         result="{} heure(s) : {} --- {}".format(self.duree, self.titre, self.contenu)
@@ -27,13 +28,14 @@ class Horaire(models.Model):
         return str(self.heure)
 
 class Etudiant(models.Model):
-    uid    = models.IntegerField(unique=True)
-    nom    = models.CharField(max_length=50)
-    prenom = models.CharField(max_length=50)
-    classe = models.CharField(max_length=10)
+    uidNumber = models.IntegerField(unique=True)
+    uid       = models.CharField(max_length=50)
+    nom       = models.CharField(max_length=50)
+    prenom    = models.CharField(max_length=50)
+    classe    = models.CharField(max_length=10)
 
     def __str__(self):
-        return "{} {} {}".format(self.nom, self.prenom, self.uid)
+        return "{nom} {prenom} {classe} {uid}".format(**self.__dict__)
     
 class Cours(models.Model):
     class Meta:

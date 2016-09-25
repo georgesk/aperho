@@ -8,8 +8,8 @@
     <script type="text/javascript">
       $( function() { // lancement après le chargement
       $( "#userinfo" ).accordion({
-        collapsible: true,
-        active: false,
+      collapsible: true,
+      active: false,
       });
       } );
     </script>
@@ -33,46 +33,60 @@
     <a href="/admin/">administration</a>
     {% endif %}
     <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
-    <h2>Cours disponibles</h2>
-    cocher les cases à gauche, et ...<br/>
-    <button type="button" onclick="valideCours()">
-      Valider les inscriptions
-    </button>
-    ou
-    <button type="button" onclick="annuleCours()">
-      Annuler les inscriptions
-    </button>
+    <h2>
+      Cours d'AP disponibles
+      {% if etudiant == None %}
+      (vous n'êtes pas étudiant(e))
+      {% else %}
+      ({{etudiant.prenom}} {{etudiant.nom}}, {{etudiant.classe}})
+      {% endif %}
+    </h2>
+    <div id="inscription_boutons">
+      Cocher les cases à gauche, et ...<br/>
+      <button type="button" onclick="valideCours()">
+	Valider les inscriptions
+      </button>
+      ou
+      <button type="button" onclick="annuleCours()">
+	Annuler les inscriptions
+      </button>
+    </div>
+    <input type="hidden" id="etudiantUid" value="{{etudiant.uid}}"/>
     {% for coursHoraire in tousLesCours %}
     <h3>Cours commençant à {{coursHoraire.horaire}}</h3>
     <table style="width: 100%">
-     {% for c in coursHoraire.cours %}
-     <tr>
-       <td colspan="2">
-	 Remplissage
-       </td>
-       <th colspan="3" class="profsalle">
-	 {{c.enseignant}}
-       </th>
+      {% for c in coursHoraire.cours %}
+      <tr>
+	<td colspan="2" class="remplisalle">
+	  Remplissage
+	</td>
+	<th colspan="2" class="profsalle">
+	  {{c.enseignant}}
+	</th>
       </tr>
       <tr>
-	<td rowspan="2">
-	  <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})"/>
+	<td rowspan="2" {% if c.formation.public_designe %}style="background: lightgrey;"{% endif %}>
+	  <!-- ci-dessous, un attribut data-class "cours_0_2" signifie un cours de la série 0, durée 2 heures :-->
+	  <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" />
 	</td>
-	<td>
+	<td class="remplisalle" style="width:6ex;">
 	  {{c.inscriptions| length}}/{{c.capacite}}
 	</td>
-	<td>{{c.horaire}}</td>
-	<td>{{c.formation.duree}} h</td>
+	<td style="width:4ex;{% if c.formation.duree == 2 %} background: wheat; color:darkred; font-weight:bold;{% endif %}">
+	  {{c.formation.duree}} h
+	</td>
 	<td style="font-weight: bold;">
 	  {{c.formation.titre}}
 	</td>
       </tr>
       <tr>
-	<td colspan="5" class="contenuap">{{c.formation.contenu}}</td>
+	<td colspan="4" class="contenuap">{{c.formation.contenu}}</td>
       </tr>
       {% endfor %}
     </table>
     {% endfor %}
     {% endif %}
+    <div id="dialog"><!-- sert pour une boîte de dialogue de jQuery --></div>
+    <div id="placeholder-for-fixed-buttons" style="height: 70px;"></div>
   </body>
 </html>

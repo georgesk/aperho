@@ -8,7 +8,7 @@ admin.site.register(Horaire)
 admin.site.register(Inscription)
 
 class EtudiantAdmin (admin.ModelAdmin):
-    list_display = ('nom', 'prenom', 'classe', 'uid')
+    list_display = ('nom', 'prenom', 'classe', 'uidNumber', 'uid')
 
 admin.site.register(Etudiant, EtudiantAdmin)
 

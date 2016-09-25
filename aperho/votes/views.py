@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+import json
 
 from aperho.settings import connection
-from .models import Etudiant, Enseignant, Formation
+from .models import Etudiant, Enseignant, Formation, Inscription, Cours
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
@@ -44,12 +45,13 @@ def addEleves(request):
             connection.search(
                 search_base = base_dn,
                 search_filter = filtre,
-                attributes=["uidNumber", "sn", "givenName" ]
+                attributes=["uidNumber", "sn", "givenName", "uid" ]
                 )
             for entry in connection.response:
                 eleves.append(
                     {
-                        "uid":entry['attributes']['uidNumber'][0],
+                        "uidNumber":entry['attributes']['uidNumber'][0],
+                        "uid":entry['attributes']['uid'][0],
                         "nom":entry['attributes']['sn'][0],
                         "prenom":entry['attributes']['givenName'][0],
                         "classe": cn,
@@ -60,8 +62,9 @@ def addEleves(request):
             etudiant=Etudiant.objects.filter(uid=e["uid"])
             if not etudiant:
                 ## création d'un nouvel enregistrement
-                etudiant=Etudiant(uid=e["uid"], nom=e["nom"],
-                                  prenom=e["prenom"], classe=e["classe"])
+                etudiant=Etudiant(uidNumber=e["uidNumber"],uid=e["uid"],
+                                  nom=e["nom"], prenom=e["prenom"],
+                                  classe=e["classe"])
                 etudiant.save()
     base_dn = 'ou=Groups,dc=lycee,dc=jb'
     filtre = '(&(cn=c*)(!(cn=*smbadm))(objectclass=kwartzGroup))'
@@ -233,3 +236,47 @@ def addFormation(request):
     return render(
         request, "addFormation.html",
     )
+
+def addInscription(request):
+    """
+    ajoute une inscription à un cours
+    renvoie un en-tête json, et des données de feedback
+    """
+    message=""
+    ok=True
+    uid=request.GET.get("uid")
+    clData=request.GET.get("classes")
+    if clData:
+        classes=[int(c) for c in clData.split(":")]
+    else:
+        classes=[]
+    ## on retire les classes à public désigné de celles où il est possible
+    ## de s'inscrire
+    classesOk=[]
+    for c in classes:
+        if not Cours.objects.filter(pk=c)[0].formation.public_designe:
+            classesOk.append(c)
+    classes=classesOk
+    etudiants=list(Etudiant.objects.filter(uid=uid))
+    if not etudiants:
+        message="ERREUR : {} ne fait pas partie des élèves qui peuvent s'inscrire".format(uid)
+        ok=False
+    else:
+        etudiant=etudiants[0]
+        ## effacement des inscriptions précédentes
+        ## !!! il faudrait prendre en compte une période des AP
+        Inscription.objects.filter(etudiant=etudiant, cours__formation__public_designe=False).delete()
+        if clData == "": # cas d'un effacement demandé
+            message="Effacement terminé."
+        else:
+            message="Inscriptions : "
+            for c in classes:
+                classe=Cours.objects.filter(pk=c)[0]
+                inscription=Inscription(etudiant=etudiant, cours=classe)
+                inscription.save()
+                message+="« {}, {}...» ".format(classe.formation.titre, classe.formation.contenu[:20])
+    return JsonResponse({
+        "message" : message,
+        "ok"      : ok,
+    })
+   
