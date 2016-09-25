@@ -70,6 +70,11 @@
 	  <div class="jolicb">
 	    <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" />
 	    <label for="cours_{{c.id}}"></label>
+	    {% if c.disabled %}
+	    <span>Case non modifiable</span>
+	    {% else %}
+	    <span>Cliquer pour modifier</span>
+	    {% endif %}
 	  </div>
 	</td>
 	<td class="remplisalle" style="width:6ex;">
