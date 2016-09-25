@@ -89,3 +89,56 @@ input[disabled].btn:hover, input[disabled].btn:active, input[disabled].btn:focus
     background: lightcyan;
 }
 
+
+.jolicb {
+    width: 30px;
+    height: 30px;
+    background: #557;
+    margin: 5px;
+    border-radius: 100%;
+    position: relative;
+    -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.5);
+    -moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.5);
+    box-shadow: 0px 1px 3px rgba(0,0,0,0.5);
+}
+
+.jolicb input[type=checkbox]{
+    margin: 10px;
+}
+
+
+
+/**
+
+ * Create the checkbox button
+
+ */
+
+.jolicb label {
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 100px;
+    -webkit-transition: all .5s ease;
+    -moz-transition: all .5s ease;
+    -o-transition: all .5s ease;
+    -ms-transition: all .5s ease;
+    transition: all .5s ease;
+    cursor: pointer;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    z-index: 10;
+    background: #533;
+    -webkit-box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);
+    -moz-box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);
+    box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);
+}
+
+/**
+ * Create the checked state
+ */
+
+.jolicb input[type=checkbox]:checked + label {
+    background: #26f828;
+}

@@ -67,7 +67,10 @@
       <tr>
 	<td rowspan="2" {% if c.formation.public_designe %}style="background: lightgrey;"{% endif %}>
 	  <!-- ci-dessous, un attribut data-class "cours_0_2" signifie un cours de la série 0, durée 2 heures :-->
-	  <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" />
+	  <div class="jolicb">
+	    <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" />
+	    <label for="cours_{{c.id}}"></label>
+	  </div>
 	</td>
 	<td class="remplisalle" style="width:6ex;">
 	  {{c.inscriptions| length}}/{{c.capacite}}

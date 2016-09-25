@@ -11,7 +11,7 @@ function check(n, dialog){
 	dialog=true;
     }
     var ok=true; // approuve/désapprouve le changement
-    var msg="changement pris en compte";
+    var msg="";
     var c_0_1=$("[data-class=cours_0_1]:checked");
     var c_1_1=$("[data-class=cours_1_1]:checked");
     var c_0_2=$("[data-class=cours_0_2]:checked");
@@ -23,15 +23,16 @@ function check(n, dialog){
 	ok=false;
 	msg="ERREUR  : deux cours demandés commencent à la deuxième heure";
     }
-    var duree=2*c_0_2.length+c_0_1.length+c_1_1.length
+    var duree=2*c_0_2.length+c_0_1.length+c_1_1.length;
     if (duree < 2){
-	msg="Une heure a été choisie. Il faut en choisir une deuxième."
+	// msg="Une heure a été choisie. Il faut en choisir une deuxième.";
+	msg="";
     }
     if (duree > 2){
 	ok=false;
 	msg="ERREUR : on ne peut pas choisir plus de deux heures de cours"
     }
-    if (dialog) message(msg);
+    if (dialog && msg.length > 0) message(msg);
     if (!ok){ // on désapprouve.
 	var cb=$("#cours_"+n)[0];
 	cb.checked=!cb.checked; // retour en arrière
