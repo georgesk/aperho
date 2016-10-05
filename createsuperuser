@@ -1,0 +1,21 @@
+#!/bin/sh
+
+usage(){
+    echo "Usage: $0 adminLoginName admin.email@example.com passwordForShell"
+    echo "parameters:"
+    echo "- adminLoginName          the login name for the administrator"
+    echo "- admin.email@example.com the email address of the administrator"
+    echo "- passwordForShell        a password; beware of characters not supported by sh"
+    exit 1
+}
+
+if [ $# -lt 3 ]; then
+    usage
+fi
+
+wd=$(dirname $0)
+cd $wd
+
+
+
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('$1', '$2', '$3')" | python3 manage.py shell

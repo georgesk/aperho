@@ -11,10 +11,12 @@
     </script>
   </head>
   <body>
+    {% if user.is_superuser %}
     <h1>Aperho : Les professeurs ont été ajoutés à la barrette</h1>
-    <p>
-      <a href="/">Retour au menu.</a>
-    </p>
+    <ul>
+      <li><a href="/admin/">Administration.</a></li>
+      <li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
+    </ul>
     <div>
       {% if profs %}
       <table>
@@ -30,5 +32,6 @@
     </div>
     <div id="dialog">
     </div>
+    {% endif %}
   </body>
 </html>

@@ -29,7 +29,6 @@ def index(request):
             ## on a affaire à un étudiant, qui est etudiants[0]
             etudiant=etudiants[0]
             cours_suivis=[i.cours for i in Inscription.objects.filter(etudiant=etudiant)]
-        print("GRRRR cours suivis :", cours_suivis)
         ## on s'assure qu'il y a bien deux horaires, pas plus, pas moins
         horaires=sorted(list(set([str(c.horaire) for c in cours])))
         while len(horaires) < 2:

@@ -30,7 +30,10 @@
       </ul>
     </div>
     {% if user.is_superuser %}
-    <a href="/admin/">administration</a>
+    <ul>
+      <li><a href="/admin/">Administration.</a></li>
+      <li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
+    </ul>
     {% endif %}
     <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
     <h2>
@@ -68,7 +71,7 @@
 	<td rowspan="2" {% if c.formation.public_designe %}style="background: lightgrey;"{% endif %}>
 	  <!-- ci-dessous, un attribut data-class "cours_0_2" signifie un cours de la série 0, durée 2 heures :-->
 	  <div class="jolicb">
-	    <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" />
+	    <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" data-formation="{{c.formation.id}}"/>
 	    <label for="cours_{{c.id}}"></label>
 	    {% if c.disabled %}
 	    <span>Case non modifiable</span>

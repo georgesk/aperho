@@ -11,7 +11,12 @@
     </script>
   </head>
   <body>
+    {% if user.is_superuser %}
     <h1>Aperho : ajout de professeurs</h1>
+    <ul>
+      <li><a href="/admin/">Administration.</a></li>
+      <li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
+    </ul>
     <form method="post">
       <fieldset>
 	<legend>Renseignez les salles des professeurs</legend>
@@ -37,5 +42,6 @@
     </form>
     <div id="dialog">
     </div>
+    {% endif %}
   </body>
 </html>

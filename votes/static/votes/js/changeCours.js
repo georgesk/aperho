@@ -15,6 +15,7 @@ function check(n, dialog){
     var c_0_1=$("[data-class=cours_0_1]:checked");
     var c_1_1=$("[data-class=cours_1_1]:checked");
     var c_0_2=$("[data-class=cours_0_2]:checked");
+    var c_checked=$("input:checkbox:checked");
     if (c_0_1.length+c_0_2.length > 1){
 	ok=false;
 	msg="ERREUR  : deux cours demandés commencent à la première heure";
@@ -31,6 +32,16 @@ function check(n, dialog){
     if (duree > 2){
 	ok=false;
 	msg="ERREUR : on ne peut pas choisir plus de deux heures de cours"
+    }
+    var formations=[];
+    for (var i=0; i< c_checked.length; i++){
+	var f=$(c_checked[i]).attr("data-formation");
+	if (formations.indexOf(f)>=0){
+	    ok=false;
+	    msg="ERREUR  : deux cours choisis ne peuvent pas être identiques";
+	} else {
+	    formations.push(f);
+	}
     }
     if (dialog && msg.length > 0) message(msg);
     if (!ok){ // on désapprouve.
@@ -77,7 +88,7 @@ function valideCours(){
     if (duree != 2){
 	message("La durée des cours sélectionnés n'est pas de deux heures. Modifiez la sélection.");
     } else {
-	var url="http://localhost:8000/votes/addInscription";
+	var url="/votes/addInscription";
 	var classesChoisies=[];
 	var checked=$(":checked");
 	for(var i=0; i < checked.length; i++){
@@ -110,7 +121,7 @@ function valideCours(){
 function annuleCours(){
     // décoche toutes les cases qu'on a le droit de décocher
     var cases=$(":checked:enabled").prop( "checked", false );;
-    var url="http://localhost:8000/votes/addInscription";
+    var url="/votes/addInscription";
     var inData={
 	uid: $("#etudiantUid").val(),
 	classes: "",
