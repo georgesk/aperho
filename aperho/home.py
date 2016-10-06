@@ -5,10 +5,14 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.hashers import *
 
-from votes.models import Cours, Inscription, Etudiant
+from votes.models import Cours, Inscription, Etudiant, Enseignant
+from votes.models import estProfesseur
 
 def index_admin(request):
     return render(request, "home_admin.html")
+
+            
+    
 
 def index(request):
     if request.user.is_authenticated():
@@ -54,6 +58,8 @@ def index(request):
                 "horaires" : horaires,
                 "etudiant" : etudiant,
                 "cours_suivis" : cours_suivis,
+                "estprof": estProfesseur(request.user),
+                "username": request.user.username,
             }
         )
     else:

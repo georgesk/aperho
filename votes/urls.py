@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^addProfs$', views.addProfs, name='addProfs'),
     url(r'^addFormation$', views.addFormation, name='addFormation'),
     url(r'^addInscription$', views.addInscription, name='addInscription'),
+    url(r'^lesCours$', views.lesCours, name='lesCours'),
 ]

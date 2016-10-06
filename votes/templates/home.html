@@ -1,10 +1,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    {% block title %}
     <title>Aperho : inscriptions</title>
+    {% endblock %}
+    {% block jquery %}
     <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
     </script>
     <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
     </script>
+    <link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-ui/css/smoothness/jquery-ui.css"/>
+    {% endblock %}
+    {% block onload %}
     <script type="text/javascript">
       $( function() { // lancement après le chargement
       $( "#userinfo" ).accordion({
@@ -13,28 +19,49 @@
       });
       } );
     </script>
+    {% endblock %}
+    {% block customjs %}
     <script type="text/javascript" src="/static/votes/js/changeCours.js">
     </script>
+    {% endblock %}
 
-    <link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-ui/css/smoothness/jquery-ui.css"/>
+    {% block style %}
     <link rel="stylesheet" type="text/css" href="/static/votes/css/stylevotes.css"/>
+    {% endblock %}
   </head>
   <body>
     {% if user.is_authenticated %}
     <div id="userinfo">
       <h3>
+	{% block welcome %}
 	Bienvenue {{user.first_name}} {{user.last_name}}
+	{% ifequal estprof "prof" %}
+	<br/><span class="remark">professeur (pas pour l'AP)</span>
+	{% else %}
+	{% ifequal estprof "profAP" %}
+	<br/><span class="remark">professeur ( dans ce groupe d'AP)</span>
+	{% endifequal %}
+	{% endifequal %}
+	<br/><span class="remark">Cliquer pour les options ↡</span>
       </h3>
-      <ul>
+      <ul class="dropdownOptions">
+	{% block localoptions %}
+	{% if user.is_superuser %}
+	<li><a href="/admin/">Administration.</a></li>
+	<li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
+	{% endif %}
+	{% ifequal estprof "profAP" %}
+	<li><a href="/votes/lesCours?uid={{username}}">Voir <b>mes cours</b> d'AP et les élèves inscrits.</a></li>
+	<li><a href="/votes/lesCours">Voir tous les cours d'AP et les élèves inscrits.</a></li>
+	{% endifequal %}
+	{% endblock %}
+	<!-- dernière option : la déconnexion -->
 	<li><a href="/logout/">Déconnexion</a></li>
+	{% endblock %}
       </ul>
     </div>
-    {% if user.is_superuser %}
-    <ul>
-      <li><a href="/admin/">Administration.</a></li>
-      <li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
-    </ul>
-    {% endif %}
+    <div style="clear:both"/>
+    {% block main %}
     <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
     <h2>
       Cours d'AP disponibles
@@ -96,8 +123,9 @@
       {% endfor %}
     </table>
     {% endfor %}
-    {% endif %}
+    {% endblock %}
     <div id="dialog"><!-- sert pour une boîte de dialogue de jQuery --></div>
     <div id="placeholder-for-fixed-buttons" style="height: 70px;"></div>
+    {% endif %}
   </body>
 </html>

@@ -3,7 +3,8 @@ from django.http import HttpResponse, JsonResponse
 import json
 
 from aperho.settings import connection
-from .models import Etudiant, Enseignant, Formation, Inscription, Cours
+from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
+    estProfesseur
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
@@ -280,3 +281,45 @@ def addInscription(request):
         "ok"      : ok,
     })
    
+def lesCours(request):
+    """
+    affiche les cours d'un prof
+    """
+    prof=estProfesseur(request.user)
+    pourqui=request.GET.get("uid","")
+    cours=Cours.objects.all()
+    noninscrits=set([])
+    if pourqui:
+        ### on ne garde que les cours du seul prof qui demande
+        nom=request.user.last_name
+        prenom=request.user.first_name
+        cours=cours.filter(enseignant__nom=nom, enseignant__prenom=prenom)
+    else:
+        ## calcul des non-inscrits
+        eleves=set([e for e in Etudiant.objects.all()])
+        inscrits=set([i.etudiant for i in Inscription.objects.all()])
+        noninscrits=eleves-inscrits
+    cours=list(cours.order_by("enseignant__nom","horaire",))
+    enseignants=[c.enseignant for c in cours]
+    horaires=set([c.horaire for c in cours])
+    eci={} ## dictionnaire enseignant -> cours -> inscriptions
+    for e in enseignants:
+        ec=[c for c in cours if c.enseignant==e]
+        eci[e]={}
+        i=0
+        for c in ec:
+            inscriptions=Inscription.objects.filter(cours=c)
+            eci[e][c]=list(inscriptions.order_by('etudiant__nom','etudiant__prenom'))
+            i+=len(eci[e][c])
+        e.nbEtudiants=i
+    return render(
+            request, "lesCours.html",
+            context={
+                "prof":  prof,
+                "eci":   eci,
+                "horaires": horaires,
+                "estprof": estProfesseur(request.user),
+                "username": request.user.username,
+                "noninscrits": noninscrits,
+            }
+        ) 

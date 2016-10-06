@@ -63,9 +63,10 @@ input[disabled].btn:hover, input[disabled].btn:active, input[disabled].btn:focus
 #userinfo {
     float:right;
     margin-rigth: 10px;
-    margin-top: 50px;
+    margin-top: 10px;
     width: 15em;
 }
+
 .ui-accordion-header{
     z-index:30;
 }
@@ -171,4 +172,18 @@ input[disabled].btn:hover, input[disabled].btn:active, input[disabled].btn:focus
     display:inline; position:absolute; 
     border:2px solid #FFF;  color:#fff;
     background:#333;
+}
+
+.remark {
+    font-size: 70%;
+}
+
+ul.dropdownOptions {
+    list-style-type: circle;
+}
+
+ul.dropdownOptions a {
+    color: blue;
+    text-decoration: none;
+    font-size: 70%;
 }
