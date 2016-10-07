@@ -1,11 +1,13 @@
 from django.contrib import admin
 
-from .models import Enseignant, Formation, Horaire, Etudiant, Cours, Inscription
+from .models import Enseignant, Formation, Horaire, Etudiant, Cours, \
+    Inscription, Ouverture
 
 admin.site.register(Enseignant)
 admin.site.register(Formation)
 admin.site.register(Horaire)
 admin.site.register(Inscription)
+admin.site.register(Ouverture)
 
 class EtudiantAdmin (admin.ModelAdmin):
     list_display = ('nom', 'prenom', 'classe', 'uidNumber', 'uid')

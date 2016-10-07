@@ -1,6 +1,22 @@
 from django.db import models
 from aperho.settings import connection
+from django.utils import timezone
 
+class Ouverture(models.Model):
+    debut = models.DateTimeField()
+    fin   = models.DateTimeField()
+
+    def __str__(self):
+        return "{} ↦ {}".format(self.debut, self.fin)
+
+    def estActive(self):
+        """
+        décide si un objet "ouverture" est actif
+        @return vrai ou faux
+        """
+        now = timezone.now()
+        return self.debut <= now <= self.fin
+    
 class Enseignant(models.Model):
     uid    = models.IntegerField(unique=True)
     nom   = models.CharField(max_length=50)
@@ -45,9 +61,17 @@ class Cours(models.Model):
     horaire    = models.ForeignKey('Horaire')
     formation  = models.ForeignKey('Formation')
     capacite   = models.IntegerField(default=18)
+    ouverture  = models.ForeignKey('Ouverture', null=True, blank=True)
 
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
+
+    def estOuvert(self):
+        """
+        Dit si l'inscription au cours est ouverte
+        @return vrai ou faux
+        """
+        return self.ouverture.estActive()
 
 class Inscription(models.Model):
     etudiant   = models.ForeignKey('Etudiant')
