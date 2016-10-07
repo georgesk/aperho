@@ -16,7 +16,7 @@ def index_admin(request):
 
 def index(request):
     if request.user.is_authenticated():
-        cours=list(Cours.objects.all())
+        cours=list(Cours.objects.all().order_by("formation__titre"))
         ## On enrichit les cours avec le remplissage actuel de chacun
         ## Et on décide si on doit désactiver la modification de ce cours
         for c in cours:

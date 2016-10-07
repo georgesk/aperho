@@ -86,6 +86,7 @@
     <h3>Cours commençant à {{coursHoraire.horaire}}</h3>
     <table style="width: 100%">
       {% for c in coursHoraire.cours %}
+      <!-- M Hogrel suggère qu'on ne voie pas les noms des enseignants ici
       <tr>
 	<td colspan="2" class="remplisalle">
 	  Remplissage
@@ -94,6 +95,7 @@
 	  {{c.enseignant}}
 	</th>
       </tr>
+      -->
       <tr>
 	<td rowspan="2" {% if c.formation.public_designe %}style="background: lightgrey;"{% endif %}>
 	  <!-- ci-dessous, un attribut data-class "cours_0_2" signifie un cours de la série 0, durée 2 heures :-->
@@ -108,6 +110,7 @@
 	  </div>
 	</td>
 	<td class="remplisalle" style="width:6ex;">
+	  Remplissage :<br/>
 	  {{c.inscriptions| length}}/{{c.capacite}}
 	</td>
 	<td style="width:4ex;{% if c.formation.duree == 2 %} background: wheat; color:darkred; font-weight:bold;{% endif %}">
