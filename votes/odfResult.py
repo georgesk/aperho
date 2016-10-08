@@ -7,7 +7,7 @@ from django.http import HttpResponse
 
 from odf.opendocument import OpenDocumentSpreadsheet, OpenDocumentText
 from odf.style import Style, TextProperties, ParagraphProperties, TableColumnProperties, ListLevelProperties
-from odf.text import P, List, ListItem, ListStyle, ListLevelStyleBullet
+from odf.text import P, H, List, ListItem, ListStyle, ListLevelStyleBullet, SoftPageBreak
 from odf.table import Table, TableColumn, TableRow, TableCell
 from io import BytesIO
 
@@ -75,52 +75,6 @@ def odsResponse(inscriptions, noninscrits):
     response.write(output.getvalue())
     return response
 
-def odtResponse(eci,noninscrits):
-    """
-    fabrique un objet de type HttpResponse qui comporte un tableur au format
-    ODT, avec les exportations d'une "barrette" d'AP.
-    @param eci un dictionnaire de dictionnaires enseignant => cours => inscriptions
-    @param noninscrits une liste d'Etudiants
-    @return un objet de type HttpResponse
-    """
-    response = HttpResponse(content_type='application/vnd.oasis.opendocument.text')
-    now=timezone.now()
-    filename="aperho-{}.odt".format(now.strftime("%Y%m%d-%H%M"))
-    response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
-
-    textdoc = OpenDocumentText()
-
-    symbolstyle = Style(name="Numbering Symbols", family="text")
-    textdoc.styles.addElement(symbolstyle)
-
-    liststyle = Style(name="List Content", family="paragraph")
-    liststyle.addElement(ParagraphProperties(numberlines="false", linenumber="0"))
-    textdoc.automaticstyles.addElement(liststyle)
-
-    listhier = ListStyle(name="MyList")
-    level = 1
-    for bullet in ["–", "•", "–","•", "✗", "✗", "✗", "✗", "✗", "✗"]:
-        b = ListLevelStyleBullet(level=str(level), stylename=symbolstyle, bulletchar=bullet)
-        listhier.addElement(b)
-        b.addElement(ListLevelProperties(minlabelwidth="%dcm" % level))
-        b.addElement(TextProperties(fontname="StarSymbol"))
-        level = level + 1
-
-    textdoc.styles.addElement(listhier)
-
-    l = List(stylename=listhier)
-    textdoc.text.addElement(l)
-    for x in [1,2,3,4]:
-        elem = ListItem()
-        elem.addElement(P(text="Listitem %d" % x))
-        l.addElement(elem)
-
-
-    output=BytesIO()
-    doc.save(output)
-    response.write(output.getvalue())
-    return response
-
 def odtResponse(eci, horaires, noninscrits):
     """
     fabrique un objet de type HttpResponse qui comporte un tableur au format
@@ -136,24 +90,15 @@ def odtResponse(eci, horaires, noninscrits):
     response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
 
     textdoc = OpenDocumentText()
+    textdoc.text.setAttribute('usesoftpagebreaks', 1)
+    tablecontents = Style(name="Table Contents", family="paragraph")
+    tablecontents.addElement(ParagraphProperties(numberlines="false", linenumber="0"))
+    tablecontents.addElement(TextProperties(fontweight="bold"))
+    textdoc.styles.addElement(tablecontents)
 
-    symbolstyle = Style(name="Numbering Symbols", family="text")
-    textdoc.styles.addElement(symbolstyle)
-
-    liststyle = Style(name="List Content", family="paragraph")
-    liststyle.addElement(ParagraphProperties(numberlines="false", linenumber="0"))
-    textdoc.automaticstyles.addElement(liststyle)
-
-    listhier = ListStyle(name="MyList")
-    level = 1
-    for bullet in ["–", "•", "–","•", "✗", "✗", "✗", "✗", "✗", "✗"]:
-        b = ListLevelStyleBullet(level=str(level), stylename=symbolstyle, bulletchar=bullet)
-        listhier.addElement(b)
-        b.addElement(ListLevelProperties(minlabelwidth="%dcm" % level))
-        b.addElement(TextProperties(fontname="StarSymbol"))
-        level = level + 1
-
-    textdoc.styles.addElement(listhier)
+    widthwide = Style(name="Wwide", family="table-column")
+    widthwide.addElement(TableColumnProperties(columnwidth="1.5in"))
+    textdoc.automaticstyles.addElement(widthwide)
 
     """
     l = List(stylename=listhier)
@@ -165,13 +110,33 @@ def odtResponse(eci, horaires, noninscrits):
     """
     for e,ci in eci.items():
         # e est un enseignant, ci est un dictionnaire
-        textdoc.text.addElement((P(text=e)))
         for c,inscriptions in ci.items():
-            textdoc.text.addElement((P(text=c)))
+            titre="{} {} ({})".format(c.horaire, c.enseignant.nom, c.enseignant.salle)
+            textdoc.text.addElement((H(text=titre, outlinelevel=1)))
+            ### on début un tableau n°, Nom, prénom, classe pour les élèves
+            table = Table()
+            table.addElement(TableColumn(numbercolumnsrepeated=4,stylename=widthwide))
+            textdoc.text.addElement(table)
+            n=1
+            tr = TableRow()
+            table.addElement(tr)
+            for val in ("n°","Nom","Prénom","Classe"):
+                tc = TableCell()
+                tr.addElement(tc)
+                p = P(stylename=tablecontents,text=str(val))
+                tc.addElement(p)
             for i in inscriptions:
-                textdoc.text.addElement((P(text="    {}".format(i))))
-        
-        
+                tr = TableRow()
+                table.addElement(tr)
+                for val in [n, i.etudiant.nom, i.etudiant.prenom, i.etudiant.classe]:
+                    tc = TableCell()
+                    tr.addElement(tc)
+                    p = P(text=val)
+                    tc.addElement(p)
+                n+=1
+        #après chaque enseignant, on passe une page.
+        sautDePage=SoftPageBreak()
+        textdoc.text.addElement(sautDePage)
     output=BytesIO()
     textdoc.save(output)
     response.write(output.getvalue())
