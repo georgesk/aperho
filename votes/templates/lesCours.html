@@ -18,46 +18,52 @@
 {% endblock %}
 
 {% block main %}
-    {% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
-    <h1>Les cours d'AP, pour ...</h1>
-    {% for e,ci in eci.items %}
-    <div class="accordion">
-      <div>
-	<h2>{{e.prenom}} {{e.nom}} ({{e.nbEtudiants}} élèves)</h2>
-	<div>
-	  <table>
-	    {% for c,inscriptions in ci.items %}
-	    {% if forloop.counter > 1 %}
-	    <!-- saut de ligne -->
-	    <tr><td colspan="3" style="background: transparent; border-color:transparent"><br/></td></tr>
-	    {% endif %}
-	    <tr>
-	      <th colspan="3">
-		{{c.horaire}} ({{c.formation.duree}} h) {{c.formation.titre}}
-	      </th>
-	    </tr>
-	    {% for i in inscriptions %}
-	    <tr>
-	      <td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td> {{i.etudiant.prenom}}</td>
-	    </tr>
-	    {% endfor %}
-	    {% endfor %}
-	  </table>
-	</div>
-	</div>
+{% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
+<h3>Données dans un autre format</h3>
+<ul>
+  <li>Pour un tableur, au <a href="/votes/lesCours?csv=yes">format CSV</a>.</li>  
+  <li>Pour un tableur, au <a href="/votes/lesCours?ods=yes">format ODS</a>.</li>  
+  <li>Pour un traitement de texte, au <a href="/votes/lesCours?odt=yes">format ODT</a>.</li>  
+</ul>  
+<h1>Les cours d'AP, pour ...</h1>
+{% for e,ci in eci.items %}
+<div class="accordion">
+  <div>
+    <h2>{{e.prenom}} {{e.nom}} ({{e.nbEtudiants}} élèves)</h2>
+    <div>
+      <table>
+	{% for c,inscriptions in ci.items %}
+	{% if forloop.counter > 1 %}
+	<!-- saut de ligne -->
+	<tr><td colspan="3" style="background: transparent; border-color:transparent"><br/></td></tr>
+	{% endif %}
+	<tr>
+	  <th colspan="3">
+	    {{c.horaire}} ({{c.formation.duree}} h) {{c.formation.titre}}
+	  </th>
+	</tr>
+	{% for i in inscriptions %}
+	<tr>
+	  <td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td> {{i.etudiant.prenom}}</td>
+	</tr>
+	{% endfor %}
+	{% endfor %}
+      </table>
     </div>
-    {% endfor %}
-    <div class="accordion">
-      <h2>ÉLÈVES NON INSCRITS ({{noninscrits|length}} élèves)</h2>
-      <div>
-	<table>
-	  {% for n in noninscrits %}
-	  <tr>
-	    <td>{{forloop.counter}}</td><td>{{n.nom}}</td><td> {{n.prenom}}</td>
-	  </tr>
-	  {% endfor %}
-	<table>
-      </div>      
-    </div>      
-    {% endifequal %}
+  </div>
+</div>
+{% endfor %}
+<div class="accordion">
+  <h2>ÉLÈVES NON INSCRITS ({{noninscrits|length}} élèves)</h2>
+  <div>
+    <table>
+      {% for n in noninscrits %}
+      <tr>
+	<td>{{forloop.counter}}</td><td>{{n.nom}}</td><td> {{n.prenom}}</td>
+      </tr>
+      {% endfor %}
+      <table>
+  </div>      
+</div>      
+{% endifequal %}
 {% endblock %}

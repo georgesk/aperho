@@ -5,6 +5,8 @@ import json
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur
+from .csvResult import csvResponse
+from .odfResult import odsResponse, odtResponse
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
@@ -287,6 +289,9 @@ def lesCours(request):
     """
     prof=estProfesseur(request.user)
     pourqui=request.GET.get("uid","")
+    csv=request.GET.get("csv","")
+    ods=request.GET.get("ods","")
+    odt=request.GET.get("odt","")
     cours=Cours.objects.all()
     noninscrits=set([])
     if pourqui:
@@ -312,7 +317,17 @@ def lesCours(request):
             eci[e][c]=list(inscriptions.order_by('etudiant__nom','etudiant__prenom'))
             i+=len(eci[e][c])
         e.nbEtudiants=i
-    return render(
+    if csv:
+        response=csvResponse(Inscription.objects.all(), noninscrits)
+        return response
+    elif ods:
+        response=odsResponse(Inscription.objects.all(), noninscrits)
+        return response
+    elif odt:
+        response=odtResponse(eci, horaires, noninscrits)
+        return response
+    else:
+        return render(
             request, "lesCours.html",
             context={
                 "prof":  prof,
