@@ -7,7 +7,7 @@ from django.http import HttpResponse
 
 from odf.opendocument import OpenDocumentSpreadsheet, OpenDocumentText
 from odf.style import Style, TextProperties, ParagraphProperties, TableColumnProperties, ListLevelProperties
-from odf.text import P, H, List, ListItem, ListStyle, ListLevelStyleBullet, SoftPageBreak
+from odf.text import P, H, List, ListItem, ListStyle, ListLevelStyleBullet, Page
 from odf.table import Table, TableColumn, TableRow, TableCell
 from io import BytesIO
 
@@ -90,7 +90,7 @@ def odtResponse(eci, horaires, noninscrits):
     response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
 
     textdoc = OpenDocumentText()
-    textdoc.text.setAttribute('usesoftpagebreaks', 1)
+
     tablecontents = Style(name="Table Contents", family="paragraph")
     tablecontents.addElement(ParagraphProperties(numberlines="false", linenumber="0"))
     tablecontents.addElement(TextProperties(fontweight="bold"))
@@ -100,19 +100,17 @@ def odtResponse(eci, horaires, noninscrits):
     widthwide.addElement(TableColumnProperties(columnwidth="1.5in"))
     textdoc.automaticstyles.addElement(widthwide)
 
-    """
-    l = List(stylename=listhier)
-    textdoc.text.addElement(l)
-    for x in [1,2,3,4]:
-        elem = ListItem()
-        elem.addElement(P(text="Listitem %d" % x))
-        l.addElement(elem)
-    """
+    withbreak = Style(name="WithBreak", parentstylename="Standard", family="paragraph")
+    withbreak.addElement(ParagraphProperties(breakbefore="page"))
+    textdoc.automaticstyles.addElement(withbreak)
+
     for e,ci in eci.items():
         # e est un enseignant, ci est un dictionnaire
+        p = P(stylename=withbreak,text="") # saut de page manuel
+        textdoc.text.addElement(p)
         for c,inscriptions in ci.items():
             titre="{} {} ({})".format(c.horaire, c.enseignant.nom, c.enseignant.salle)
-            textdoc.text.addElement((H(text=titre, outlinelevel=1)))
+            textdoc.text.addElement(H(text=titre, outlinelevel=1))
             ### on début un tableau n°, Nom, prénom, classe pour les élèves
             table = Table()
             table.addElement(TableColumn(numbercolumnsrepeated=4,stylename=widthwide))
@@ -135,8 +133,17 @@ def odtResponse(eci, horaires, noninscrits):
                     tc.addElement(p)
                 n+=1
         #après chaque enseignant, on passe une page.
-        sautDePage=SoftPageBreak()
-        textdoc.text.addElement(sautDePage)
+
+    p = P(stylename=withbreak,text="") # saut de page manuel
+    textdoc.text.addElement(p)
+    titre="Élèves non encore inscrits"
+    textdoc.text.addElement(H(text=titre, outlinelevel=1))
+    ni=list(noninscrits)
+    ni.sort(key=lambda e: (e.classe, e.nom, e.prenom))
+    for e in ni:
+        ligne="{} {} {}".format(e.classe, e.nom, e.prenom)
+        textdoc.text.addElement(P(text=ligne))
+        
     output=BytesIO()
     textdoc.save(output)
     response.write(output.getvalue())
