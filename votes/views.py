@@ -338,3 +338,94 @@ def lesCours(request):
                 "noninscrits": noninscrits,
             }
         ) 
+
+def enroler(request):
+    """
+    Les profs du groupe d'AP peuvent enrôler des élèves non-inscrits
+    grâce à cette page
+    """
+    cours=list(Cours.objects.all().order_by("enseignant__nom", "horaire"))
+    for c in cours:
+        # on ajout l'attribut n, remplissage du cours
+        c.n= len(Inscription.objects.filter(cours=c))
+    ## calcul des non-inscrits
+    eleves=set([e for e in Etudiant.objects.all()])
+    inscrits=set([i.etudiant for i in Inscription.objects.all()])
+    noninscrits=list(eleves-inscrits)
+    noninscrits.sort(key=lambda e: e.nom)
+    return render(
+            request, "enroler.html",
+            context={
+                "prof":        estProfesseur(request.user),
+                "estprof":     estProfesseur(request.user),
+                "username":    request.user.username,
+                "cours":       cours,
+                "noninscrits": noninscrits,
+            }
+        )
+
+def enroleEleveCours(request):
+    """
+    enrole un élève dans un cours request.POST doit contenir deux variables,
+    uid et cours.
+    """
+    uid=request.GET.get("uid","")
+    cours=request.GET.get("cours","")
+    cours2=request.GET.get("cours2","")
+    possible="je ne peux pas enrôler"
+    if "profAP" == estProfesseur(request.user):
+        possible="je peux enrôler"
+    msg=""
+    ok=True
+    if possible:
+        lesCours=list(Cours.objects.all())
+        c1=[c for c in lesCours if c.id==int(cours)]
+        c2=[c for c in lesCours if c.id==int(cours2)]
+        ## test de durée
+        duree=0
+        for c in c1+c2:
+            duree+=c.formation.duree
+        if duree != 2:
+            msg="ERREUR : la durée totale des cours choisis est {} heures, il faut 2 heures exactement.".format(duree)
+            ok=False
+        ## test d'exclusion
+        if len(c1+c2)==2 : ##deux cours différents
+            if c1[0].horaire==c2[0].horaire:
+                msg="ERREUR : Il est impossible d'enrôler pour deux cours à la même heure ({}).".format(c1[0].horaire)
+                ok=False
+        ## test de remplissage
+        if c1:
+            r1=len(Inscription.objects.filter(cours=c1[0]))
+            if r1 >= c1[0].capacite:
+                msg="ERREUR : Le cours {} à {} accueille déjà {} élèves, il est plein.".format(c1[0].formation.titre, c1[0].horaire, r1)
+                ok=False
+        if c2:
+            r2=len(Inscription.objects.filter(cours=c2[0]))
+            if r2 >= c2[0].capacite:
+                msg="ERREUR : Le cours {} à {} accueille déjà {} élèves, il est plein.".format(c2[0].formation.titre, c2[0].horaire, r2)
+                ok=False
+        if ok:
+            eleve=list(Etudiant.objects.filter(uid=uid))
+            if len(eleve)==0:
+                msg="ERREUR : Élève inconnu."
+            else:
+                eleve=eleve[0]
+                ## vérifie que l'élève n'est pas déjà inscrit
+                inscr=len(Inscription.objects.filter(etudiant=eleve))
+                if inscr:
+                    msg="ERREUR : {} {} {} est déjà inscrit.". format(eleve.nom, eleve.prenom, eleve.classe)
+                else:
+                    if c1:
+                        inscription=Inscription(etudiant=eleve,cours=c1[0])
+                        inscription.save()
+                    if c2:
+                        inscription=Inscription(etudiant=eleve,cours=c2[0])
+                        inscription.save()
+                    msg="OK : {} {} {} a été inscrit dans {} cours.".format(
+                        eleve.nom, eleve.prenom, eleve.classe, len(c1+c2),
+                    )
+    else:
+        msg="ERREUR : Impossible de faire l'inscription, il faut être professeur dans cette barrette d'AP."    
+    return JsonResponse({
+        "msg" : msg,
+    })

@@ -9,4 +9,6 @@ urlpatterns = [
     url(r'^addFormation$', views.addFormation, name='addFormation'),
     url(r'^addInscription$', views.addInscription, name='addInscription'),
     url(r'^lesCours$', views.lesCours, name='lesCours'),
+    url(r'^enroler$', views.enroler, name='enroler'),
+    url(r'^enroleEleveCours$', views.enroleEleveCours, name='enroleEleveCours'),
 ]

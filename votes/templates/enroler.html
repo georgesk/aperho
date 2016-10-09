@@ -1,0 +1,74 @@
+{% extends 'home.html' %}
+{% block title %}<title>Aperho : enrôler des élèves</title>{% endblock %}
+{% block onload %}
+<script type="text/javascript">
+  $( function() { // lancement après le chargement
+  $( "#userinfo" ).accordion({
+  collapsible: true,
+  active: false,
+  });
+  $( ".accordion" ).accordion({
+  header: "h2",
+  autoHeight: false,
+  collapsible: true,
+  active: false,
+  });
+
+  var noninscrits=[
+  {% for ni in noninscrits %}
+  "{{ni.nom}} {{ni.prenom}} {{ni.classe}} ({{ni.uid}})",
+  {% endfor %}
+  ];
+  $("#eleve").autocomplete({
+  source: noninscrits,
+  });
+  } );
+</script>
+<script type="text/javascript" src="/static/votes/js/enroler.js">
+</script>
+{% endblock %}
+
+{% block main %}
+{% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
+<h1>Enrôler des élèves</h2>
+<table>
+  <tr><th colspan="2">Formulaire</th></tr>
+  <tr><th>Élève à enrôler ... </th><th> dans les cours :</th></tr>
+  <tr>
+    <td rowspan="2">
+      <input type="text" id="eleve" name="eleve" placeholder="Commencer à taper 3 lettres ..." size="40" />
+    </td>
+    <td>
+      <select id="cours" name="cours">
+	<option value="0">--- Choisir un cours ---</option>
+	{% for c in cours %}
+	<option value="{{c.id}}">
+	  {{c.enseignant.nom}} {{c.horaire}}, durée : {{c.formation.duree}}h ({{c.n}}/{{c.capacite}}) {{c.formation.titre}}
+	</option>
+	{% endfor %}  
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <select id="cours2" name="cours2">
+	<option value="0">--- Choisir un cours ---</option>
+	{% for c in cours %}
+	<option value="{{c.id}}">
+	  {{c.enseignant.nom}} {{c.horaire}}, durée : {{c.formation.duree}}h ({{c.n}}/{{c.capacite}}) {{c.formation.titre}}
+	</option>
+	{% endfor %}  
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th colspan="2">
+      <button type="button" onclick="enroler()">Enrôler</button>
+    </th>
+  </tr>
+</table>
+<div id="dialog">
+  <!-- sert à placer un dialogue modal -->
+</div>
+{% endifequal %}
+{% endblock %}

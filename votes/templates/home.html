@@ -39,7 +39,7 @@
 	<br/><span class="remark">professeur (pas pour l'AP)</span>
 	{% else %}
 	{% ifequal estprof "profAP" %}
-	<br/><span class="remark">professeur ( dans ce groupe d'AP)</span>
+	<br/><span class="remark">professeur (dans ce groupe d'AP)</span>
 	{% endifequal %}
 	{% endifequal %}
 	<br/><span class="remark">Cliquer pour les options ↡</span>
@@ -53,6 +53,7 @@
 	{% ifequal estprof "profAP" %}
 	<li><a href="/votes/lesCours?uid={{username}}">Voir <b>mes cours</b> d'AP et les élèves inscrits.</a></li>
 	<li><a href="/votes/lesCours">Voir tous les cours d'AP et les élèves inscrits.</a></li>
+	<li><a href="/votes/enroler">Enrôler des élèves non-inscrits.</a></li>
 	{% endifequal %}
 	{% endblock %}
 	<!-- dernière option : la déconnexion -->
