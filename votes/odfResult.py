@@ -109,7 +109,7 @@ def odtResponse(eci, horaires, noninscrits):
         p = P(stylename=withbreak,text="") # saut de page manuel
         textdoc.text.addElement(p)
         for c,inscriptions in ci.items():
-            titre="{} {} ({}, {}h)".format(c.horaire, c.enseignant.nom, c.enseignant.salle, c.formation.duree)
+            titre="{} {} ({}, {}h, {})".format(c.horaire, c.enseignant.nom, c.enseignant.salle, c.formation.duree, c.formation.titre)
             textdoc.text.addElement(H(text=titre, outlinelevel=1))
             ### on début un tableau n°, Nom, prénom, classe pour les élèves
             table = Table()
