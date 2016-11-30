@@ -22,13 +22,14 @@ class Ouverture(models.Model):
     """
     debut = models.DateTimeField()
     fin   = models.DateTimeField()
-
+    nom_session = models.CharField(max_length=50, default="Toussaint")
+    
     def __str__(self):
         return "{} ↦ {}".format(self.debut, self.fin)
 
     def estActive(self):
         """
-        décide si un objet "ouverture" est actif au momnet précis
+        décide si un objet "ouverture" est actif au moment précis
         de l'invocation de la méthode.
         @return vrai ou faux
         """
@@ -48,6 +49,7 @@ class Enseignant(models.Model):
     nom   = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     salle = models.CharField(max_length=50)
+    barrettes= models.ManyToManyField(Barrette)
 
     def __str__(self):
         return "{} ({})".format(self.nom, self.salle)
@@ -74,6 +76,14 @@ class Horaire(models.Model):
     Désigne une heure du jour : 14:00 ou 15:00 par exemple.
     """
     heure = models.TimeField()
+    jour  = models.IntegerField(choices=[
+        (1, "lundi"),
+        (2,"mardi"),
+        (3, "mercredi"),
+        (4, "jeudi"),
+        (5, "vendredi"),
+        (6, "samedi"),
+    ], default=1)
 
     def __str__(self):
         return str(self.heure)
@@ -89,6 +99,7 @@ class Etudiant(models.Model):
     nom       = models.CharField(max_length=50)
     prenom    = models.CharField(max_length=50)
     classe    = models.CharField(max_length=10)
+    barrette   = models.ForeignKey('Barrette', null=True, blank=True)
 
     def __str__(self):
         return "{nom} {prenom} {classe} {uid}".format(**self.__dict__)
@@ -107,7 +118,8 @@ class Cours(models.Model):
     horaire    = models.ForeignKey('Horaire')
     formation  = models.ForeignKey('Formation')
     capacite   = models.IntegerField(default=18)
-    ouverture  = models.ForeignKey('Ouverture', null=True, blank=True)
+    ouverture  = models.ForeignKey('Ouverture')
+    barrette   = models.ForeignKey('Barrette', null=True, blank=True)
 
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)

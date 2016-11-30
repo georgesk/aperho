@@ -85,6 +85,7 @@ def addEleves(request):
     ### Liste des classes déjà connues dans la base de données
     etudiants=list(Etudiant.objects.all())
     classesDansDb=list(set([nomClasse(e.classe) for e in Etudiant.objects.all()]))
+    classesDansDb.sort()
     return render(
         request, "addEleves.html",
         context={
