@@ -3,6 +3,12 @@ from aperho.settings import connection
 from django.utils import timezone
 
 class Ouverture(models.Model):
+	"""
+	Ouverture des votes, pour une barrette d'AP. Les élèves ne pouront
+	"voter" dans cette barrette qu'entre une date de début et une date
+	de fin. Entre les deux, le vote ne leur sera pas proposé (mais
+	pourrait éventuellement leur être montré)
+	"""
     debut = models.DateTimeField()
     fin   = models.DateTimeField()
 
@@ -11,13 +17,22 @@ class Ouverture(models.Model):
 
     def estActive(self):
         """
-        décide si un objet "ouverture" est actif
+        décide si un objet "ouverture" est actif au momnet précis
+        de l'invocation de la méthode.
         @return vrai ou faux
         """
         now = timezone.now()
         return self.debut <= now <= self.fin
     
 class Enseignant(models.Model):
+	"""
+	Désigne un professeur ou un autre membre de l'équipe éducative.
+	le champ "uid" correspond à l'identifiant de ce professeur dans 
+	l'annuaire LDAP de l'établissement.
+	Le champ "salle" correspond à une désignation plus ou moins
+	précise du lieu où il donnera ses cours (ça peut être une salle
+	ou alors un groupe de salles, voire tout un étage de bâtiment).
+	"""
     uid    = models.IntegerField(unique=True)
     nom   = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
@@ -27,6 +42,11 @@ class Enseignant(models.Model):
         return "{} ({})".format(self.nom, self.salle)
     
 class Formation(models.Model):
+	"""
+	Désigne une "granule" de formation, qui peut être réutilisée
+	plus d'une fois si nécessaire. Elle n'est pas attachée à un
+	enseignant /a priori/.
+	"""
     titre   = models.CharField(max_length=80)
     contenu = models.TextField()
     duree   = models.IntegerField(default=1)
@@ -39,12 +59,20 @@ class Formation(models.Model):
         return result
     
 class Horaire(models.Model):
+	"""
+	Désigne une heure du jour : 14:00 ou 15:00 par exemple.
+	"""
     heure = models.TimeField()
 
     def __str__(self):
         return str(self.heure)
 
 class Etudiant(models.Model):
+	"""
+	Représente un étudiant qui peut "voter". Les champs "uidNumber" et
+	"uid" identifient l'étudiant dans l'annuaire LDAP de 
+	l'établissement.
+	"""
     uidNumber = models.IntegerField(unique=True)
     uid       = models.CharField(max_length=50)
     nom       = models.CharField(max_length=50)
@@ -55,6 +83,13 @@ class Etudiant(models.Model):
         return "{nom} {prenom} {classe} {uid}".format(**self.__dict__)
     
 class Cours(models.Model):
+	"""
+	Représente un cours, c'est à dire décrit les caractéristiques
+	complètes d'un cours d'AP : l'enseignant qui intervient, la granule
+	de formation que l'enseignant dispensera, l'heure de début, la
+	capacité (nombre maximal d'élèves qui peuvent voter pour ce cours),
+	et les dates de début/fin d'ouverture des votes	pour s'y inscrire.
+	"""
     class Meta:
         verbose_name_plural = "cours"
     enseignant = models.ForeignKey('Enseignant')
@@ -74,6 +109,10 @@ class Cours(models.Model):
         return self.ouverture.estActive()
 
 class Inscription(models.Model):
+	"""
+	La relation binaire entre un utudiant et un cours, qui résulte de
+	son vote.
+	"""
     etudiant   = models.ForeignKey('Etudiant')
     cours      = models.ForeignKey('Cours')
 

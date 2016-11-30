@@ -64,3 +64,6 @@ target/
 
 # no database
 *.sqlite3
+
+# no doxygen output
+doc
