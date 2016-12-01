@@ -29,7 +29,7 @@ class EnseignantAdmin(admin.ModelAdmin):
 admin.site.register(Enseignant, EnseignantAdmin)
 
 class CoursAdmin (admin.ModelAdmin):
-    list_filter = ("horaire","enseignant")
+    list_filter = ("horaire","enseignant", "ouverture")
     
     def get_form(self, request, obj=None, **kwargs):
         """
