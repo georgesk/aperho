@@ -10,6 +10,7 @@ from odf.style import Style, TextProperties, ParagraphProperties, TableColumnPro
 from odf.text import P, H, List, ListItem, ListStyle, ListLevelStyleBullet, Page
 from odf.table import Table, TableColumn, TableRow, TableCell
 from io import BytesIO
+from .models import rdvOrientation, Orientation, Ouverture
 
 def odsResponse(inscriptions, noninscrits):
     """
@@ -44,11 +45,10 @@ def odsResponse(inscriptions, noninscrits):
 
     # Start the table, and describe the columns
     table = Table(name="Inscriptions")
-    #table.addElement(TableColumn(numbercolumnsrepeated=4,stylename=widthshort))
     table.addElement(TableColumn(numbercolumnsrepeated=3,stylename=widthwide))
     tr = TableRow()
     table.addElement(tr)
-    for title in ['id', 'Eleve_nom', 'Eleve_prenom', 'Eleve_classe', 'Professeur', 'Salle', 'Heure', 'Duree', 'Public_designe', 'Resume','Detail']:
+    for title in ['id', 'Eleve_nom', 'Eleve_prenom', 'Eleve_classe', 'Professeur', 'Salle', 'Heure', 'Duree', 'Public_designe', 'Resume','Detail','Autres']:
         tc = TableCell()
         tr.addElement(tc)
         p = P(stylename=tablecontents,text=title)
@@ -61,10 +61,15 @@ def odsResponse(inscriptions, noninscrits):
             tr.addElement(tc)
             p = P(stylename=tablecontents,text=str(val))
             tc.addElement(p)
+        ## write something in the last column (Autres)
+        tc = TableCell()
+        tr.addElement(tc)
+        p = P(stylename=tablecontents,text=rdvOrientation(i.etudiant, i.cours.horaire))
+        tc.addElement(p)
     for e in noninscrits:
         tr = TableRow()
         table.addElement(tr)
-        for val in [0, e.nom, e.prenom, e.classe, '', '', '', '', '', '', '']:
+        for val in [0, e.nom, e.prenom, e.classe, '', '', '', '', '', '', '','']:
             tc = TableCell()
             tr.addElement(tc)
             p = P(stylename=tablecontents,text=str(val))
@@ -84,6 +89,11 @@ def odtResponse(eci, horaires, noninscrits):
     @param noninscrits une liste d'Etudiants
     @return un objet de type HttpResponse
     """
+    ## détermine d'abord s'il y a des séances d'orientation, pour la dernière
+    ## ouverture en date. yaCop est un booléen vrai si les COP interviennent.
+    yaCop=len(Orientation.objects.filter(
+        ouverture=Ouverture.objects.last()
+    )) > 0
     response = HttpResponse(content_type='application/vnd.oasis.opendocument.text')
     now=timezone.now()
     filename="aperho-{}.odt".format(now.strftime("%Y%m%d-%H%M"))
@@ -96,9 +106,27 @@ def odtResponse(eci, horaires, noninscrits):
     tablecontents.addElement(TextProperties(fontweight="bold"))
     textdoc.styles.addElement(tablecontents)
 
-    widthwide = Style(name="Wwide", family="table-column")
-    widthwide.addElement(TableColumnProperties(columnwidth="1.5in"))
-    textdoc.automaticstyles.addElement(widthwide)
+    w=[] # styles de largeurs de colonnes
+    w1 = Style(name="Wwide1", family="table-column")
+    w1.addElement(TableColumnProperties(columnwidth="0.5in"))
+    textdoc.automaticstyles.addElement(w1)
+    w.append(w1)
+    w2 = Style(name="Wwide2", family="table-column")
+    w2.addElement(TableColumnProperties(columnwidth="1.5in"))
+    textdoc.automaticstyles.addElement(w2)
+    w.append(w2)
+    w3 = Style(name="Wwide3", family="table-column")
+    w3.addElement(TableColumnProperties(columnwidth="1.5in"))
+    textdoc.automaticstyles.addElement(w3)
+    w.append(w3)
+    w4 = Style(name="Wwide4", family="table-column")
+    w4.addElement(TableColumnProperties(columnwidth="1in"))
+    textdoc.automaticstyles.addElement(w4)
+    w.append(w4)
+    w5 = Style(name="Wwide5", family="table-column")
+    w5.addElement(TableColumnProperties(columnwidth="4in"))
+    textdoc.automaticstyles.addElement(w5)
+    w.append(w5)
 
     withbreak = Style(name="WithBreak", parentstylename="Standard", family="paragraph")
     withbreak.addElement(ParagraphProperties(breakbefore="page"))
@@ -113,12 +141,19 @@ def odtResponse(eci, horaires, noninscrits):
             textdoc.text.addElement(H(text=titre, outlinelevel=1))
             ### on début un tableau n°, Nom, prénom, classe pour les élèves
             table = Table()
-            table.addElement(TableColumn(numbercolumnsrepeated=4,stylename=widthwide))
+            nbCol=4
+            if yaCop:
+                nbCol=5
+            for i in range(nbCol):
+                table.addElement(TableColumn(stylename=w[i]))
             textdoc.text.addElement(table)
             n=1
             tr = TableRow()
             table.addElement(tr)
-            for val in ("n°","Nom","Prénom","Classe"):
+            colTitres=("n°","Nom","Prénom","Classe")
+            if yaCop:
+                colTitres=("n°","Nom","Prénom","Classe", "Rdv COP")
+            for val in colTitres:
                 tc = TableCell()
                 tr.addElement(tc)
                 p = P(stylename=tablecontents,text=str(val))
@@ -131,6 +166,11 @@ def odtResponse(eci, horaires, noninscrits):
                     tr.addElement(tc)
                     p = P(text=val)
                     tc.addElement(p)
+                if yaCop:
+                    tc = TableCell()
+                    tr.addElement(tc)
+                    p = P(text=rdvOrientation(i.etudiant, i.cours.horaire))
+                    tc.addElement(p)                    
                 n+=1
         #après chaque enseignant, on passe une page.
 

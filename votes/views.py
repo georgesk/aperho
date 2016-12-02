@@ -277,24 +277,19 @@ def addInscription(request):
         ## ça ne fait rien du tout en l'absence de champ d'orientations.
         ouverture=[o for o in Ouverture.objects.all() if o.estActive()]
         # ouverture[0] est l'ouverture active si la liste n'est pas vide
-        print("grrrr", ouverture, orientations)
         if ouverture and orientations:
             choices=Orientation._meta.get_field("choix").choices
             for key, val in choices:
-                print("GRRRRRR", key, val)
                 ## l'élève a peut-être déjà choisi cette orientation
                 dejaChoisi=Orientation.objects.filter(etudiant=etudiant, ouverture=ouverture[0], choix=key).first()
-                print("grrr dejaChoisi=",dejaChoisi)
                 if key in orientations:
                     if not dejaChoisi:
                         # s'il ne l'a pas déjà on la crée
-                        print("GRRRR création")
                         ori=Orientation(etudiant=etudiant, ouverture=ouverture[0], choix=key)
                         ori.save()
                 else:
                     ## l'élève ne veut pas de cette orientation
                     if dejaChoisi:
-                        print("grrrr suppression")
                         dejaChoisi.delete()
         ######################################################################
         ## effacement des inscriptions précédentes
