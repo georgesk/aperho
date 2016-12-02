@@ -1,10 +1,11 @@
 from django.contrib import admin
 
 from .models import Enseignant, Formation, Horaire, Etudiant, Cours, \
-    Inscription, Ouverture
+    Inscription, Ouverture, Orientation
 
 admin.site.register(Horaire)
 admin.site.register(Ouverture)
+admin.site.register(Orientation)
 
 class FormationAdmin (admin.ModelAdmin):
     list_filter = ("duree","public_designe")
