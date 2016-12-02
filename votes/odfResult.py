@@ -64,7 +64,7 @@ def odsResponse(inscriptions, noninscrits):
         ## write something in the last column (Autres)
         tc = TableCell()
         tr.addElement(tc)
-        p = P(stylename=tablecontents,text=rdvOrientation(i.etudiant, i.cours.horaire))
+        p = P(stylename=tablecontents,text=rdvOrientation(i))
         tc.addElement(p)
     for e in noninscrits:
         tr = TableRow()
@@ -169,7 +169,7 @@ def odtResponse(eci, horaires, noninscrits):
                 if yaCop:
                     tc = TableCell()
                     tr.addElement(tc)
-                    p = P(text=rdvOrientation(i.etudiant, i.cours.horaire))
+                    p = P(text=rdvOrientation(i))
                     tc.addElement(p)                    
                 n+=1
         #après chaque enseignant, on passe une page.

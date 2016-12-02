@@ -25,12 +25,10 @@ pour un créneau d'ouverture de l'AP donné
         """
         return self.ouverture.estActive()
 
-def rdvOrientation(etudiant, horaire, ouverture=None):
+def rdvOrientation(inscription, ouverture=None):
     """
     Donne la liste des rendez-vous pour l'orientation d'un étudiant
-    @param etudiant l'identifiant d'un étudiant
-    @param horaire un objet qui se résout en une chaîne comme "14:00:00"
-    par exemple
+    @param inscription une inscription d'étudiant
     @param ouverture une période d'ouverture des inscriptions. Valeur par
     défaut : None, ce qui provoque le choix de la plus récente ouverture
     @return une chaîne de caractères expliquant à l'élève la date et le lieu
@@ -40,23 +38,30 @@ def rdvOrientation(etudiant, horaire, ouverture=None):
         ouverture=Ouverture.objects.last()
     if not ouverture:
         return ""
-    ori=list(Orientation.objects.filter(etudiant=etudiant, ouverture=ouverture))
+    ori=list(Orientation.objects.filter(
+        etudiant=inscription.etudiant,
+        ouverture=ouverture
+    ))
     if not ori:
         return ""
     choices=Orientation._meta.get_field("choix").choices
     result=[]
     for key, val in choices:
-        ori=Orientation.objects.filter(etudiant=etudiant, ouverture=ouverture, choix=key).first()
+        ori=Orientation.objects.filter(
+            etudiant=inscription.etudiant,
+            ouverture=ouverture,
+            choix=key).first()
         if ori:
             parfum=val[:val.index("(")].strip()
             cop="cop??"
             salle="A113"
             jour="??/??"
             heure="14:00:00"
-            if str(horaire)==heure:
+            if str(inscription.cours.horaire)==heure or \
+               inscription.cours.formation.duree==2:
                 result.append(
-                    "{j} : {val} avec {cop} ({s})".format(
-                        val=parfum, cop=cop, s=salle, j=jour
+                    "{j} {h} : {val} avec {cop} ({s})".format(
+                        val=parfum, cop=cop, s=salle, j=jour, h=heure[:5]
                     ))
     return ", ".join(result)
     

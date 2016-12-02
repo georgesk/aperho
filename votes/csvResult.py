@@ -21,7 +21,7 @@ def csvResponse(inscriptions, noninscrits):
     writer = csv.writer(response)
     writer.writerow(['id', 'Eleve_nom', 'Eleve_prenom', 'Eleve_classe', 'Professeur', 'Salle', 'Heure', 'Duree', 'Public_designe', 'Resume','Detail','Autres'])
     for i in inscriptions:
-        writer.writerow([i.pk, i.etudiant.nom, i.etudiant.prenom, i.etudiant.classe, i.cours.enseignant.nom, i.cours.enseignant.salle, i.cours.horaire, i.cours.formation.duree, i.cours.formation.public_designe, i.cours.formation.titre, i.cours.formation.contenu, rdvOrientation(i.etudiant, i.cours.horaire)])
+        writer.writerow([i.pk, i.etudiant.nom, i.etudiant.prenom, i.etudiant.classe, i.cours.enseignant.nom, i.cours.enseignant.salle, i.cours.horaire, i.cours.formation.duree, i.cours.formation.public_designe, i.cours.formation.titre, i.cours.formation.contenu, rdvOrientation(i)])
     for e in noninscrits:
         writer.writerow([0, e.nom, e.prenom, e.classe, '', '', '', '', '', '', '',''])
     return response
