@@ -4,7 +4,7 @@ import json
 
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
-    estProfesseur
+    estProfesseur, Ouverture, Orientation
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 
@@ -254,6 +254,11 @@ def addInscription(request):
         classes=[int(c) for c in clData.split(":")]
     else:
         classes=[]
+    orData=request.GET.get("orientations")
+    if orData:
+        orientations=[int(o) for o in orData.split(":")]
+    else:
+        orientations=[]
     ## on retire les classes à public désigné de celles où il est possible
     ## de s'inscrire
     classesOk=[]
@@ -267,6 +272,31 @@ def addInscription(request):
         ok=False
     else:
         etudiant=etudiants[0]
+        ###############################################################
+        ## on met à jour les orientations
+        ## ça ne fait rien du tout en l'absence de champ d'orientations.
+        ouverture=[o for o in Ouverture.objects.all() if o.estActive()]
+        # ouverture[0] est l'ouverture active si la liste n'est pas vide
+        print("grrrr", ouverture, orientations)
+        if ouverture and orientations:
+            choices=Orientation._meta.get_field("choix").choices
+            for key, val in choices:
+                print("GRRRRRR", key, val)
+                ## l'élève a peut-être déjà choisi cette orientation
+                dejaChoisi=Orientation.objects.filter(etudiant=etudiant, ouverture=ouverture[0], choix=key).first()
+                print("grrr dejaChoisi=",dejaChoisi)
+                if key in orientations:
+                    if not dejaChoisi:
+                        # s'il ne l'a pas déjà on la crée
+                        print("GRRRR création")
+                        ori=Orientation(etudiant=etudiant, ouverture=ouverture[0], choix=key)
+                        ori.save()
+                else:
+                    ## l'élève ne veut pas de cette orientation
+                    if dejaChoisi:
+                        print("grrrr suppression")
+                        dejaChoisi.delete()
+        ######################################################################
         ## effacement des inscriptions précédentes
         ## !!! il faudrait prendre en compte une période des AP
         Inscription.objects.filter(etudiant=etudiant, cours__formation__public_designe=False).delete()

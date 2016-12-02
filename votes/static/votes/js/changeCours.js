@@ -15,7 +15,7 @@ function check(n, dialog){
     var c_0_1=$("[data-class=cours_0_1]:checked");
     var c_1_1=$("[data-class=cours_1_1]:checked");
     var c_0_2=$("[data-class=cours_0_2]:checked");
-    var c_checked=$("input:checkbox:checked");
+    var c_checked=$("table input:checkbox:checked");
     if (c_0_1.length+c_0_2.length > 1){
 	ok=false;
 	msg="ERREUR  : deux cours demandés commencent à la première heure";
@@ -84,33 +84,42 @@ function message(msg, reload){
  * validation des cours qui sont cochés
  **/
 function valideCours(){
-    var duree=check(0,false);
-    if (duree != 2){
-	message("La durée des cours sélectionnés n'est pas de deux heures. Modifiez la sélection.");
+    var inscriptions=$("fieldset.orientation input:checked");
+    if (inscriptions.length < 1){
+	message("Aucune séance d'information sur l'orientation en première n'a été choisie. Cochez au moins une des cases en haut de cette page.");
     } else {
-	var url="/votes/addInscription";
-	var classesChoisies=[];
-	var checked=$(":checked");
-	for(var i=0; i < checked.length; i++){
-	    classesChoisies.push(parseInt($(checked[i]).attr("name").replace("cours_","")));
-	}
-	var inData={
-	    uid: $("#etudiantUid").val(),
-	    classes: classesChoisies.join(":"),
-	};
-	var successFunction=function(data){
-	    if (data.ok){
-		message("OK ; "+data.message, /*reload*/ true);
-	    } else {
-		message("Échec ; "+data.message);
+	var duree=check(0,false);
+	if (duree != 2){
+	    message("La durée des cours sélectionnés n'est pas de deux heures. Modifiez la sélection.");
+	} else {
+	    var url="/votes/addInscription";
+	    var classesChoisies=[];
+	    var checked=$("table input:checked");
+	    for(var i=0; i < checked.length; i++){
+		classesChoisies.push(parseInt($(checked[i]).attr("name").replace("cours_","")));
 	    }
-	};
-	var failFunction=function(data){
-	    message("Erreur de traitement (/vote/addInscription). " + JSON.stringify(data));
-	};
-	$.get(url, inData)
-	    .done(successFunction)
-	    .fail(failFunction);
+	    var inData={
+		uid: $("#etudiantUid").val(),
+		classes: classesChoisies.join(":"),
+		orientations: $('fieldset.orientation input:checkbox:checked').
+		    map(function() {
+			return this.value;
+		    }).get().join(":"),
+	    };
+	    var successFunction=function(data){
+		if (data.ok){
+		    message("OK ; "+data.message, /*reload*/ true);
+		} else {
+		    message("Échec ; "+data.message);
+		}
+	    };
+	    var failFunction=function(data){
+		message("Erreur de traitement (/vote/addInscription). " + JSON.stringify(data));
+	    };
+	    $.get(url, inData)
+		.done(successFunction)
+		.fail(failFunction);
+	}
     }
 }
 
@@ -120,11 +129,12 @@ function valideCours(){
  **/
 function annuleCours(){
     // décoche toutes les cases qu'on a le droit de décocher
-    var cases=$(":checked:enabled").prop( "checked", false );;
+    var cases=$("table input:checked:enabled").prop( "checked", false );;
     var url="/votes/addInscription";
     var inData={
 	uid: $("#etudiantUid").val(),
 	classes: "",
+	orientations: "",
     };
     var successFunction=function(data){
 	if (data.ok){

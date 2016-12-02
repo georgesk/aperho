@@ -3,6 +3,29 @@ from django.db import models
 from aperho.settings import connection
 from django.utils import timezone
 
+class Orientation(models.Model):
+    """
+    Définit une ou plusieurs orientations associées à un étudiant,
+pour un créneau d'ouverture de l'AP donné
+    """
+    choix = models.IntegerField(choices=[
+        (1, "S, ES, L (scientifique, économique & social, littéraire)"),
+        (2,"STMG (sciences et techniques de management & gestion)"),
+    ], default=1)
+    etudiant   = models.ForeignKey('Etudiant', null = True, default=None)
+    ouverture  = models.ForeignKey('Ouverture')
+
+    def __str__(self):
+        return "{} {} {}".format(self.etudiant, self.choix, self.ouverture)
+
+    def estOuvert(self):
+        """
+        Dit si l'inscription à l'orientation est ouverte
+        @return vrai ou faux
+        """
+        return self.ouverture.estActive()
+
+
 class Barrette(models.Model):
     """
     Définit un ensemble d'étudiants qui sont gérés ensemble
