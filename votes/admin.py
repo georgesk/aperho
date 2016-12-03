@@ -5,7 +5,11 @@ from .models import Enseignant, Formation, Horaire, Etudiant, Cours, \
 
 admin.site.register(Horaire)
 admin.site.register(Ouverture)
-admin.site.register(Orientation)
+
+class OrientationAdmin (admin.ModelAdmin):
+    list_filter = ("choix", "ouverture")
+    
+admin.site.register(Orientation, OrientationAdmin)
 
 class FormationAdmin (admin.ModelAdmin):
     list_filter = ("duree","public_designe")
