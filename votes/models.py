@@ -84,7 +84,7 @@ def rdvOrientation(inscription, ouverture=None):
     if not ori:
         return ""
     choices=Orientation._meta.get_field("choix").choices
-    result=[]
+    result=set()
     locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
     for key, val in choices:
         ori=Orientation.objects.filter(
@@ -107,7 +107,7 @@ def rdvOrientation(inscription, ouverture=None):
                     )
                     if inscription.cours.horaire.heure.strftime("%H:%M")==heure or \
                       inscription.cours.formation.duree==2:
-                        result.append(mentionCOP)                    
+                        result.add(mentionCOP)                    
             else:
                 cop="cop??"
                 salle="A???"
@@ -118,8 +118,8 @@ def rdvOrientation(inscription, ouverture=None):
                 )
                 if inscription.cours.horaire.heure.strftime("%H:%M")==heure or \
                    inscription.cours.formation.duree==2:
-                    result.append(mentionCOP)
-    return ", ".join(result)
+                    result.add(mentionCOP)
+    return ", ".join(list(result))
     
 class Barrette(models.Model):
     """
