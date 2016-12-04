@@ -17,9 +17,9 @@
     </ul>
     <h1>Affection des élèves dans les {{nbseances}} séances d'information des COP</h1>
     {% for s, orientations in affectations.items %}
-    <h3>{{s}} {{s.formation}}</h3>
+    <h2>{{s}} --- {{orientations.formation}}</h2>
     <ol>
-      {% for o in orientations %}
+      {% for o in orientations.orientations %}
       <li>{{o.etudiant}}</li>
       {% endfor %}
     </ol>

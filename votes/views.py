@@ -68,18 +68,18 @@ def cop (request):
         total+=nbcours
     affectations=OrderedDict() # seance => liste des élèves affectés
     for s in seances:
-        affectations[s]=[]
+        affectations[s]={"formation": choices[s.formation-1][1], "orientations": []}
     for o in ori1:
         ## pour chaque inscription à un cours d'orientation
         titre=choices[o.choix-1][1]
         decalage=decalages[titre]
         ## on trouve la bonne séance et on y ajoute l'inscription
         s=seances[decalage]
-        affectations[s].append(o)
-        ## on s'assure que le formation corespondra au choix de l'élève
+        affectations[s]["orientations"].append(o)
+        ## on s'assure que le formation correspondra au choix de l'élève
         s.formation=o.choix
         ## si la séance est pleine, on passe à la suivante
-        if len(affectations[s]) > moyenne:
+        if len(affectations[s]["orientations"]) > moyenne:
             decalages[titre] += 1
             
     return render(
