@@ -1,7 +1,8 @@
 # -*- mode: python-mode; python-indent-offset: 4 -*-
 from django.db import models
-from aperho.settings import connection
+from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
+import locale
 
 class CoursOrientation(models.Model):
     """
@@ -84,23 +85,35 @@ def rdvOrientation(inscription, ouverture=None):
         return ""
     choices=Orientation._meta.get_field("choix").choices
     result=[]
+    locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
     for key, val in choices:
         ori=Orientation.objects.filter(
             etudiant=inscription.etudiant,
             ouverture=ouverture,
             choix=key).first()
         if ori:
-            parfum=val[:val.index("(")].strip()
-            cop="cop??"
-            salle="A113"
-            jour="??/??"
-            heure="14:00:00"
-            if str(inscription.cours.horaire)==heure or \
-               inscription.cours.formation.duree==2:
-                result.append(
-                    "{j} {h} : {val} avec {cop} ({s})".format(
-                        val=parfum, cop=cop, s=salle, j=jour, h=heure[:5]
-                    ))
+            ## on recherche l'affectation si celle-ci existe
+            ## dans la table InscriptionOrientation
+            inscr=list(InscriptionOrientation.objects.filter(etudiant=inscription.etudiant))
+            if len(inscr)>0:
+                parfum=val[:val.index("(")].strip()
+                cop=inscr[0].cours.cop.nom
+                salle=inscr[0].cours.cop.salle
+                t=timezone.localtime(inscr[0].cours.debut)
+                jour=t.strftime("%A %d %b")
+                heure=t.strftime("%H:%M")
+            else:
+                parfum=val[:val.index("(")].strip()
+                cop="cop??"
+                salle="A???"
+                jour="??/??"
+                heure="??:??"
+            mentionCOP = "{j} {h} : {cop} ({s})".format(
+                val=parfum, cop=cop, s=salle, j=jour, h=heure
+            )
+            if inscription.cours.horaire.heure.strftime("%H:%M")==heure or \
+              inscription.cours.formation.duree==2:
+                result.append(mentionCOP)
     return ", ".join(result)
     
 class Barrette(models.Model):

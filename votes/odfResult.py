@@ -112,7 +112,7 @@ def odtResponse(eci, horaires, noninscrits):
     textdoc.automaticstyles.addElement(w1)
     w.append(w1)
     w2 = Style(name="Wwide2", family="table-column")
-    w2.addElement(TableColumnProperties(columnwidth="1.5in"))
+    w2.addElement(TableColumnProperties(columnwidth="2in"))
     textdoc.automaticstyles.addElement(w2)
     w.append(w2)
     w3 = Style(name="Wwide3", family="table-column")
@@ -152,7 +152,7 @@ def odtResponse(eci, horaires, noninscrits):
             table.addElement(tr)
             colTitres=("n°","Nom","Prénom","Classe")
             if yaCop:
-                colTitres=("n°","Nom","Prénom","Classe", "Rdv COP")
+                colTitres=("n°","Nom","Prénom","Classe", "Séance COP")
             for val in colTitres:
                 tc = TableCell()
                 tr.addElement(tc)
