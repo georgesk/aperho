@@ -66,9 +66,7 @@ def cop (request):
         nb=len(orientations[titre])
         nbcours=int(0.5+nb/moyenne)
         total+=nbcours
-        print("GRRR", nbcours, "cours pour", titre)
-    print("GRRR total de cours : ", total, seances)
-    affectations={} # seance => liste des élèves affectés
+    affectations=OrderedDict() # seance => liste des élèves affectés
     for s in seances:
         affectations[s]=[]
     for o in ori1:
@@ -83,12 +81,6 @@ def cop (request):
         ## si la séance est pleine, on passe à la suivante
         if len(affectations[s]) > moyenne:
             decalages[titre] += 1
-    for s in seances:
-        print("GRRR affectations pour", s, "(",choices[s.formation-1][1],")")
-        for o in affectations[s]:
-            print("     GRRR", o.etudiant)
-        
-        
             
     return render(
         request, "cop.html",
