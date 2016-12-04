@@ -96,24 +96,29 @@ def rdvOrientation(inscription, ouverture=None):
             ## dans la table InscriptionOrientation
             inscr=list(InscriptionOrientation.objects.filter(etudiant=inscription.etudiant))
             if len(inscr)>0:
-                parfum=val[:val.index("(")].strip()
-                cop=inscr[0].cours.cop.nom
-                salle=inscr[0].cours.cop.salle
-                t=timezone.localtime(inscr[0].cours.debut)
-                jour=t.strftime("%A %d %b")
-                heure=t.strftime("%H:%M")
+                for i in inscr:
+                    cop=i.cours.cop.nom
+                    salle=i.cours.cop.salle
+                    t=timezone.localtime(i.cours.debut)
+                    jour=t.strftime("%d %b")
+                    heure=t.strftime("%H:%M")
+                    mentionCOP = "{j} {h} : {cop} ({s})".format(
+                        cop=cop, s=salle, j=jour, h=heure
+                    )
+                    if inscription.cours.horaire.heure.strftime("%H:%M")==heure or \
+                      inscription.cours.formation.duree==2:
+                        result.append(mentionCOP)                    
             else:
-                parfum=val[:val.index("(")].strip()
                 cop="cop??"
                 salle="A???"
                 jour="??/??"
                 heure="??:??"
-            mentionCOP = "{j} {h} : {cop} ({s})".format(
-                val=parfum, cop=cop, s=salle, j=jour, h=heure
-            )
-            if inscription.cours.horaire.heure.strftime("%H:%M")==heure or \
-              inscription.cours.formation.duree==2:
-                result.append(mentionCOP)
+                mentionCOP = "{j} {h} : {cop} ({s})".format(
+                    cop=cop, s=salle, j=jour, h=heure
+                )
+                if inscription.cours.horaire.heure.strftime("%H:%M")==heure or \
+                   inscription.cours.formation.duree==2:
+                    result.append(mentionCOP)
     return ", ".join(result)
     
 class Barrette(models.Model):
