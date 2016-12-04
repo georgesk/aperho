@@ -76,6 +76,9 @@ def cop (request):
         ## on trouve la bonne séance et on y ajoute l'inscription
         s=seances[decalage]
         affectations[s]["orientations"].append(o)
+        ## on inscrit ça dans la base de données
+        inscr=InscriptionOrientation(etudiant=o.etudiant, cours=s)
+        inscr.save()
         ## on s'assure que le formation correspondra au choix de l'élève
         s.formation=o.choix
         ## si la séance est pleine, on passe à la suivante
