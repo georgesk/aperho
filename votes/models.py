@@ -3,6 +3,44 @@ from django.db import models
 from aperho.settings import connection
 from django.utils import timezone
 
+class CoursOrientation(models.Model):
+    """
+    Définit une séance d'information par une conseillère d'orientation
+    psychologue.
+    """
+    class Meta:
+        verbose_name = "Séance d'orientation"
+        verbose_name_plural = "Séances d'orientation"
+    cop = models.ForeignKey('Cop')
+    debut = models.DateTimeField()
+    formation = models.IntegerField(choices=[
+        (1,"Orientation en premières S, ES et L"),
+        (2,"Orientation en premières STMG"),
+        ], default=1)
+
+    def __str__(self):
+        return "{} {} {}".format(timezone.localtime(self.debut), self.cop, self.formation)
+
+class Cop(models.Model):
+    """
+    Définit une conseillère d'orientation psychologue
+    """
+    nom = models.CharField(max_length=50)
+    salle = models.CharField(max_length=50)
+
+    def __str__(self):
+        return "{} ({})".format(self.nom, self.salle)
+
+class InscriptionOrientation(models.Model):
+    """
+    Décrit l'affectation d'un étudiant à un cours d'orientation
+    """
+    etudiant = models.ForeignKey('Etudiant')
+    cours    = models.ForeignKey('CoursOrientation')
+
+    def __str__(self):
+        return "{} {}".format(self.etudiant, self.cours)
+    
 class Orientation(models.Model):
     """
     Définit une ou plusieurs orientations associées à un étudiant,
@@ -12,8 +50,8 @@ pour un créneau d'ouverture de l'AP donné
         (1, "S, ES, L (scientifique, économique & social, littéraire)"),
         (2,"STMG (sciences et techniques de management & gestion)"),
     ], default=1)
-    etudiant   = models.ForeignKey('Etudiant', null = True, default=None)
-    ouverture  = models.ForeignKey('Ouverture')
+    etudiant    = models.ForeignKey('Etudiant', null = True, default=None)
+    ouverture   = models.ForeignKey('Ouverture')
 
     def __str__(self):
         return "{} {} {}".format(self.etudiant, self.choix, self.ouverture)

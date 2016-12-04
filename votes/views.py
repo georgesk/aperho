@@ -4,23 +4,102 @@ import json
 
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
-    estProfesseur, Ouverture, Orientation
+    estProfesseur, Ouverture, Orientation, InscriptionOrientation, \
+    CoursOrientation
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
 
+
 def nomClasse(s):
 	"""
 	Correction des noms des classes ;
-	dans notre annuaire, toutes les classes sont préficées par "c"
+	dans notre annuaire, toutes les classes sont préfixées par "c"
 	"""
 	if s[0]=="c":
 		return s[1:]
 	else:
 		return s
-		
+
+def cop (request):
+    """
+    Affecte les élèves aux formations des Conseillères d'Orientation
+    Psychologues (COP) et affiche un feedback
+    """
+    ori=list(Orientation.objects.all())
+    ori1=[]
+    for o in ori:
+        ## on recopie seulement les cas où l'étudiant n'est pas NULL
+        ## c'est un peu compliqué car l'accès à l'étudiant n'est pas
+        ## garanti sans lever une exception.
+        try:
+            if o.etudiant:
+                ori1.append(o)
+        except:
+            pass
+    ## on catégorise les orientations par les choix
+    from collections import OrderedDict
+    orientations=OrderedDict()
+    choices=Orientation._meta.get_field("choix").choices
+    ## on met en place un ordre prédéfini pour les clés, d'abord les formations
+    ## générales
+    for c in choices:
+        orientations[c[1]]=[]
+    ## on replit le dictionnaire ordonné avec les orientations
+    for o in ori1:
+        titre=choices[o.choix-1][1]
+        orientations[titre].append(o)
+     ## on efface toutes les inscriptions aux séances des COPs
+    InscriptionOrientation.objects.all().delete()
+    ## on compte le nombre de séances possibles pour les cops
+    seances=list(CoursOrientation.objects.all().order_by("debut","cop"))
+    nbseances=len(seances)
+    ## on en déduit la répartition des élèves, sans mixer les
+    ## choix d'orientation
+    moyenne=(len(ori1)/nbseances)+1 # nombre moyen d'élèves à placer par séance, un peu majoré
+    total=0
+    decalages={} # type d'orientation => décalage dans la liste des séances
+    for titre in orientations:
+        decalages[titre]=total
+        nb=len(orientations[titre])
+        nbcours=int(0.5+nb/moyenne)
+        total+=nbcours
+        print("GRRR", nbcours, "cours pour", titre)
+    print("GRRR total de cours : ", total, seances)
+    affectations={} # seance => liste des élèves affectés
+    for s in seances:
+        affectations[s]=[]
+    for o in ori1:
+        ## pour chaque inscription à un cours d'orientation
+        titre=choices[o.choix-1][1]
+        decalage=decalages[titre]
+        ## on trouve la bonne séance et on y ajoute l'inscription
+        s=seances[decalage]
+        affectations[s].append(o)
+        ## on s'assure que le formation corespondra au choix de l'élève
+        s.formation=o.choix
+        ## si la séance est pleine, on passe à la suivante
+        if len(affectations[s]) > moyenne:
+            decalages[titre] += 1
+    for s in seances:
+        print("GRRR affectations pour", s, "(",choices[s.formation-1][1],")")
+        for o in affectations[s]:
+            print("     GRRR", o.etudiant)
+        
+        
+            
+    return render(
+        request, "cop.html",
+        context={
+            "orientations": orientations,
+            "nbseances":    nbseances,
+            "seances":      seances,
+            "affectations": affectations,
+        }
+    )
+    
 def addEleves(request):
     """
     Une page pour ajouter des élèves à une barrette d'AP

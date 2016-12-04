@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^lesCours$', views.lesCours, name='lesCours'),
     url(r'^enroler$', views.enroler, name='enroler'),
     url(r'^enroleEleveCours$', views.enroleEleveCours, name='enroleEleveCours'),
+    url(r'^cop$', views.cop, name='cop'),
 ]

@@ -1,11 +1,20 @@
 from django.contrib import admin
 
 from .models import Enseignant, Formation, Horaire, Etudiant, Cours, \
-    Inscription, Ouverture, Orientation
+    Inscription, Ouverture, Orientation, CoursOrientation, Cop, \
+    InscriptionOrientation
 
 admin.site.register(Horaire)
 admin.site.register(Ouverture)
+admin.site.register(Cop)
+admin.site.register(InscriptionOrientation)
 
+class CoursOrientationAdmin(admin.ModelAdmin):
+    list_filter = ("cop", "debut", "formation")
+    search_fields = ['cop__nom','debut']
+admin.site.register(CoursOrientation, CoursOrientationAdmin)
+
+    
 class OrientationAdmin (admin.ModelAdmin):
     list_filter = ("choix", "ouverture")
     
