@@ -24,7 +24,7 @@
   <li>Pour un tableur, au <a href="/votes/lesCours?csv=yes">format CSV</a>.</li>  
   <li>Pour un tableur, au <a href="/votes/lesCours?ods=yes">format ODS</a>.</li>  
   <li>Pour un traitement de texte, au <a href="/votes/lesCours?odt=yes">format ODT</a>.</li>  
-</ul>  
+</ul>
 <h1>Les cours d'AP, pour ...</h1>
 {% for e,ci in eci.items %}
 <div class="accordion">
@@ -62,8 +62,24 @@
 	<td>{{forloop.counter}}</td><td>{{n.nom}}</td><td> {{n.prenom}}</td>
       </tr>
       {% endfor %}
-      <table>
-  </div>      
+    </table>
+  </div>
+</div>
+<h1>Conseillères d'orientation</h1>
+<div class="accordion">
+  {% for cop, ci in cci.items %}
+  <h2>{{cop.nom}} ({{cop.salle}})</h2>
+  <div>
+    {% for cours, inscr in ci.items %}
+    <table style="margin-top:1em;">
+      <tr><th colspan="4">{{cours.debut}} {{cours.choice}}</th></tr>
+      {% for i in inscr %}
+      <tr><td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td>{{i.etudiant.prenom}}</td><td>{{i.etudiant.classe}}</td></tr>
+      {% endfor %}
+    </table>
+    {% endfor %}
+  </div>
+  {% endfor %}
 </div>      
 {% endifequal %}
 {% endblock %}

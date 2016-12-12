@@ -5,9 +5,10 @@ import json
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, InscriptionOrientation, \
-    CoursOrientation
+    CoursOrientation, Cop
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
+from collections import OrderedDict
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
@@ -40,7 +41,6 @@ def cop (request):
         except:
             pass
     ## on catégorise les orientations par les choix
-    from collections import OrderedDict
     orientations=OrderedDict()
     choices=Orientation._meta.get_field("choix").choices
     ## on met en place un ordre prédéfini pour les clés, d'abord les formations
@@ -406,8 +406,18 @@ def lesCours(request):
         noninscrits=eleves-inscrits
     cours=list(cours.order_by("enseignant__nom","horaire",))
     enseignants=[c.enseignant for c in cours]
+    cops=list(Cop.objects.all().order_by("nom"))
     horaires=set([c.horaire for c in cours])
-    eci={} ## dictionnaire enseignant -> cours -> inscriptions
+    cci=OrderedDict() ## dictionnaire cop -> coursOrientation -> inscriptionOrientations
+    for c in cops:
+        cc=[co for co in CoursOrientation.objects.all().order_by("debut") if co.cop==c]
+        cci[c]=OrderedDict()
+        choices=Orientation._meta.get_field("choix").choices
+        for co in cc:
+            co.choice=choices[co.formation-1][1]
+            io=InscriptionOrientation.objects.filter(cours=co)
+            cci[c][co]=list(io.order_by('etudiant__nom','etudiant__prenom'))
+    eci=OrderedDict() ## dictionnaire enseignant -> cours -> inscriptions
     for e in enseignants:
         ec=[c for c in cours if c.enseignant==e]
         eci[e]={}
@@ -432,6 +442,8 @@ def lesCours(request):
             context={
                 "prof":  prof,
                 "eci":   eci,
+                "cops": cops,
+                "cci" : cci,
                 "horaires": horaires,
                 "estprof": estProfesseur(request.user),
                 "username": request.user.username,
