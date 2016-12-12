@@ -76,6 +76,9 @@ def cop (request):
     ## avec le prof de séance, en priorité, puis on butine les profs des
     ## séances non utilisées pour finir de remplir. On n'affecte que les
     ## élèves qui suivent la formation prévue pour cette séance.
+    ############################################################
+    ## premier round : on enrole les étudiants du prof sélectionné
+    dejaEnroles={1:[], 2:[]}
     for s in seances[:derniereSeance]:
         enroles=[]
         ## commençons par le prof de la séance
@@ -89,7 +92,24 @@ def cop (request):
                     voeux=Orientation.objects.filter(etudiant=i.etudiant, choix=s.formation)
                     if voeux.count():
                         enroles.append(i.etudiant)
+                        dejaEnroles[s.formation].append(i.etudiant)
         affectations[s]=enroles
+    ## deuxième round : on enrole les élèves pas encore inscrits
+    ## en tournant parmi tous les élèves
+    etudiants=Etudiant.objects.all()
+    for s in seances[:derniereSeance]:
+        for e in etudiants:
+            if e not in dejaEnroles[s.formation] and Orientation.objects.filter(etudiant=e, choix=s.formation).count() > 0 and len(affectations[s]) < 27:
+                ## à ce stade, l'étudiant est encore libre
+                ## et il a un voeu compatible
+                affectations[s].append(e)
+                dejaEnroles[s.formation].append(e)
+                
+    ## inscription des affectations dans la base de données
+    for s in affectations:
+        for e in affectations[s]:
+            io=InscriptionOrientation(etudiant=e, cours=s)
+            io.save()
     return render(
         request, "cop.html",
         context={
