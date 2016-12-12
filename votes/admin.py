@@ -10,8 +10,8 @@ admin.site.register(Cop)
 admin.site.register(InscriptionOrientation)
 
 class CoursOrientationAdmin(admin.ModelAdmin):
-    list_filter = ("cop", "debut", "formation")
-    search_fields = ['cop__nom','debut']
+    list_filter = ("cop", "debut", "formation", "prof")
+    search_fields = ['cop__nom','debut','prof_nom']
 admin.site.register(CoursOrientation, CoursOrientationAdmin)
 
     

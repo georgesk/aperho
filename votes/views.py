@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 import json
 
 from aperho.settings import connection
@@ -44,7 +45,7 @@ def cop (request):
     orientations=OrderedDict()
     choices=Orientation._meta.get_field("choix").choices
     ## on met en place un ordre prédéfini pour les clés, d'abord les formations
-    ## générales
+    ## générales, tout comme dans la liste choices
     for c in choices:
         orientations[c[1]]=[]
     ## on replit le dictionnaire ordonné avec les orientations
@@ -55,41 +56,44 @@ def cop (request):
     InscriptionOrientation.objects.all().delete()
     ## on compte le nombre de séances possibles pour les cops
     seances=list(CoursOrientation.objects.all().order_by("debut","cop"))
-    nbseances=len(seances)
     ## on en déduit la répartition des élèves, sans mixer les
     ## choix d'orientation
-    moyenne=(len(ori1)/nbseances)+1 # nombre moyen d'élèves à placer par séance, un peu majoré
-    total=0
-    decalages={} # type d'orientation => décalage dans la liste des séances
-    for titre in orientations:
-        decalages[titre]=total
-        nb=len(orientations[titre])
-        nbcours=int(0.5+nb/moyenne)
-        total+=nbcours
     affectations=OrderedDict() # seance => liste des élèves affectés
-    for s in seances:
-        affectations[s]={"formation": choices[s.formation-1][1], "orientations": []}
-    for o in ori1:
-        ## pour chaque inscription à un cours d'orientation
-        titre=choices[o.choix-1][1]
-        decalage=decalages[titre]
-        ## on trouve la bonne séance et on y ajoute l'inscription
-        s=seances[decalage]
-        affectations[s]["orientations"].append(o)
-        ## on inscrit ça dans la base de données
-        inscr=InscriptionOrientation(etudiant=o.etudiant, cours=s)
-        inscr.save()
-        ## on s'assure que le formation correspondra au choix de l'élève
-        s.formation=o.choix
-        ## si la séance est pleine, on passe à la suivante
-        if len(affectations[s]["orientations"]) > moyenne:
-            decalages[titre] += 1
-            
+    choix=1
+    derniereSeance=0
+    for o in orientations:
+        ## calcul du nombre de profs à mobiliser pour les COPS
+        ## sachant que la capacité d'un cours de COP est 27
+        totalOrientation=len(list(Orientation.objects.filter(choix=choix)))
+        nbProfs=1+int(totalOrientation/27)          # nb de profs à mobiliser
+        effectifMax=1+int(totalOrientation/nbProfs) # max d'élèves par cours
+        for indexSeance in range(derniereSeance, derniereSeance+nbProfs):
+            seances[indexSeance].formation=choix
+        derniereSeance+=nbProfs
+        choix+=1 # en vue de la prochaine orientation
+    ## À ce stade, derniereSeance pointe sur la dernière séance des COPS
+    ## Pour chaque séance, on remplit avec la liste des élèves qui sont
+    ## avec le prof de séance, en priorité, puis on butine les profs des
+    ## séances non utilisées pour finir de remplir. On n'affecte que les
+    ## élèves qui suivent la formation prévue pour cette séance.
+    for s in seances[:derniereSeance]:
+        enroles=[]
+        ## commençons par le prof de la séance
+        cours=Cours.objects.filter(enseignant=s.prof)
+        for c in cours:
+            inscriptions=Inscription.objects.filter(cours=c)
+            for i in inscriptions:
+                ## si c est un cours de deux heures, ou si c est à l'heure
+                ## de la séance
+                if c.formation.duree==2 or c.horaire.heure.strftime("%H:%M")==timezone.localtime(s.debut).strftime("%H:%M"):
+                    voeux=Orientation.objects.filter(etudiant=i.etudiant, choix=s.formation)
+                    if voeux.count():
+                        enroles.append(i.etudiant)
+        affectations[s]=enroles
     return render(
         request, "cop.html",
         context={
             "orientations": orientations,
-            "nbseances":    nbseances,
             "seances":      seances,
             "affectations": affectations,
         }

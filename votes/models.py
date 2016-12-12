@@ -13,6 +13,7 @@ class CoursOrientation(models.Model):
         verbose_name = "Séance d'orientation"
         verbose_name_plural = "Séances d'orientation"
     cop = models.ForeignKey('Cop')
+    prof = models.ForeignKey('Enseignant', null=True, default=None)
     debut = models.DateTimeField()
     formation = models.IntegerField(choices=[
         (1,"Orientation en premières S, ES et L"),
@@ -20,7 +21,7 @@ class CoursOrientation(models.Model):
         ], default=1)
 
     def __str__(self):
-        return "{} {} {}".format(timezone.localtime(self.debut), self.cop, self.formation)
+        return "{} {} {} avec {}".format(timezone.localtime(self.debut), self.cop, self.formation, self.prof)
 
 class Cop(models.Model):
     """
