@@ -41,17 +41,18 @@ def cop (request):
                 ori1.append(o)
         except:
             pass
+    ## à ce stade ori1 contient les orientations avec étudiant non null
+    ###################################################################
     ## on catégorise les orientations par les choix
     orientations=OrderedDict()
     choices=Orientation._meta.get_field("choix").choices
     ## on met en place un ordre prédéfini pour les clés, d'abord les formations
     ## générales, tout comme dans la liste choices
     for c in choices:
-        orientations[c[1]]=[]
+        orientations[c[0]]=[]
     ## on replit le dictionnaire ordonné avec les orientations
     for o in ori1:
-        titre=choices[o.choix-1][1]
-        orientations[titre].append(o)
+        orientations[o.choix].append(o)
      ## on efface toutes les inscriptions aux séances des COPs
     InscriptionOrientation.objects.all().delete()
     ## on compte le nombre de séances possibles pour les cops
@@ -59,51 +60,62 @@ def cop (request):
     ## on en déduit la répartition des élèves, sans mixer les
     ## choix d'orientation
     affectations=OrderedDict() # seance => liste des élèves affectés
-    choix=1
     derniereSeance=0
-    for o in orientations:
+    effectifSeance={} ## dictionnaire : n° choix => effectif optimal
+    for choix in orientations:
         ## calcul du nombre de profs à mobiliser pour les COPS
         ## sachant que la capacité d'un cours de COP est 27
         totalOrientation=len(list(Orientation.objects.filter(choix=choix)))
         nbProfs=1+int(totalOrientation/27)          # nb de profs à mobiliser
-        effectifMax=1+int(totalOrientation/nbProfs) # max d'élèves par cours
+        effectifSeance[choix]=1+int(totalOrientation/nbProfs)
         for indexSeance in range(derniereSeance, derniereSeance+nbProfs):
             seances[indexSeance].formation=choix
         derniereSeance+=nbProfs
-        choix+=1 # en vue de la prochaine orientation
+    print ("GRRRR", effectifSeance)
     ## À ce stade, derniereSeance pointe sur la dernière séance des COPS
     ## Pour chaque séance, on remplit avec la liste des élèves qui sont
     ## avec le prof de séance, en priorité, puis on butine les profs des
     ## séances non utilisées pour finir de remplir. On n'affecte que les
     ## élèves qui suivent la formation prévue pour cette séance.
     ############################################################
+    dejaEnroles={} ## dictionnaire : n° choix => liste de chaînes d'étudiants
+    ## il faut comptabiliser str(Etudiant) plutôt que les instances de
+    ## etudiant, si la comparaison des instances peut poser problème
+    ############################################################
     ## premier round : on enrole les étudiants du prof sélectionné
-    dejaEnroles={1:[], 2:[]}
+    for c in choices:
+        dejaEnroles[c[0]]=[]
     for s in seances[:derniereSeance]:
-        enroles=[]
+        enrolesDansSeance=[]
         ## commençons par le prof de la séance
         cours=Cours.objects.filter(enseignant=s.prof)
         for c in cours:
-            inscriptions=Inscription.objects.filter(cours=c)
-            for i in inscriptions:
-                ## si c est un cours de deux heures, ou si c est à l'heure
-                ## de la séance
-                if c.formation.duree==2 or c.horaire.heure.strftime("%H:%M")==timezone.localtime(s.debut).strftime("%H:%M"):
-                    voeux=Orientation.objects.filter(etudiant=i.etudiant, choix=s.formation)
-                    if voeux.count():
-                        enroles.append(i.etudiant)
-                        dejaEnroles[s.formation].append(i.etudiant)
-        affectations[s]=enroles
+            if c.formation.duree==1 and \
+               c.horaire.heure.strftime("%H:%M") != timezone.localtime(s.debut).strftime("%H:%M"):
+                # cours d'une heure, mais pas à la bonne heure
+                continue
+            ## maintenant c est un cours de deux heures,
+            ## ou c est à l'heure de la séance
+            ## on parcourt les élèves inscrits au cours
+            for i in Inscription.objects.filter(cours=c):
+                voeux=Orientation.objects.filter(etudiant=i.etudiant, choix=s.formation)
+                ## on regarde si l'élève  a un voeu pour s.formation
+                ## et s'il n'est pas déjà inscrit à s.formation
+                if voeux.count() and \
+                   str(i.etudiant) not in dejaEnroles[s.formation]:
+                    enrolesDansSeance.append(i.etudiant)
+                    dejaEnroles[s.formation].append(str(i.etudiant))
+        affectations[s]=enrolesDansSeance
     ## deuxième round : on enrole les élèves pas encore inscrits
     ## en tournant parmi tous les élèves
     etudiants=Etudiant.objects.all()
     for s in seances[:derniereSeance]:
         for e in etudiants:
-            if e not in dejaEnroles[s.formation] and Orientation.objects.filter(etudiant=e, choix=s.formation).count() > 0 and len(affectations[s]) < 27:
+            if str(e) not in dejaEnroles[s.formation] and Orientation.objects.filter(etudiant=e, choix=s.formation).count() > 0 and len(affectations[s]) < effectifSeance[s.formation]:
                 ## à ce stade, l'étudiant est encore libre
                 ## et il a un voeu compatible
                 affectations[s].append(e)
-                dejaEnroles[s.formation].append(e)
+                dejaEnroles[s.formation].append(str(e))
                 
     ## inscription des affectations dans la base de données
     for s in affectations:

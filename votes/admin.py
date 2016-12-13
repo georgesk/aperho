@@ -7,15 +7,22 @@ from .models import Enseignant, Formation, Horaire, Etudiant, Cours, \
 admin.site.register(Horaire)
 admin.site.register(Ouverture)
 admin.site.register(Cop)
-admin.site.register(InscriptionOrientation)
+
+class InscriptionOrientationAdmin(admin.ModelAdmin):
+ search_fields = [
+     "etudiant__nom", "cours__cop__nom", "cours__prof__nom", "cours__debut"
+ ]
+   
+admin.site.register(InscriptionOrientation, InscriptionOrientationAdmin)
 
 class CoursOrientationAdmin(admin.ModelAdmin):
     list_filter = ("cop", "debut", "formation", "prof")
-    search_fields = ['cop__nom','debut','prof_nom']
+    search_fields = ['cop__nom','debut','prof__nom']
 admin.site.register(CoursOrientation, CoursOrientationAdmin)
 
     
 class OrientationAdmin (admin.ModelAdmin):
+    search_fields = ['etudiant__nom']
     list_filter = ("choix", "ouverture")
     
 admin.site.register(Orientation, OrientationAdmin)
