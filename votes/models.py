@@ -31,7 +31,7 @@ class Cop(models.Model):
     salle = models.CharField(max_length=50)
 
     def __str__(self):
-        return "{} ({})".format(self.nom, self.salle)
+        return "{}".format(self.nom)
 
 class InscriptionOrientation(models.Model):
     """
@@ -98,13 +98,14 @@ def rdvOrientation(inscription, ouverture=None):
             inscr=list(InscriptionOrientation.objects.filter(etudiant=inscription.etudiant))
             if len(inscr)>0:
                 for i in inscr:
-                    cop=i.cours.cop.nom
-                    salle=i.cours.cop.salle
+                    cop=str(i.cours.cop.nom)[:4]
+                    salle=i.cours.prof.salle
+                    prof=i.cours.prof.nom
                     t=timezone.localtime(i.cours.debut)
-                    jour=t.strftime("%d %b")
+                    jour=t.strftime("%d/%m")
                     heure=t.strftime("%H:%M")
-                    mentionCOP = "{j} {h} : {cop} ({s})".format(
-                        cop=cop, s=salle, j=jour, h=heure
+                    mentionCOP = "{j} {h} : {cop}/{prof} ({s})".format(
+                        cop=cop, s=salle, j=jour, h=heure, prof=prof
                     )
                     if inscription.cours.horaire.heure.strftime("%H:%M")==heure or \
                       inscription.cours.formation.duree==2:
