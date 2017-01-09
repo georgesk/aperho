@@ -470,7 +470,7 @@ def lesCours(request):
         response=odsResponse(Inscription.objects.all(), noninscrits)
         return response
     elif odt:
-        response=odtResponse(eci, horaires, noninscrits)
+        response=odtResponse(eci, horaires, noninscrits, cci)
         return response
     else:
         return render(

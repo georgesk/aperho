@@ -3,6 +3,7 @@ Implémentation de l'export ODF des résultats d'une "barrette" d'AP
 """
 
 from django.utils import timezone
+from django.utils.timezone import localtime
 from django.http import HttpResponse
 
 from odf.opendocument import OpenDocumentSpreadsheet, OpenDocumentText
@@ -80,13 +81,14 @@ def odsResponse(inscriptions, noninscrits):
     response.write(output.getvalue())
     return response
 
-def odtResponse(eci, horaires, noninscrits):
+def odtResponse(eci, horaires, noninscrits, cci=None):
     """
     fabrique un objet de type HttpResponse qui comporte un tableur au format
     ODT, avec les exportations d'une "barrette" d'AP.
     @param eci un dictionnaire de dictionnaires enseignant => cours => inscriptions
     @param horaires les horaires existant dans la "barrette"
     @param noninscrits une liste d'Etudiants
+    @param cci dictionnaire cop -> coursOrientation -> inscriptionOrientations
     @return un objet de type HttpResponse
     """
     ## détermine d'abord s'il y a des séances d'orientation, pour la dernière
@@ -183,6 +185,42 @@ def odtResponse(eci, horaires, noninscrits):
     for e in ni:
         ligne="{} {} {}".format(e.classe, e.nom, e.prenom)
         textdoc.text.addElement(P(text=ligne))
+
+    if cci:
+        for cop, ci in cci.items():
+            titre="Conseillère d'orientation : {}".format(cop.nom)
+            for cours, inscr in ci.items():
+                p = P(stylename=withbreak,text="") # saut de page manuel
+                textdoc.text.addElement(p)
+                textdoc.text.addElement(H(text=titre, outlinelevel=1))
+                titre2="{} {} avec {}".format(localtime(cours.debut).strftime("%d/%m/%Y %H%M"), cours.choice, cours.prof)
+                textdoc.text.addElement(H(text=titre2, outlinelevel=2))
+                ### on débute un tableau n°, Nom, prénom, classe pour les élèves
+                table = Table()
+                nbCol=4
+                for i in range(nbCol):
+                    table.addElement(TableColumn(stylename=w[i]))
+                textdoc.text.addElement(table)
+                tr = TableRow()
+                table.addElement(tr)
+                colTitres=("n°","Nom","Prénom","Classe")
+                for val in colTitres:
+                    tc = TableCell()
+                    tr.addElement(tc)
+                    p = P(stylename=tablecontents,text=str(val))
+                    tc.addElement(p)
+                ### compteur d'élèves au minimum ...
+                n=1
+                ### puis on ajoute une ligne par inscription
+                for i in inscr:
+                    tr = TableRow()
+                    table.addElement(tr)
+                    for val in [n, i.etudiant.nom, i.etudiant.prenom, i.etudiant.classe]:
+                        tc = TableCell()
+                        tr.addElement(tc)
+                        p = P(text=val)
+                        tc.addElement(p)
+                    n+=1
         
     output=BytesIO()
     textdoc.save(output)

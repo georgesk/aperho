@@ -68,11 +68,11 @@
 <h1>Conseillères d'orientation</h1>
 <div class="accordion">
   {% for cop, ci in cci.items %}
-  <h2>{{cop.nom}} ({{cop.salle}})</h2>
+  <h2>{{cop.nom}}</h2>
   <div>
     {% for cours, inscr in ci.items %}
     <table style="margin-top:1em;">
-      <tr><th colspan="4">{{cours.debut}} {{cours.choice}}</th></tr>
+      <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>
       {% for i in inscr %}
       <tr><td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td>{{i.etudiant.prenom}}</td><td>{{i.etudiant.classe}}</td></tr>
       {% endfor %}
