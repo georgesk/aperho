@@ -241,13 +241,16 @@ def getAllProfs():
     for entry in connection.response:
         if int(entry['attributes']['uidNumber'][0]) not in uids:
             ## on n'ajoute le prof que s'il n'est pas encore dans la barrette
-            profs.append(
-                {
-                    "uid":entry['attributes']['uidNumber'][0],
-                    "nom":entry['attributes']['sn'][0],
-                    "prenom":entry['attributes']['givenName'][0],
-                }
-            )
+            try:
+                profs.append(
+                    {
+                        "uid":entry['attributes']['uidNumber'][0],
+                        "nom":entry['attributes']['sn'][0],
+                        "prenom":entry['attributes']['givenName'][0],
+                    }
+                )
+            except:
+                pass # par exemple s'il n'y a pas d'attribut givenName
     profs.sort(key=lambda e: "{nom} {prenom}".format(**e))
     return profs
 
