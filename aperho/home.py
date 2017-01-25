@@ -5,7 +5,8 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.hashers import *
 
-from votes.models import Cours, Inscription, Etudiant, Enseignant, Orientation
+from votes.models import Cours, Inscription, Etudiant, Enseignant, \
+    Orientation, Horaire
 from votes.models import estProfesseur
 
 def index_admin(request):
@@ -24,8 +25,13 @@ def index(request):
         # la bonne date d'ouverture, même si les autres champs sont par défaut.
         orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
         cours=[c for c in cours if c.estOuvert()]
+        capacite={} # tableau heure -> nombre d'élèves accueillis
+        heures=[str(h.heure)[:5] for h in Horaire.objects.all()]
+        for h in heures:
+            capacite[h]=0
         ## On enrichit les cours avec le remplissage actuel de chacun
         ## Et on décide si on doit désactiver la modification de ce cours
+        ## au passage, on met à jour les capacités d'accueil des élèves
         for c in cours:
             inscriptions=Inscription.objects.filter(cours=c)
             ## liste des étudiants inscrits dans le cours
@@ -33,6 +39,12 @@ def index(request):
             ## on désactive le cours s'il est à public désigné ou s'il est plein
             ## et que l'étudiant n'y est pas déjà inscrit
             c.disabled=c.formation.public_designe or (len(c.inscriptions) >= c.capacite and request.user.username not in [e.uid for e in c.inscriptions])
+            ## mise à jour des capacités :
+            if c.formation.duree == 2:
+                for h in heures:
+                    capacite[h]+=c.capacite
+            else:
+                capacite[str(c.horaire.heure)[:5]]+=c.capacite
         cours_suivis=[]
         orientations_demandees=[]
         etudiants=list(Etudiant.objects.filter(uid=request.user.username))
@@ -56,12 +68,14 @@ def index(request):
                     {
                         "cours": [c for c in cours
                                   if str(c.horaire)==horaires[0]],
-                        "horaire": horaires[0][:5]
+                        "horaire": horaires[0][:5],
+                        "capacite" : capacite[horaires[0][:5]]
                     },
                     {
                         "cours": [c for c in cours
                                   if str(c.horaire)==horaires[1]],
-                        "horaire": horaires[1][:5]
+                        "horaire": horaires[1][:5],
+                        "capacite" : capacite[horaires[1][:5]]
                     },
                 ],
                 "horaires" : horaires,

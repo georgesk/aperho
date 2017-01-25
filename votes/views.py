@@ -6,7 +6,7 @@ import json
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, InscriptionOrientation, \
-    CoursOrientation, Cop
+    CoursOrientation, Cop, Horaire
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from collections import OrderedDict

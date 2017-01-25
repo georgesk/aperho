@@ -112,7 +112,7 @@
     </div>
     <input type="hidden" id="etudiantUid" value="{{etudiant.uid}}"/>
     {% for coursHoraire in tousLesCours %}
-    <h3>Cours commençant à {{coursHoraire.horaire}}</h3>
+    <h3>Cours commençant à {{coursHoraire.horaire}} (capacité : {{coursHoraire.capacite}} élèves)</h3>
     <table style="width: 100%">
       {% for c in coursHoraire.cours %}
       <!-- M Hogrel suggère qu'on ne voie pas les noms des enseignants ici
