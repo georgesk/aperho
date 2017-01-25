@@ -67,3 +67,6 @@ target/
 
 # no doxygen output
 doc
+
+# no backups
+*backup*

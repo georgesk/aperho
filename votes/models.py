@@ -186,9 +186,12 @@ class Formation(models.Model):
     public_designe = models.BooleanField(default=False, verbose_name="Public désigné")
 
     def __str__(self):
-        result="{} heure(s) : {} --- {}".format(self.duree, self.titre, self.contenu)
-        if len(result) > 40:
-            result=result[:37]+" ..."
+        cours=Cours.objects.filter(formation=self)
+        profs="/".join([c.enseignant.nom for c in cours])
+        result="{} heure(s) : {} -- {} --- {}".format(self.duree, self.titre, profs, self.contenu)
+        max=120
+        if len(result) > max:
+            result=result[:max-4]+" ..."
         return result
     
 class Horaire(models.Model):
