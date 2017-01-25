@@ -577,3 +577,11 @@ def enroleEleveCours(request):
     return JsonResponse({
         "msg" : msg,
     })
+
+def listClasse(request):
+    c=request.GET.get("classe")
+    etudiants=Etudiant.objects.filter(classe=c)
+    eleves=[e.nom+" "+e.prenom for e in etudiants]
+    return JsonResponse({
+        "eleves": "<br/>".join(eleves),
+    })

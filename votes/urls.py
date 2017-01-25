@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^enroler$', views.enroler, name='enroler'),
     url(r'^enroleEleveCours$', views.enroleEleveCours, name='enroleEleveCours'),
     url(r'^cop$', views.cop, name='cop'),
+    url(r'^listClasse$', views.listClasse, name='listClasse'),
 ]
