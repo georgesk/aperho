@@ -58,6 +58,7 @@ def index(request):
         horaires=sorted(list(set([str(c.horaire) for c in cours])))
         while len(horaires) < 2:
             horaires.append("remplissage_{}".format(len(horaires)))
+            capacite["rempl"]="??" # au cas où on aurait rempli quelque chose
         assert len(horaires)==2
         ## on sépare les cours selon les deux horaires
         return render(
