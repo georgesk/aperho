@@ -3,7 +3,6 @@
 
 function voirClasse(c){
     $.get("listClasse", {classe: c}, function(data){
-	alert(data.eleves);
 	$("#dialog").html(data.eleves);
 	$( "#dialog" ).dialog({
 	    autoOpen: true,
@@ -24,6 +23,24 @@ function voirClasse(c){
 }
 
 function effacerClasse(c){
-    alert("on veut effacer "+c);
+    $.get("delClasse", {classe: c}, function(data){
+	$("#dialog").html("Effacement de "+c);
+	$( "#dialog" ).dialog({
+	    autoOpen: true,
+	    modal: true,
+	    buttons: [
+		{
+		    text: "OK",
+		    icons: {
+			primary: "ui-icon-heart"
+		    },
+		    click: function() {
+			$( this ).dialog( "close" );
+			location.reload(); // on rafraîchit la page
+		    }
+		}
+	    ]
+	});
+    });
 }
 
