@@ -145,7 +145,7 @@ class Ouverture(models.Model):
     nom_session = models.CharField(max_length=50, default="Toussaint")
     
     def __str__(self):
-        return "{} ↦ {}".format(self.debut, self.fin)
+        return "{} : {} ↦ {}".format(self.nom_session, self.debut, self.fin)
 
     def estActive(self):
         """

@@ -20,10 +20,11 @@
     {% for c in lesCours %}
     <div class="classeConnue">
       <h3>{{c}}</h3>
-      <button type="button" onclick="effacerCours('{{c}}')">Effacer</button>
+      <button type="button" onclick="effacerCours('{{c.id}}')">Effacer</button>
     </div>
     {% endfor %}
     <div id="dialog">
     </div>
+    {% endif %}
   </body>
 </html>
