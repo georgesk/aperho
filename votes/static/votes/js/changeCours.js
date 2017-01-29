@@ -82,10 +82,11 @@ function message(msg, reload){
 
 /**
  * validation des cours qui sont cochés
+ * @param orientationOuverte booléen vrai s'il y a des cases pour l'orientation
  **/
-function valideCours(){
+function valideCours(orientationOuverte){
     var inscriptions=$("fieldset.orientation input:checked");
-    if (inscriptions.length < 1){
+    if (orientationOuverte != 'False' && inscriptions.length < 1){
 	message("Aucune séance d'information sur l'orientation en première n'a été choisie. Cochez au moins une des cases en haut de cette page.");
     } else {
 	var duree=check(0,false);
