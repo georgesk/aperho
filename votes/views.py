@@ -25,6 +25,24 @@ def nomClasse(s):
 	else:
 		return s
 
+def lesClasses():
+    """
+    Renvoie les classes connues par l'annuaire LDAP
+    @return une liste de noms de classes, sans le préfixe "c"
+    """
+    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    filtre  = '(cn=c*)'
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes=["cn" ]
+    )
+    classes=[entry['attributes']['cn'][0] for entry in connection.response]
+    notclasses=[ 'cdtower', 'cuisine',  'college' ]
+    classes=[nomClasse(c) for c in classes \
+             if c not in notclasses and 'smbadm' not in c and 'test' not in c]
+    return classes
+
 def cop (request):
     """
     Affecte les élèves aux formations des Conseillères d'Orientation
@@ -612,11 +630,41 @@ def delCours(request):
     return JsonResponse({
         "status": "ok",
     })
-    
+
 
 def addBarrette(request):
-    b=Barrette.objects.all()
+    """
+    Cette page sert à la gestion des barrettes. Il faut commencer à
+    vérifier le statut de l'utilisateur, et le renvoyer éventuellement vers
+    une page d'erreur, ou alors lui permettre seulement de voir la liste des
+    barrettes.
+    """
+    avertissement=""
+    barrettes=Barrette.objects.all()
+    classesPrises=set()
+    for b in barrettes:
+        classesPrises |= set(json.loads(b.classesJSON))
+    nom=request.POST.get("nom","")
+    classes=request.POST.get("selectedclasses","")
+    if nom and classes:
+        ensemble=set(json.loads(classes))
+        if ensemble & classesPrises:
+            avertissement="On ne peut pas enregistrer plusieurs fois les mêmes classes"
+        else:
+            b=Barrette(nom=nom, classesJSON=classes)
+            b.save()
+            avertissement="Nouvelle barrette : {nom}".format(nom=nom)
+        barrettes=Barrette.objects.all()
+    for b in barrettes:
+        classesPrises |= set(json.loads(b.classesJSON))
+    for i in range(len(barrettes)):
+        barrettes[i].l=sorted(json.loads(barrettes[i].classesJSON))
+    classes=sorted(list(set(lesClasses())-classesPrises))
     return render(
         request, "addBarrette.html",
-        { "lesBarrettes": b }
+        {
+            "lesBarrettes": barrettes,
+            "classes" : classes,
+            "avertissement" : avertissement,
+        }
     )

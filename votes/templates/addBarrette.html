@@ -1,1 +1,84 @@
 {% extends "base1.html" %}
+{% block localscripts %}
+<script src="/static/votes/js/multiselectable.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('.multi').multiselectable({
+	selectableLabel:"Disponibles",
+	selectedLabel:"Sélectionnées"
+    });
+    if("{{avertissement}}".length > 0){
+	$( "#message" ).attr({title: "Avertissement",})
+	$( "#message" ).text("{{avertissement}}");
+	$( "#message" ).dialog({
+	    modal: true,
+	    buttons: [
+		{
+		    text: "OK",
+		    click: function() {
+			$( this ).dialog( "close" );
+		    }
+		}
+	    ]
+	});
+    }
+});
+/**
+ * récupérations des classes sélectionnées dans un liste au format json
+ **/
+function collectclasses(){
+  collected=[];
+  $("#classes option").each(function(i){
+      console.log(i, $(this).val(), $(this).attr("selected"));
+      if($(this).attr("selected")){
+	collected.push($(this).val());
+      }
+    });
+  $("#selectedclasses").val(JSON.stringify(collected));
+  return true;
+}
+</script>
+{% endblock %}
+
+{% block title %}
+<h1>Gestion des barrettes</h1>
+{% endblock %}
+
+{% block contents %}
+{% if lesBarrettes %}
+<h2>Barrettes existantes</h2>
+{% endif %}
+{% for b in lesBarrettes %}
+<div class="barrette">
+<div class="unebarrette">{{b.nom}}</div>
+<p>
+  {% for c in b.l %}
+  <div class="uneClasse">{{c}}</div>
+  {% endfor %}
+</p>
+{% endfor %}
+</div>
+<h2>Créer une nouvelle barrette</h2>
+<form action="#" method="post"  onSubmit="collectclasses()">
+  {% csrf_token %}
+  <p>
+    <label style="font-size: 120%; font-weight: bold;">
+      Nom de la nouvelle barrette :
+    </label>
+    <input type="text" name="nom" placeholder="un nouveau nom ?"/>
+  </p>
+  <p>
+    <select name="classes" id="classes" multiple="on" class="multi">
+      {% for c in classes %}
+      <option value="{{c}}">{{c}}</option>
+      {% endfor %}
+    </select>
+  </p>
+  <div style="clear:both"></div>
+  <div style="margin-top: 3em;">
+    <input type="submit" value="Créer une nouvelle barrette" style="font-size:120%; font-weight:bold;"/>
+    <input type="hidden" name="selectedclasses" id="selectedclasses"/>
+  </div>
+</form>
+<div id="message"></div>
+{% endblock %}
