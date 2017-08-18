@@ -6,7 +6,7 @@ import json
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, InscriptionOrientation, \
-    CoursOrientation, Cop, Horaire
+    CoursOrientation, Cop, Horaire, Barrette
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from collections import OrderedDict
@@ -613,3 +613,10 @@ def delCours(request):
         "status": "ok",
     })
     
+
+def addBarrette(request):
+    b=Barrette.objects.all()
+    return render(
+        request, "addBarrette.html",
+        { "lesBarrettes": b }
+    )
