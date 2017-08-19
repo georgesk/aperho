@@ -9,12 +9,6 @@ from votes.models import Cours, Inscription, Etudiant, Enseignant, \
     Orientation, Horaire
 from votes.models import estProfesseur
 
-def index_admin(request):
-    return render(request, "home_admin.html")
-
-            
-    
-
 def index(request):
     if request.user.is_authenticated():
         cours=list(Cours.objects.all().order_by("formation__titre"))
