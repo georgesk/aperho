@@ -3,7 +3,7 @@
 {% block mesactions %}
 <ul>
   {% if user.is_superuser %}
-  <li><a href="#nb">Créer une nouvelle barrette</a></li>
+  <li><a id="cnb" href="#nb">Créer une nouvelle barrette</a></li>
   {% else %}
   <li><a href="/votes/profil">Mon profil</a></li>
   {% endif %}
@@ -54,7 +54,37 @@ function collectclasses(){
  * @param el un élément fils de la barrette
  **/
 function editBarrette(el){
-    alert('Édition de '+$(el).parents('.unebarrette').first().text());
+    var b = $(el).parents('.unebarrette').first();
+    var p = b.next();
+    var nom = b.text().trim();
+    var classes = [];
+    p.find(".uneClasse").each(function(){
+	classes.push($(this).text().trim());
+    });
+    // on désactive la possibilité de créer une nouvelle barrette
+    $("#cnb").css({display: "none"});
+    // on rhabille le formulaire de création en formulaire d'édition
+    $("#nb").text("Modification de la barrette "+nom);
+    $("form").first().attr({action: "editBarrette"});
+    $("#submit").val("Valider le changement");
+    $("#nomOrig").val(nom);
+    $("#nom").val(nom);
+    // on remet les noms de classes dans la liste des choix
+    for(var i=0; i < classes.length; i++){
+	var c = classes[i];
+	$("#classes").append($("<option>",{value: c, selected: 'selected'}).text(c));
+    }
+    // on refait le multiselect
+    $(".multiselectable").first().remove();
+    $('.multi').multiselectable({
+	selectableLabel:"Disponibles",
+	selectedLabel:"Sélectionnées"
+    });
+    // on scrolle
+    var aTag = $(".unebarrette").last();
+    console.log(aTag);
+    $('html,body').animate({scrollTop: aTag.offset().top-60},'slow');
+    return;
 }
 /**
  * suppression d'une barrette
@@ -88,7 +118,6 @@ function delBarrette(el){
     ).fail(
 	function(){alert("Échec de la suppression de "+nom);}
     );
-    //alert('Suppression de '+$(el).parents('.unebarrette').first().text());
 }
 </script>
 {% endblock %}
@@ -110,24 +139,24 @@ function delBarrette(el){
     <div class="editButton"><img src="/static/votes/img/edit.png" onclick="editBarrette(this)" alt="Bouton d'édition"/></div>
     {% endif %}
   </div>
-<p>
-  {% for c in b.l %}
-  <div class="uneClasse">{{c}}</div>
+  <div>
+    {% for c in b.l %}
+    <div class="uneClasse">{{c}}</div>
+    {% endfor %}
+  </div>
   {% endfor %}
-</p>
-{% endfor %}
 </div>
 
 {% if user.is_superuser %}
 <a name="nb"></a>
-<h2>Créer une nouvelle barrette</h2>
+<h2 id="nb">Créer une nouvelle barrette</h2>
 <form action="#" method="post"  onSubmit="collectclasses()">
   {% csrf_token %}
   <p>
     <label style="font-size: 120%; font-weight: bold;">
       Nom de la nouvelle barrette :
     </label>
-    <input type="text" name="nom" placeholder="un nouveau nom ?"/>
+    <input type="text" name="nom" id="nom" placeholder="un nouveau nom ?"/>
   </p>
   <p>
     <select name="classes" id="classes" multiple="on" class="multi">
@@ -138,8 +167,9 @@ function delBarrette(el){
   </p>
   <div style="clear:both"></div>
   <div style="margin-top: 3em;">
-    <input type="submit" value="Créer une nouvelle barrette" style="font-size:120%; font-weight:bold;"/>
+    <input type="submit" id="submit" value="Créer une nouvelle barrette" style="font-size:120%; font-weight:bold;"/>
     <input type="hidden" name="selectedclasses" id="selectedclasses"/>
+    <input type="hidden" name="nomOrig" id="nomOrig"/>
   </div>
 </form>
 {% endif %}
