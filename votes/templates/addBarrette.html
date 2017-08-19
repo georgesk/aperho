@@ -49,6 +49,47 @@ function collectclasses(){
   $("#selectedclasses").val(JSON.stringify(collected));
   return true;
 }
+/**
+ * édition d'une barrette
+ * @param el un élément fils de la barrette
+ **/
+function editBarrette(el){
+    alert('Édition de '+$(el).parents('.unebarrette').first().text());
+}
+/**
+ * suppression d'une barrette
+ * @param el un élément fils de la barrette
+ **/
+function delBarrette(el){
+    var nom=$(el).parents('.unebarrette').first().text();
+    var ajaxQuery=$.get(
+	"delBarrette", {nom: nom},
+	function(){
+	    $("#message").html("Effacement de la barrette "+nom);
+	    $( "#message" ).dialog(
+		{
+		    autoOpen: true,
+		    modal: true,
+		    buttons: [
+			{
+			    text: "OK",
+			    icons: {
+				primary: "ui-icon-heart"
+			    },
+			    click: function() {
+				$( this ).dialog( "close" );
+				location.reload(); // on rafraîchit la page
+			    }
+			},
+		    ],
+		}
+	    )
+	}
+    ).fail(
+	function(){alert("Échec de la suppression de "+nom);}
+    );
+    //alert('Suppression de '+$(el).parents('.unebarrette').first().text());
+}
 </script>
 {% endblock %}
 
@@ -64,8 +105,10 @@ function collectclasses(){
 <div class="barrette">
   <div class="unebarrette">
     {{b.nom}}
-    <div class="delButton"><img src="/static/votes/img/del.png" onclick="alert('Suppression de '+$(this).parents('.unebarrette').first().text())" alt="Bouton de suppression"/></div>
-    <div class="editButton"><img src="/static/votes/img/edit.png" onclick="alert('Édition de '+$(this).parents('.unebarrette').first().text())" alt="Bouton d'édition"/></div>
+    {% if user.is_superuser %}
+    <div class="delButton"><img src="/static/votes/img/del.png" onclick="delBarrette(this)" alt="Bouton de suppression"/></div>
+    <div class="editButton"><img src="/static/votes/img/edit.png" onclick="editBarrette(this)" alt="Bouton d'édition"/></div>
+    {% endif %}
   </div>
 <p>
   {% for c in b.l %}

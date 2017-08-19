@@ -276,4 +276,5 @@ fieldset legend {
 
 .unebarrette .delButton, .unebarrette .editButton{
     float: right;
+    cursor: pointer;
 }
