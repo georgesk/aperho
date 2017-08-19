@@ -1,43 +1,38 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>Aperho : ajout de professeurs</title>
-    <link rel="stylesheet" href="/static/votes/css/stylevotes.css" type="text/css"/>
-    <link rel="stylesheet" href="/static/votes/js/jquery-ui/themes/smoothness/jquery-ui.css" type="text/css"/>
-    <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
-    </script>
-    <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
-    </script>
-    <script type="text/javascript" src="/static/votes/js/addEleves.js">
-    </script>
-  </head>
-  <body>
-    {% if user.is_superuser %}
-    <ul>
-      <li><a href="/admin/">Administration.</a></li>
-      <li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
-    </ul>
-    <h1>Aperho : ajout de professeurs</h1>
-    <form method="post">
-      <fieldset>
-	<legend>Cocher les professeurs à ajouter dans la barrette d'AP.</legend>
-	<div>
-	  {% if profs %}
-	  {% for p in profs %}
-	  <div class="profAcocher">
-	    <input type="checkbox" id="{{p.uid}}" name="{{p.uid}}"/>
-	    {{p.nom}} {{p.prenom}}
-	  </div>
-	  {% endfor %}
-	  {% endif %}
-	</div>
-	<div id="profAvalider">
-	  {% csrf_token %}
-	  <input type="submit" name="ajout" value="Ajouter les professeurs cochés"/>
-	</div>
-      </fieldset>
-    </form>
-    <div id="dialog">
+{% extends "home.html" %}
+
+{% block webTitle %}<title>Aperho : ajout de professeurs</title>{% endblock %}
+
+{% block localscripts %}
+<script type="text/javascript" src="/static/votes/js/addEleves.js">
+</script>
+{% endblock %}
+
+{% block title %}<h1>Aperho : ajout de professeurs</h1>{% endblock %}
+
+{% block contents %}
+{% if user.is_superuser %}
+<form method="post">
+  <fieldset>
+    <legend>Cocher les professeurs à ajouter dans la barrette d'AP.</legend>
+    <div>
+      {% if profs %}
+      {% for p in profs %}
+      <div class="profAcocher">
+	<input type="checkbox" id="{{p.uid}}" name="{{p.uid}}"/>
+	{{p.nom}} {{p.prenom}}
+      </div>
+      {% endfor %}
+      {% endif %}
     </div>
-    {% endif %}
-  </body>
-</html>
+    <div id="profAvalider">
+      {% csrf_token %}
+      <input type="submit" name="ajout" value="Ajouter les professeurs cochés"/>
+    </div>
+  </fieldset>
+</form>
+<div id="dialog">
+</div>
+{% else %}
+<h2>Votre statut ne vous permet pas d'utiliser cette page</h2>
+{% endif %}
+{% endblock %}
