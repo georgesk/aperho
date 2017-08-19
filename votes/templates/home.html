@@ -49,8 +49,6 @@ $( function() { // lancement après le chargement
 {% block contents %}
 {% if user.is_authenticated %}
 
-{% block main %}
-
 {% if orientationOuverte %}
 <h2>
   Choix d'orientation (au moins une !)
@@ -142,7 +140,7 @@ ou
   {% endfor %}
 </table>
 {% endfor %}
-{% endblock %}
+
 <div id="dialog"><!-- sert pour une boîte de dialogue de jQuery --></div>
 <div id="placeholder-for-fixed-buttons" style="height: 70px;"></div>
 {% endif %}

@@ -1,23 +1,25 @@
 {% extends 'home.html' %}
-{% block title %}<title>Aperho : liste de cours</title>{% endblock %}
-{% block onload %}
+
+{% block webTitle %}<title>Aperho : liste de cours</title>{% endblock %}
+
+{% block localscripts %}
 <script type="text/javascript">
-  $( function() { // lancement après le chargement
-  $( "#userinfo" ).accordion({
-  collapsible: true,
-  active: false,
-  });
-  $( ".accordion" ).accordion({
-  header: "h2",
-  autoHeight: false,
-  collapsible: true,
-  active: false,
-  });
-  } );
+$( function() { // lancement après le chargement
+	$( "#userinfo" ).accordion({
+	    collapsible: true,
+	    active: false,
+	});
+    $( ".accordion" ).accordion({
+	header: "h2",
+	autoHeight: false,
+	collapsible: true,
+	active: false,
+    });
+} );
 </script>
 {% endblock %}
 
-{% block main %}
+{% block contents %}
 {% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
 <h3>Données dans un autre format</h3>
 <ul>
@@ -81,5 +83,7 @@
   </div>
   {% endfor %}
 </div>      
+{% else %}<!-- prof != "profAP" -->
+<h2>Votre statut ne vous permet pas d'utiliser cette page</h2>
 {% endifequal %}
 {% endblock %}

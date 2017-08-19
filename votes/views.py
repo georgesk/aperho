@@ -91,7 +91,6 @@ def cop (request):
         for indexSeance in range(derniereSeance, derniereSeance+nbProfs):
             seances[indexSeance].formation=choix
         derniereSeance+=nbProfs
-    print ("GRRRR", effectifSeance)
     ## À ce stade, derniereSeance pointe sur la dernière séance des COPS
     ## Pour chaque séance, on remplit avec la liste des élèves qui sont
     ## avec le prof de séance, en priorité, puis on butine les profs des
@@ -701,11 +700,8 @@ def editBarrette(request):
     nomOrig=request.POST.get("nomOrig","")
     classes=request.POST.get("selectedclasses","")
     assert (nom and classes)
-    print("GRRRR", nomOrig, nom, classes)
     b=Barrette.objects.filter(nom=nomOrig)[0]
-    print ("GRRRR", b)
     b.nom=nom
     b.classesJSON=classes
-    print ("GRRRR", b)
     b.save()
     return HttpResponseRedirect('addBarrette')
