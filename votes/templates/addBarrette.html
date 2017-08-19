@@ -4,9 +4,17 @@
 <ul>
   {% if user.is_superuser %}
   <li><a id="cnb" href="#nb">Créer une nouvelle barrette</a></li>
+  <li><a href="/votes/addEleves">Élèves</a></li>
+  <li><a href="/votes/addProfs">Profs</a></li>
+  <li><a href="/votes/addFormation">Formations d'AP</a></li>
+  <li><a href="/admin/votes/cours/add/">Nouvelle séance  d'AP</a></li>
+  <li><a href="/votes/listCours">Séances d'AP</a></li>
+  <li><a href="/votes/cop">Élèves -> COPs</a></li>
+  <li><hr/></li>
+  <li><a href="/admin/">Administration directe de Django</a></li>
   {% else %}
-  <li><a href="/votes/profil">Mon profil</a></li>
   {% endif %}
+  <li><hr/></li>
   <li><a href="/logout">Déconnexion</a></li>
 </ul>
 {% endblock %}
@@ -123,7 +131,7 @@ function delBarrette(el){
 {% endblock %}
 
 {% block title %}
-<h1>Les barrettes d'accompagnement personnalisé</h1>
+<h1>Les barrettes d'accompagnement personnalisé</h1> <!-- ' -->
 {% endblock %}
 
 {% block contents %}
