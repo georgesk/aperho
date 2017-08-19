@@ -627,7 +627,6 @@ def listCours(request):
 def delCours(request):
     c=request.GET.get("cours")
     cours=Cours.objects.filter(pk=c)
-    print ("GRRRR to delete : ", len(cours), "with c=", c)
     cours.delete()
     return JsonResponse({
         "status": "ok",
@@ -678,3 +677,14 @@ def addBarrette(request):
             "avertissement" : avertissement,
         }
     )
+
+def delBarrette(request):
+    """
+    suppression d'une barrette
+    """
+    nom=request.GET.get("nom").strip()
+    b=Barrette.objects.filter(nom=nom)
+    b.delete()
+    return JsonResponse({
+        "status": "ok",
+    })
