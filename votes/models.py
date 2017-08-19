@@ -19,6 +19,7 @@ class CoursOrientation(models.Model):
         (1,"Orientation en premières S, ES et L"),
         (2,"Orientation en premières STMG"),
         ], default=1)
+    barrette = models.ForeignKey('Barrette')
 
     def __str__(self):
         return "{} {} {} avec {}".format(timezone.localtime(self.debut), self.cop, self.formation, self.prof)
@@ -149,6 +150,7 @@ class Ouverture(models.Model):
     debut = models.DateTimeField()
     fin   = models.DateTimeField()
     nom_session = models.CharField(max_length=50, default="Toussaint")
+    barrette = models.ForeignKey('Barrette')
     
     def __str__(self):
         return "{} : {} ↦ {}".format(self.nom_session, self.debut, self.fin)
@@ -199,6 +201,7 @@ class Formation(models.Model):
     contenu = models.TextField()
     duree   = models.IntegerField(default=1)
     public_designe = models.BooleanField(default=False, verbose_name="Public désigné")
+    barrette = models.ForeignKey('Barrette')
 
     def __str__(self):
         cours=Cours.objects.filter(formation=self)
@@ -237,7 +240,7 @@ class Etudiant(models.Model):
     nom       = models.CharField(max_length=50)
     prenom    = models.CharField(max_length=50)
     classe    = models.CharField(max_length=10)
-    barrette   = models.ForeignKey('Barrette', null=True, blank=True)
+    barrette   = models.ForeignKey('Barrette')
 
     def __str__(self):
         return "{nom} {prenom} {classe} {uid}".format(**self.__dict__)
@@ -257,7 +260,7 @@ class Cours(models.Model):
     formation  = models.ForeignKey('Formation')
     capacite   = models.IntegerField(default=18)
     ouverture  = models.ForeignKey('Ouverture')
-    barrette   = models.ForeignKey('Barrette', null=True, blank=True)
+    barrette   = models.ForeignKey('Barrette')
 
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
