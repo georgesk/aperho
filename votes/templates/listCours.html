@@ -1,30 +1,27 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>Aperho : liste des cours</title>
-    <link rel="stylesheet" href="/static/votes/css/stylevotes.css" type="text/css"/>
-    <link rel="stylesheet" href="/static/votes/js/jquery-ui/themes/smoothness/jquery-ui.css" type="text/css"/>
-    <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
-    </script>
-    <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
-    </script>
-    <script type="text/javascript" src="/static/votes/js/listCours.js">
-    </script>
-  </head>
-  <body>
-    {% if user.is_superuser %}
-    <h1>Aperho : ajout d'élèves</h1>
-    <ul>
-      <li><a href="/admin/">Administration.</a></li>
-      <li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
-    </ul>
-    {% for c in lesCours %}
-    <div class="classeConnue">
-      <h3>{{c}}</h3>
-      <button type="button" onclick="effacerCours('{{c.id}}')">Effacer</button>
-    </div>
-    {% endfor %}
-    <div id="dialog">
-    </div>
-    {% endif %}
-  </body>
-</html>
+{% extends "home.html" %}
+
+{% block webTitle %}
+<title>Aperho : liste des cours</title>
+{% endblock %}
+
+{% block localscripts %}
+<script type="text/javascript" src="/static/votes/js/listCours.js">
+</script>
+{% endblock %}
+
+{% block title %}<h1>Aperho : liste des cours</h1>{% endblock %}
+
+{% block contents %}
+{% if user.is_superuser %}
+{% for c in lesCours %}
+<div class="classeConnue">
+  <h3>{{c}}</h3>
+  <button type="button" onclick="effacerCours('{{c.id}}')">Effacer</button>
+</div>
+{% endfor %}
+<div id="dialog">
+</div>
+{% else %}
+<h2>Votre statut ne vous permet pas d'utiliser cette page</h2>
+{% endif %}
+{% endblock %}
