@@ -1,163 +1,149 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    {% block title %}
-    <title>Aperho : inscriptions</title>
-    {% endblock %}
-    {% block jquery %}
-    <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
-    </script>
-    <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
-    </script>
-    <link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-ui/css/smoothness/jquery-ui.css"/>
-    {% endblock %}
-    {% block onload %}
-    <script type="text/javascript">
-      $( function() { // lancement après le chargement
-      $( "#userinfo" ).accordion({
-      collapsible: true,
-      active: false,
-      });
-      } );
-    </script>
-    {% endblock %}
-    {% block customjs %}
-    <script type="text/javascript" src="/static/votes/js/changeCours.js">
-    </script>
-    {% endblock %}
+{% extends "base1.html" %}
 
-    {% block style %}
-    <link rel="stylesheet" type="text/css" href="/static/votes/css/stylevotes.css"/>
-    {% endblock %}
-  </head>
-  <body>
-    {% if user.is_authenticated %}
-    <div id="userinfo">
-      <h3>
-	{% block welcome %}
-	Bienvenue {{user.first_name}} {{user.last_name}}
-	{% ifequal estprof "prof" %}
-	<br/><span class="remark">professeur (pas pour l'AP)</span>
+{% block mesactions %}
+<ul>
+  {% if user.is_superuser %}
+  <li><a href="/votes/addBarrette">Barrettes</a></li>
+  <li><a href="/votes/addEleves">Élèves</a></li>
+  <li><a href="/votes/addProfs">Profs</a></li>
+  <li><a href="/votes/addFormation">Formations d'AP</a></li>
+  <li><a href="/admin/votes/cours/add/">Nouvelle séance  d'AP</a></li>
+  <li><a href="/votes/listCours">Séances d'AP</a></li>
+  <li><a href="/votes/cop">Élèves -> COPs</a></li>
+  <li><hr/></li>
+  <li><a href="/admin/">Administration directe de Django</a></li>
+  {% endif %}
+  {% ifequal estprof "profAP" %}
+  <li><a href="/votes/lesCours?uid={{username}}">Voir <b>mes cours</b> d'AP et les élèves inscrits.</a></li>
+  <li><a href="/votes/lesCours">Voir tous les cours d'AP et les élèves inscrits.</a></li>
+  <li><a href="/votes/enroler">Enrôler des élèves non-inscrits.</a></li>
+  {% endifequal %}
+  
+  <!-- dernière option : la déconnexion -->
+  <li><hr/></li>
+  <li><a href="/logout/">Déconnexion</a></li>
+</ul>
+{% endblock %}
+
+{% block webTitle %}
+<title>Aperho : inscriptions</title>
+{% endblock %}
+
+{% block localscripts %}
+<script type="text/javascript">
+$( function() { // lancement après le chargement
+	$( "#userinfo" ).accordion({
+	    collapsible: true,
+	    active: false,
+	});
+} );
+</script>
+<script type="text/javascript" src="/static/votes/js/changeCours.js">
+</script>
+{% endblock %}
+
+{% block title %}
+<h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
+{% endblock %}
+
+{% block contents %}
+{% if user.is_authenticated %}
+
+{% block main %}
+
+{% if orientationOuverte %}
+<h2>
+  Choix d'orientation (au moins une !)
+  {% if etudiant == None %}
+  (vous n'êtes pas étudiant(e))
+  {% else %}
+  ({{etudiant.prenom}} {{etudiant.nom}}, {{etudiant.classe}})
+  {% endif %}
+</h2>
+<fieldset class="orientation">
+  <legend>
+    <p>Une séance au moins sera utilisée pour l'information sur l'orientation en première. Chaque présence aux séances d'information est obligatoire et remplacera <i>une</i> séance d'AP durant la période. Si on coche plusieurs cases, chaque présence en information sera obligatoire.</p>
+    <p>Vous devez cocher une case au moins.</p>
+  </legend>
+  {% for o in orientations %}
+  <input type="checkbox" name="orientation" value={{o.val}}
+	 {% if o.val in orientations_demandees %}
+	 checked="checked"
+	 {% endif %}
+	 /> {{o.label}}<br/>
+  {% endfor %}
+</fieldset>
+{% endif %}
+<h2>
+  Cours d'AP disponibles
+  {% if etudiant == None %}
+  (vous n'êtes pas étudiant(e))
+  {% else %}
+  ({{etudiant.prenom}} {{etudiant.nom}}, {{etudiant.classe}})
+  {% endif %}
+</h2>
+<div id="inscription_boutons">
+  {% if orientationOuverte %}
+  Choisir au moins un type d'orientation pour la première,</br/>
+cocher les cases à gauche, et ...<br/>
+{% else %}
+Cocher les cases à gauche, et ...<br/>
+{% endif %}
+<button type="button" onclick="valideCours('{{orientationOuverte}}')">
+  Valider les inscriptions
+</button>
+ou
+<button type="button" onclick="annuleCours()">
+  Annuler les inscriptions
+</button>
+</div>
+<input type="hidden" id="etudiantUid" value="{{etudiant.uid}}"/>
+{% for coursHoraire in tousLesCours %}
+<h3>Cours commençant à {{coursHoraire.horaire}} (capacité : {{coursHoraire.capacite}} élèves)</h3>
+<table style="width: 100%">
+  {% for c in coursHoraire.cours %}
+  <!-- M Hogrel suggère qu'on ne voie pas les noms des enseignants ici
+       <tr>
+	 <td colspan="2" class="remplisalle">
+	   Remplissage
+	 </td>
+	 <th colspan="2" class="profsalle">
+	   {{c.enseignant}}
+	 </th>
+       </tr>
+       -->
+  <tr>
+    <td rowspan="2" {% if c.formation.public_designe %}style="background: lightgrey;"{% endif %}>
+      <!-- ci-dessous, un attribut data-class "cours_0_2" signifie un cours de la série 0, durée 2 heures :-->
+      <div class="jolicb">
+	<input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" data-formation="{{c.formation.id}}"/>
+	<label for="cours_{{c.id}}"></label>
+	{% if c.disabled %}
+	<span>Case non modifiable</span>
 	{% else %}
-	{% ifequal estprof "profAP" %}
-	<br/><span class="remark">professeur (dans ce groupe d'AP)</span>
-	{% endifequal %}
-	{% endifequal %}
-	<br/><span class="remark">Cliquer pour les options ↡</span>
-      </h3>
-      <ul class="dropdownOptions">
-	{% block localoptions %}
-	{% if user.is_superuser %}
-	<li><a href="/admin/">Administration.</a></li>
-	<li><a href="/preparation/">Préparation des cours, formations, groupes, etc.</a></li>
+	<span>Cliquer pour modifier</span>
 	{% endif %}
-	{% ifequal estprof "profAP" %}
-	<li><a href="/votes/lesCours?uid={{username}}">Voir <b>mes cours</b> d'AP et les élèves inscrits.</a></li>
-	<li><a href="/votes/lesCours">Voir tous les cours d'AP et les élèves inscrits.</a></li>
-	<li><a href="/votes/enroler">Enrôler des élèves non-inscrits.</a></li>
-	{% endifequal %}
-	{% endblock %}
-	<!-- dernière option : la déconnexion -->
-	<li><a href="/logout/">Déconnexion</a></li>
-	{% endblock %}
-      </ul>
-    </div>
-    <div style="clear:both"/>
-    {% block main %}
-    <h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
-    {% if orientationOuverte %}
-    <h2>
-      Choix d'orientation (au moins une !)
-      {% if etudiant == None %}
-      (vous n'êtes pas étudiant(e))
-      {% else %}
-      ({{etudiant.prenom}} {{etudiant.nom}}, {{etudiant.classe}})
-      {% endif %}
-    </h2>
-    <fieldset class="orientation">
-      <legend>
-	<p>Une séance au moins sera utilisée pour l'information sur l'orientation en première. Chaque présence aux séances d'information est obligatoire et remplacera <i>une</i> séance d'AP durant la période. Si on coche plusieurs cases, chaque présence en information sera obligatoire.</p>
-	<p>Vous devez cocher une case au moins.</p>
-      </legend>
-      {% for o in orientations %}
-      <input type="checkbox" name="orientation" value={{o.val}}
-	     {% if o.val in orientations_demandees %}
-	     checked="checked"
-	     {% endif %}
-	     /> {{o.label}}<br/>
-      {% endfor %}
-    </fieldset>
-    {% endif %}
-    <h2>
-      Cours d'AP disponibles
-      {% if etudiant == None %}
-      (vous n'êtes pas étudiant(e))
-      {% else %}
-      ({{etudiant.prenom}} {{etudiant.nom}}, {{etudiant.classe}})
-      {% endif %}
-    </h2>
-    <div id="inscription_boutons">
-      {% if orientationOuverte %}
-      Choisir au moins un type d'orientation pour la première,</br/>
-      cocher les cases à gauche, et ...<br/>
-      {% else %}
-      Cocher les cases à gauche, et ...<br/>
-      {% endif %}
-      <button type="button" onclick="valideCours('{{orientationOuverte}}')">
-	Valider les inscriptions
-      </button>
-      ou
-      <button type="button" onclick="annuleCours()">
-	Annuler les inscriptions
-      </button>
-    </div>
-    <input type="hidden" id="etudiantUid" value="{{etudiant.uid}}"/>
-    {% for coursHoraire in tousLesCours %}
-    <h3>Cours commençant à {{coursHoraire.horaire}} (capacité : {{coursHoraire.capacite}} élèves)</h3>
-    <table style="width: 100%">
-      {% for c in coursHoraire.cours %}
-      <!-- M Hogrel suggère qu'on ne voie pas les noms des enseignants ici
-      <tr>
-	<td colspan="2" class="remplisalle">
-	  Remplissage
-	</td>
-	<th colspan="2" class="profsalle">
-	  {{c.enseignant}}
-	</th>
-      </tr>
-      -->
-      <tr>
-	<td rowspan="2" {% if c.formation.public_designe %}style="background: lightgrey;"{% endif %}>
-	  <!-- ci-dessous, un attribut data-class "cours_0_2" signifie un cours de la série 0, durée 2 heures :-->
-	  <div class="jolicb">
-	    <input type="checkbox" id="cours_{{c.id}}" name="cours_{{c.id}}" onchange="check({{c.id}})" {% if c in cours_suivis %}checked{% endif %} {% if c.disabled %}disabled{% endif %} data-class="cours_{{forloop.parentloop.counter0}}_{{c.formation.duree}}" data-formation="{{c.formation.id}}"/>
-	    <label for="cours_{{c.id}}"></label>
-	    {% if c.disabled %}
-	    <span>Case non modifiable</span>
-	    {% else %}
-	    <span>Cliquer pour modifier</span>
-	    {% endif %}
-	  </div>
-	</td>
-	<td class="remplisalle" style="width:6ex;">
-	  Remplissage :<br/>
-	  {{c.inscriptions| length}}/{{c.capacite}}
-	</td>
-	<td style="width:4ex;{% if c.formation.duree == 2 %} background: wheat; color:darkred; font-weight:bold;{% endif %}">
-	  {{c.formation.duree}} h
-	</td>
-	<td style="font-weight: bold;">
-	  {{c.formation.titre}}
-	</td>
-      </tr>
-      <tr>
-	<td colspan="4" class="contenuap">{{c.formation.contenu}}</td>
-      </tr>
-      {% endfor %}
-    </table>
-    {% endfor %}
-    {% endblock %}
-    <div id="dialog"><!-- sert pour une boîte de dialogue de jQuery --></div>
-    <div id="placeholder-for-fixed-buttons" style="height: 70px;"></div>
-    {% endif %}
-  </body>
-</html>
+      </div>
+    </td>
+    <td class="remplisalle" style="width:6ex;">
+      Remplissage :<br/>
+      {{c.inscriptions| length}}/{{c.capacite}}
+    </td>
+    <td style="width:4ex;{% if c.formation.duree == 2 %} background: wheat; color:darkred; font-weight:bold;{% endif %}">
+      {{c.formation.duree}} h
+    </td>
+    <td style="font-weight: bold;">
+      {{c.formation.titre}}
+    </td>
+  </tr>
+  <tr>
+    <td colspan="4" class="contenuap">{{c.formation.contenu}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endfor %}
+{% endblock %}
+<div id="dialog"><!-- sert pour une boîte de dialogue de jQuery --></div>
+<div id="placeholder-for-fixed-buttons" style="height: 70px;"></div>
+{% endif %}
+{% endblock %} <!-- end contents -->

@@ -1,6 +1,11 @@
 body{
     padding-bottom: 50 px; /* permet de placer les boutons (fixed) */
 }
+
+.whichUser{
+    font-size: 70%;
+}
+
 h1,h2,h3,h4,h5,h6{
     margin: 0.5em 0;
     padding: 0.5em;
