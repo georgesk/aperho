@@ -631,6 +631,14 @@ def delCours(request):
         "status": "ok",
     })
 
+def classesPrises(barrettes):
+    """
+    Détermine les classes déjà prises quand on considère un ensemble
+    de barrettes
+    @param barrettes un itérable de barrettes
+    @return un ensemble de classes déjà prises
+    """
+    return set(sum([json.loads(b.classesJSON) for b in barrettes],[]))
 
 def addBarrette(request):
     """
@@ -640,26 +648,22 @@ def addBarrette(request):
     barrettes.
     """
     avertissement=""
-    barrettes=Barrette.objects.all()
-    classesPrises=set()
-    for b in barrettes:
-        classesPrises |= set(json.loads(b.classesJSON))
+    barrettes=list(Barrette.objects.all())
     nom=request.POST.get("nom","")
     classes=request.POST.get("selectedclasses","")
     if nom and classes:
         ensemble=set(json.loads(classes))
-        if ensemble & classesPrises:
+        if ensemble & classesPrises(barrettes):
             avertissement="On ne peut pas enregistrer plusieurs fois les mêmes classes"
         else:
             b=Barrette(nom=nom, classesJSON=classes)
             b.save()
             avertissement="Nouvelle barrette : {nom}".format(nom=nom)
-        barrettes=Barrette.objects.all()
+            barrettes.append(b)
+    # ajoute une liste "ordinaire" des classes à chaque barrette
     for b in barrettes:
-        classesPrises |= set(json.loads(b.classesJSON))
-    for i in range(len(barrettes)):
-        barrettes[i].l=sorted(json.loads(barrettes[i].classesJSON))
-    classes=sorted(list(set(lesClasses())-classesPrises))
+        b.l=sorted(json.loads(b.classesJSON))
+    classes=sorted(list(set(lesClasses())-classesPrises(barrettes)))
     return render(
         request, "addBarrette.html",
         {
