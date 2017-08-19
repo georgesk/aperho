@@ -1,6 +1,14 @@
 body{
     padding-bottom: 50 px; /* permet de placer les boutons (fixed) */
 }
+h1,h2,h3,h4,h5,h6{
+    margin: 0.5em 0;
+    padding: 0.5em;
+    text-align: center;
+    border: 1px black solid;
+    border-radius: 0.5em;
+    background: #eee;
+}
 fieldset.joli {
     background:    yellow;
     border:        1px navy solid;
