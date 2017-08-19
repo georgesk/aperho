@@ -128,7 +128,7 @@ class Barrette(models.Model):
     Définit un ensemble d'étudiants qui sont gérés ensemble
     et aux mêmes heures dans l'emploi du temps.
     """
-    nom = models.CharField(max_length=50)
+    nom = models.CharField(max_length=50, unique=True)
     # liste des classes de la barrette, nommées comme
     # dans l'annuaire LDAP, le tout au format JSON.
     classesJSON = models.CharField(max_length=500,

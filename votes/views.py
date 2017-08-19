@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
+from django.forms import ValidationError
+from django.db import IntegrityError
 import json
 
 from aperho.settings import connection
@@ -652,14 +654,18 @@ def addBarrette(request):
     nom=request.POST.get("nom","")
     classes=request.POST.get("selectedclasses","")
     if nom and classes:
-        ensemble=set(json.loads(classes))
-        if ensemble & classesPrises(barrettes):
-            avertissement="On ne peut pas enregistrer plusieurs fois les mêmes classes"
-        else:
+        try:
             b=Barrette(nom=nom, classesJSON=classes)
+            if set(json.loads(classes)) & classesPrises(barrettes):
+                avertissement="On ne peut pas enregistrer plusieurs fois les mêmes classes"
+                raise ValidationError(avertissement)
             b.save()
             avertissement="Nouvelle barrette : {nom}".format(nom=nom)
             barrettes.append(b)
+        except ValidationError as e:
+            avertissement="Erreur : %s" %e.messages[0]
+        except IntegrityError as e:
+            avertissement="Le nom de barrette doit être unique (%s)" %e
     # ajoute une liste "ordinaire" des classes à chaque barrette
     for b in barrettes:
         b.l=sorted(json.loads(b.classesJSON))
