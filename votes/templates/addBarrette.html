@@ -62,7 +62,11 @@ function collectclasses(){
 {% endif %}
 {% for b in lesBarrettes %}
 <div class="barrette">
-<div class="unebarrette">{{b.nom}}</div>
+  <div class="unebarrette">
+    {{b.nom}}
+    <div class="delButton"><img src="/static/votes/img/del.png" onclick="alert('Suppression de '+$(this).parents('.unebarrette').first().text())" alt="Bouton de suppression"/></div>
+    <div class="editButton"><img src="/static/votes/img/edit.png" onclick="alert('Édition de '+$(this).parents('.unebarrette').first().text())" alt="Bouton d'édition"/></div>
+  </div>
 <p>
   {% for c in b.l %}
   <div class="uneClasse">{{c}}</div>
