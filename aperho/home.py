@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.hashers import *
 
 from votes.models import Cours, Inscription, Etudiant, Enseignant, \
-    Orientation, Horaire
+    Orientation, Horaire, estProfesseur
 from votes.models import estProfesseur
 
 def index(request):
@@ -18,8 +18,8 @@ def index(request):
         # il suffit qu'il y ait au moins un object Orientation avec
         # la bonne date d'ouverture, même si les autres champs sont par défaut.
         orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
-        if request.user.is_superuser:
-            pass # on ne tient pas compte des ouvertures d'inscription
+        if request.user.is_superuser or "profAP"==estProfesseur(request.user):
+            cours=[c for c in cours if c.estRecent()]
         else:
             cours=[c for c in cours if c.estOuvert()]
         capacite={} # tableau heure -> nombre d'élèves accueillis

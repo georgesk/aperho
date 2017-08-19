@@ -162,6 +162,15 @@ class Ouverture(models.Model):
         now = timezone.now()
         return self.debut <= now <= self.fin
     
+    def estRecente(self):
+        """
+        décide si un objet "ouverture" le plus récent des objets
+        similaires
+        @return vrai ou faux
+        """
+        recente=Ouverture.objects.all().order_by('-debut')[0]
+        return recente.debut==self.debut
+    
 class Enseignant(models.Model):
     """
     Désigne un professeur ou un autre membre de l'équipe éducative.
@@ -259,6 +268,14 @@ class Cours(models.Model):
         @return vrai ou faux
         """
         return self.ouverture.estActive()
+
+    def estRecent(self):
+        """
+        Dit si la date d'inscription pour ce cours est la plus récente
+        des dates d'inscriptions
+        """
+        return self.ouverture.estRecente()
+        
 
 class Inscription(models.Model):
     """
