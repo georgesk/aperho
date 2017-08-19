@@ -34,9 +34,14 @@ table.joli {
     border-collapse: collapse;
 }
 
-table.joli, th, td {
+tr.ligneHeure1 td {
     border: 1px navy solid;
     background: lightyellow;
+}
+
+tr.ligneHeure2 td {
+    border: 1px navy solid;
+    background: bisque;
 }
 
 div.classeConnue {

@@ -72,21 +72,11 @@ $( function() { // lancement après le chargement
   {% endfor %}
 </fieldset>
 {% endif %}
-<h2>
-  Cours d'AP disponibles
-  {% if etudiant == None %}
-  (vous n'êtes pas étudiant(e))
-  {% else %}
-  ({{etudiant.prenom}} {{etudiant.nom}}, {{etudiant.classe}})
-  {% endif %}
-</h2>
+
+{% if orientationOuverte %}
 <div id="inscription_boutons">
-  {% if orientationOuverte %}
   Choisir au moins un type d'orientation pour la première,</br/>
 cocher les cases à gauche, et ...<br/>
-{% else %}
-Cocher les cases à gauche, et ...<br/>
-{% endif %}
 <button type="button" onclick="valideCours('{{orientationOuverte}}')">
   Valider les inscriptions
 </button>
@@ -95,6 +85,8 @@ ou
   Annuler les inscriptions
 </button>
 </div>
+{% endif %}
+
 <input type="hidden" id="etudiantUid" value="{{etudiant.uid}}"/>
 {% for coursHoraire in tousLesCours %}
 <h3>Cours commençant à {{coursHoraire.horaire}} (capacité : {{coursHoraire.capacite}} élèves)</h3>
@@ -110,7 +102,7 @@ ou
 	 </th>
        </tr>
        -->
-  <tr>
+  <tr class="ligneHeure{{forloop.parentloop.counter}}">
     <td rowspan="2" {% if c.formation.public_designe %}style="background: lightgrey;"{% endif %}>
       <!-- ci-dessous, un attribut data-class "cours_0_2" signifie un cours de la série 0, durée 2 heures :-->
       <div class="jolicb">
@@ -134,12 +126,12 @@ ou
       {{c.formation.titre}}
     </td>
   </tr>
-  <tr>
+  <tr class="ligneHeure{{forloop.parentloop.counter}}">
     <td colspan="4" class="contenuap">{{c.formation.contenu}}</td>
   </tr>
   {% endfor %}
 </table>
-{% endfor %}
+{% endfor %} <!-- end for coursHoraire in tousLesCours -->
 
 <div id="dialog"><!-- sert pour une boîte de dialogue de jQuery --></div>
 <div id="placeholder-for-fixed-buttons" style="height: 70px;"></div>

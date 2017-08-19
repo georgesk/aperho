@@ -18,7 +18,10 @@ def index(request):
         # il suffit qu'il y ait au moins un object Orientation avec
         # la bonne date d'ouverture, même si les autres champs sont par défaut.
         orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
-        cours=[c for c in cours if c.estOuvert()]
+        if request.user.is_superuser:
+            pass # on ne tient pas compte des ouvertures d'inscription
+        else:
+            cours=[c for c in cours if c.estOuvert()]
         capacite={} # tableau heure -> nombre d'élèves accueillis
         heures=[str(h.heure)[:5] for h in Horaire.objects.all()]
         for h in heures:
