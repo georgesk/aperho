@@ -18,4 +18,5 @@ urlpatterns = [
     url(r'^delCours$', views.delCours, name='delCours'),
     url(r'^addBarrette$', views.addBarrette, name='addBarrette'),
     url(r'^delBarrette$', views.delBarrette, name='delBarrette'),
+    url(r'^editBarrette$', views.editBarrette, name='editBarrette'),
 ]

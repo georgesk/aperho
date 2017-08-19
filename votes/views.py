@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.utils import timezone
 from django.forms import ValidationError
 from django.db import IntegrityError
@@ -688,3 +688,24 @@ def delBarrette(request):
     return JsonResponse({
         "status": "ok",
     })
+
+def editBarrette(request):
+    """
+    traitement de la modification d'un barrette
+    la requête contient dans le POST les variables :
+    nom pour le nouveau nom de barrette
+    nomOrig pour le nom d'origine
+    selectedclasses pour une liste de classes à mettre dans la barrette
+    """
+    nom=request.POST.get("nom","")
+    nomOrig=request.POST.get("nomOrig","")
+    classes=request.POST.get("selectedclasses","")
+    assert (nom and classes)
+    print("GRRRR", nomOrig, nom, classes)
+    b=Barrette.objects.filter(nom=nomOrig)[0]
+    print ("GRRRR", b)
+    b.nom=nom
+    b.classesJSON=classes
+    print ("GRRRR", b)
+    b.save()
+    return HttpResponseRedirect('addBarrette')
