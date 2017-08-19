@@ -6,11 +6,26 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.hashers import *
 
 from votes.models import Cours, Inscription, Etudiant, Enseignant, \
-    Orientation, Horaire, estProfesseur
-from votes.models import estProfesseur
+    Orientation, Horaire, estProfesseur, barrettesPourUtilisateur
 
 def index(request):
     if request.user.is_authenticated():
+        bpu=barrettesPourUtilisateur(request.user)
+        print("GRRRR1", request.session.get("barrette","barrette inconnue"))
+        if not request.session.get("barrette",""):
+            if len(bpu)==1:
+                request.session["barrette"]=bpu[0].nom
+            elif len(bpu) > 1:
+                print("GRRRRR on choisira une des barrettes pour la session parmi", bpu)
+                """
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     À faire : appeler une page autre que home.html, avec
+     un formulaire pour sélectionner une des barrettes possibles
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                """
+            else:
+                print("L'impossible est arrivé ? un utilisateur sans barrette connue")
+        print("GRRRR2", request.session.get("barrette","barrette inconnue"))
         cours=list(Cours.objects.all().order_by("formation__titre"))
         choix=Orientation._meta.get_field("choix")
         orientations=[{"val": c[0], "label": c[1],} for c in choix.choices]

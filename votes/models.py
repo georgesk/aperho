@@ -243,7 +243,7 @@ class Etudiant(models.Model):
     barrette   = models.ForeignKey('Barrette')
 
     def __str__(self):
-        return "{nom} {prenom} {classe} {uid}".format(**self.__dict__)
+        return "{nom} {prenom} {classe} {uid}, barrette={barrette_id}".format(**self.__dict__)
     
 class Cours(models.Model):
     """
@@ -328,3 +328,21 @@ def estProfesseur(user):
             result="profAP"
     return result
 
+def barrettesPourUtilisateur(user):
+    """
+    Trouve la liste des barrettes qui correspondent à un utilisateur donné
+    """
+    if user.is_superuser:
+        result=list(Barrette.objects.all())
+    elif "profAP"==estProfesseur(user):
+        prof=Enseignant.objects.filter(nom=user.last_name, prenom=user.first_name)[0]
+        result=list(Barrette.objects.filter(enseignant=prof))
+    else:
+        # c'est un élève ?
+        try:
+            eleve=Etudiant.objects.filter(nom=user.last_name, prenom=user.first_name)[0]
+            result=list(Barrette.objects.filter(pk=eleve.barrette_id))
+        except:
+            result=[]
+    return result
+    
