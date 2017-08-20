@@ -309,6 +309,33 @@ def getProfs(uids):
     profs.sort(key=lambda e: "{nom} {prenom}".format(**e))
     return profs
 
+def changeSalle(request):
+    """
+    fonction de rappel pour changer un prof de salle
+    """
+    prof=request.POST.get("prof","")
+    salle=request.POST.get("salle","")
+    barrette=request.POST.get("barrette","")
+    nouvelleSalle=request.POST.get("nouvelleSalle","")
+    b=Barrette.objects.get(nom=barrette)
+    trouve=[e for e in Enseignant.objects.filter(barrettes__in=[b.pk]) if "%s %s" %(e.nom, e.prenom)==prof]
+    if trouve:
+        try:
+            ok="ok"
+            trouve[0].salle=nouvelleSalle
+            trouve[0].save()
+            message="Mis %s en salle %s" %(prof,nouvelleSalle)
+        except Exception as e:
+            ok="ko"
+            message="Erreur: %s" %e
+    else:
+        ok="ko"
+        message="pas trouvé %s dans la barrette %s" %(prof, barrette)
+    return JsonResponse({
+        "message" : message,
+        "ok"      : ok,
+    })
+            
 def addUnProf(request):
     """
     fonction de rappel pour inscrire un prof

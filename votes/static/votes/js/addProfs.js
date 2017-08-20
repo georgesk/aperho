@@ -22,25 +22,48 @@ function addProf(csrf, barrette){
 }
 
 /**
- * Désinscrit un prof d'une barrette
+ * changement de salle pour un prof dans une barrette
  **/
-function delProf(el){
-    var ligne=$(el).parents("tr")[0];
-    var prof=$(ligne).find("td:eq(1)").text().trim();
-    var barrette=$("#barretteCourante").text().trim();
-    var csrf=$("#csrf").text().trim();
-    $.post(
-	"delProfBarrette",
-	{
+function addProf(csrf, barrette){
+    $.post("addUnProf",
+	   {
 	       csrfmiddlewaretoken: csrf,
-	       prof: prof,
+	       prof: $("#prof").val(),
+	       salle: $("#salle").val(),
 	       barrette: barrette
-	},
-	function(data){
+	   },
+	   function(data){
 	       alert(data.message);
 	       if (data.ok=="ok"){
 		   location.assign("addProfs");
 	       }
+	   }
+	  ).fail(
+	      function(){
+		  alert("Échec : problème de communication");
+	      }
+	  );
+}
+
+
+/**
+ * Désinscrit un prof d'une barrette
+ **/
+function changeSalle(prof, barrette, salle, nouvelleSalle, csrf){
+    $.post(
+	"changeSalle",
+	{
+	    csrfmiddlewaretoken: csrf,
+	    prof: prof,
+	    barrette: barrette,
+	    salle: salle,
+	    nouvelleSalle: nouvelleSalle,
+	},
+	function(data){
+	    alert(data.message);
+	    if (data.ok=="ok"){
+		location.assign("addProfs");
+	    }
 	},
     ).fail(
 	      function(){
@@ -60,5 +83,38 @@ function editProf(el){
     var barrette=$("#barretteCourante").text().trim();
     var csrf=$("#csrf").text().trim();
     console.log("Édition de ", prof, salle, barrette, csrf);
+    /*************************************
+     * Il faut récupérer la nouvelle salle
+     *************************************/
+    $("#dialog").empty()
+    $("#dialog").append(
+	$("<span>").css({"margin-right": "1ex"}).text("Nouvelle salle :")
+    ).append(
+	$("<input>",{
+	    type: "text",
+	    placeholder: "à renseigner",
+	    id:"newSalle"
+	})
+    );
+    $('#dialog').dialog({
+        autoOpen: true,
+        width: 550,
+	modal:true,
+        //height: 150,
+        closeOnEscape: true,
+        draggable: true,
+        title: 'Choix de la salle pour '+prof,
+        buttons: {
+            'OK': function () {
+		var nouvelleSalle = $("#newSalle").val();
+		changeSalle(prof, barrette, salle, nouvelleSalle, csrf);
+                $('#dialog').dialog('close');
+            },
+            'Échap': function () {
+                $('#dialog').dialog('close');
+            }
+
+        }
+    });
 }
 

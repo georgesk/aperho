@@ -28,6 +28,7 @@ function changebarrette(possibilites, active){
     $('#dialog').dialog({
         autoOpen: true,
         width: 550,
+	modal:true,
         //height: 150,
         closeOnEscape: true,
         draggable: true,
