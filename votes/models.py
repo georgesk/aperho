@@ -182,12 +182,15 @@ class Enseignant(models.Model):
     précise du lieu où il donnera ses cours (ça peut être une salle
     ou alors un groupe de salles, voire tout un étage de bâtiment).
     """
-    uid    = models.IntegerField(unique=True)
+    uid    = models.IntegerField()
     nom   = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     salle = models.CharField(max_length=50)
     barrettes= models.ManyToManyField(Barrette)
 
+    class Meta:
+        unique_together = ('uid', 'salle',)
+        
     def __str__(self):
         return "{} ({})".format(self.nom, self.salle)
     

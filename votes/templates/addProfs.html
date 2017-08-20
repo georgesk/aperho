@@ -29,18 +29,28 @@ $( "#accordeon" ).accordion({
 
 {% block contents %}
 {% if user.is_superuser %}
+<div style="display:none" id="barretteCourante">{{barretteCourante}}</div>
+<div style="display:none" id="csrf">{{csrf_token}}</div>
 <h2>Ajouter les profs en bas du tableau</h2>
 <table border="1" class="joli">
-  <tr style="background: lightcyan"><th>Nom Prénom</th><th>Salle</th><th>Barrettes</th></tr>
+  <tr style="background: lightcyan"><th colspan="2">Nom Prénom</th><th>Salle</th><th>Barrettes</th></tr>
   {% for p in profsInscrits %}
   <tr>
+    <td>
+      <div class="delButton">
+	<img src="/static/votes/img/del.png" onclick="delProf(this)" alt="Bouton de suppression" title="Supprimer"/>
+      </div>
+      <div class="editButton">
+	<img src="/static/votes/img/edit.png" onclick="editProf(this)" alt="Bouton d'édition" title="Éditer"/>
+      </div>
+    </td>
     <td>{{p.nom}} {{p.prenom}}</td>
     <td>{{p.salle}}</td>
     <td>{{p.bb}}</td>
   </tr>
   {% endfor %}
   <tr style="background: lightcyan">
-    <td><input type="text" id="prof" name="prof" placeholder="Commencer à taper 3 lettres ..." size="40" /></td>
+    <td colspan="2"><input type="text" id="prof" name="prof" placeholder="Commencer à taper 3 lettres ..." size="40" /></td>
     <td><input type="text" id="salle" name="salle" placeholder="Salle de cours"/></td>
     <td><button onclick='addProf("{{csrf_token}}", "{{barretteCourante}}")'>Nouveau prof</button></td>
   </tr>

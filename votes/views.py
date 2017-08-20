@@ -320,7 +320,6 @@ def addUnProf(request):
     libres=getProfsLibres(barrette)
     trouve=[p for p in libres if "{nom} {prenom}".format(**p) == prof]
     if trouve:
-        print("GRRRR", trouve[0])
         try:
             enseignant, created = Enseignant.objects.get_or_create(uid=trouve[0]["uid"], nom=trouve[0]["nom"], prenom=trouve[0]["prenom"], salle=salle)
             bb=[b.nom for b in list(Barrette.objects.filter(enseignant__in=[enseignant.pk]))]
@@ -341,6 +340,30 @@ def addUnProf(request):
         "ok"      : ok,
     })
 
+def delProfBarrette(request):
+    """
+    Détache un prof d'une barrette
+    """
+    prof=request.POST.get("prof","")
+    barrette=request.POST.get("barrette","")
+    b=Barrette.objects.get(nom=barrette)
+    trouve=[e for e in Enseignant.objects.filter(barrettes__in=[b.pk]) if "%s %s" %(e.nom, e.prenom)==prof]
+    if trouve:
+        try:
+            trouve[0].barrettes.remove(b)
+            ok="ok"
+            message="%s supprimé(e) de la barrette" %prof
+        except Exception as e:
+            ok="ko"
+            message="Erreur : %s" %e
+    else:
+        ok="ko"
+        message="pas trouvé %s dans la barrette" %prof
+    return JsonResponse({
+        "message" : message,
+        "ok"      : ok,
+    })
+    
 def addProfs(request):
     """
     Une page pour ajouter des profs à une barrette d'AP

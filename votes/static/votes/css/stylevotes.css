@@ -299,3 +299,9 @@ fieldset legend {
     float: right;
     cursor: pointer;
 }
+
+td .delButton, td .editButton{
+    float: right;
+    margin-right: 5px;
+    cursor: pointer;
+}
