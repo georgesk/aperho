@@ -18,6 +18,7 @@
   <li><a href="/votes/lesCours">Tous les cours d'AP</a></li>
   <li><a href="/votes/enroler">Enrôler des élèves</a></li>
   {% endifequal %}
+  {{actionChangeBarrette|safe}} <!-- action de changement de barrette, éventuellement -->
   
   <!-- dernière option : la déconnexion -->
   <li><hr/></li>
@@ -31,6 +32,7 @@
 
 {% block localscripts %}
 <script type="text/javascript">
+/* début */{{initScript|safe}}/* fin de script venant de django */
 $( function() { // lancement après le chargement
 	$( "#userinfo" ).accordion({
 	    collapsible: true,
@@ -40,10 +42,12 @@ $( function() { // lancement après le chargement
 </script>
 <script type="text/javascript" src="/static/votes/js/changeCours.js">
 </script>
+<script type="text/javascript" src="/static/votes/js/changeBarrette.js">
+</script>
 {% endblock %}
 
 {% block title %}
-<h1>..:: AP Lycée Jean Bart ::.. ..:: Inscription ::..</h1>
+<h1>..:: Inscription à l'AP ({{barrette}}) ::..</h1>
 {% endblock %}
 
 {% block contents %}

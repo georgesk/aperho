@@ -5,27 +5,30 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.hashers import *
 
+import json
+
 from votes.models import Cours, Inscription, Etudiant, Enseignant, \
     Orientation, Horaire, estProfesseur, barrettesPourUtilisateur
 
 def index(request):
+    initScript="" # script à insérer dans home.html
     if request.user.is_authenticated():
         bpu=barrettesPourUtilisateur(request.user)
-        print("GRRRR1", request.session.get("barrette","barrette inconnue"))
-        if not request.session.get("barrette",""):
-            if len(bpu)==1:
-                request.session["barrette"]=bpu[0].nom
-            elif len(bpu) > 1:
-                print("GRRRRR on choisira une des barrettes pour la session parmi", bpu)
-                """
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     À faire : appeler une page autre que home.html, avec
-     un formulaire pour sélectionner une des barrettes possibles
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                """
-            else:
+        nomsBarrettes=[str(b.nom) for b in bpu]
+        barretteCourante=request.session.get("barrette","")
+        actionChangeBarrette="" # code HTML pour une ligne de menu
+        if len(bpu)>1:
+            # on donne un menu pour changer de barrette
+            actionChangeBarrette=""" <li><a href='javascript:changebarrette(%s,%d)'>Changer de barrette</a></li>"""%(json.dumps(nomsBarrettes),nomsBarrettes.index(barretteCourante) if barretteCourante in nomsBarrettes else "undef")
+        if not barretteCourante:
+            if not bpu:
                 print("L'impossible est arrivé ? un utilisateur sans barrette connue")
-        print("GRRRR2", request.session.get("barrette","barrette inconnue"))
+            else:
+                # par défaut, la première barrette est activée
+                request.session["barrette"]=bpu[0].nom
+                # mais on propose de changer de barrette s'il y en plusieurs
+                if len(bpu) > 1:
+                    initScript=""" $(function(){changebarrette(%s,%d)});""" %(json.dumps(nomsBarrettes),0)
         cours=list(Cours.objects.all().order_by("formation__titre"))
         choix=Orientation._meta.get_field("choix")
         orientations=[{"val": c[0], "label": c[1],} for c in choix.choices]
@@ -77,6 +80,9 @@ def index(request):
             request,
             "home.html",
             {
+                "initScript": initScript,
+                "barrette": request.session["barrette"],
+                "actionChangeBarrette": actionChangeBarrette,
                 "tousLesCours": [
                     {
                         "cours": [c for c in cours
