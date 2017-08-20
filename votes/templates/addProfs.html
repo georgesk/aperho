@@ -30,8 +30,8 @@ $( "#accordeon" ).accordion({
 {% block contents %}
 {% if user.is_superuser %}
 <h2>Ajouter les profs en bas du tableau</h2>
-<table>
-  <tr><th>Nom Prénom</th><th>Salle</th><th>Barrettes</th></tr>
+<table border="1" class="joli">
+  <tr style="background: lightcyan"><th>Nom Prénom</th><th>Salle</th><th>Barrettes</th></tr>
   {% for p in profsInscrits %}
   <tr>
     <td>{{p.nom}} {{p.prenom}}</td>
@@ -39,7 +39,7 @@ $( "#accordeon" ).accordion({
     <td>{{p.bb}}</td>
   </tr>
   {% endfor %}
-  <tr>
+  <tr style="background: lightcyan">
     <td><input type="text" id="prof" name="prof" placeholder="Commencer à taper 3 lettres ..." size="40" /></td>
     <td><input type="text" id="salle" name="salle" placeholder="Salle de cours"/></td>
     <td><button onclick='addProf("{{csrf_token}}", "{{barretteCourante}}")'>Nouveau prof</button></td>

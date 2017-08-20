@@ -34,6 +34,17 @@ table.joli {
     border-collapse: collapse;
 }
 
+table.joli td{
+    padding: 0.3em;
+}
+
+table.joli tr:nth-child(even){
+    background: #ffffee;
+}
+table.joli tr:nth-child(odd){
+    background: #ffeeee;
+}
+
 tr.ligneHeure1 td {
     border: 1px navy solid;
     background: lightyellow;
