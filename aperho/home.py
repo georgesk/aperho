@@ -15,11 +15,14 @@ def index(request):
     if request.user.is_authenticated():
         bpu=barrettesPourUtilisateur(request.user)
         nomsBarrettes=[str(b.nom) for b in bpu]
+        nouvelleBarrette=request.GET.get("nouvelleBarrette","")
+        if nouvelleBarrette in nomsBarrettes:
+            request.session["barrette"]=nouvelleBarrette
         barretteCourante=request.session.get("barrette","")
         actionChangeBarrette="" # code HTML pour une ligne de menu
         if len(bpu)>1:
             # on donne un menu pour changer de barrette
-            actionChangeBarrette=""" <li><a href='javascript:changebarrette(%s,%d)'>Changer de barrette</a></li>"""%(json.dumps(nomsBarrettes),nomsBarrettes.index(barretteCourante) if barretteCourante in nomsBarrettes else "undef")
+            actionChangeBarrette=""" <li><a href='javascript:changebarrette(%s,%s)'>Changer de barrette</a></li>"""%(json.dumps(nomsBarrettes),nomsBarrettes.index(barretteCourante) if barretteCourante in nomsBarrettes else "undef")
         if not barretteCourante:
             if not bpu:
                 print("L'impossible est arrivé ? un utilisateur sans barrette connue")

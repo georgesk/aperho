@@ -9,7 +9,6 @@
  * @param active le rang de la possibilité active
  **/
 function changebarrette(possibilites, active){
-    console.log(active)
     // vide le dialogue et y place des boutons radio
     $("#dialog").empty();
     for(var i=0; i < possibilites.length; i++){
@@ -35,8 +34,8 @@ function changebarrette(possibilites, active){
         title: 'Choix de la barrette',
         buttons: {
             'OK': function () {
-                //Handle flagdata JSON and send ot serverside
-
+		var nouvelleBarrette = $("#dialog input:checked")[0].nextSibling.nodeValue;
+		window.location.assign("/?nouvelleBarrette="+nouvelleBarrette);
             },
             'Échap': function () {
                 $('#dialog').dialog('close');
