@@ -1,20 +1,22 @@
 // scripts spécifiques à addProfs.html
 
-function addProf(csrf){
-    console.log($("#prof").val()+" "+$("#salle").val()+" "+ csrf);
+function addProf(csrf, barrette){
     $.post("addUnProf",
 	   {
 	       csrfmiddlewaretoken: csrf,
 	       prof: $("#prof").val(),
 	       salle: $("#salle").val(),
+	       barrette: barrette
 	   },
-	   function(){
-	       alert($("#prof").val()+" est inscrit(e)")
-	       location.assign("addProfs");
+	   function(data){
+	       alert(data.message);
+	       if (data.ok=="ok"){
+		   location.assign("addProfs");
+	       }
 	   }
 	  ).fail(
 	      function(){
-		  alert("l'inscription a échoué");
+		  alert("Échec : problème de communication");
 	      }
 	  );
 }

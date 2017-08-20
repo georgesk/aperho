@@ -42,7 +42,7 @@ $( "#accordeon" ).accordion({
   <tr>
     <td><input type="text" id="prof" name="prof" placeholder="Commencer à taper 3 lettres ..." size="40" /></td>
     <td><input type="text" id="salle" name="salle" placeholder="Salle de cours"/></td>
-    <td><button onclick='addProf("{{csrf_token}}")'>Nouveau prof</button></td>
+    <td><button onclick='addProf("{{csrf_token}}", "{{barretteCourante}}")'>Nouveau prof</button></td>
   </tr>
 </table>
 

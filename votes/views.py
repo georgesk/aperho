@@ -313,10 +313,32 @@ def addUnProf(request):
     """
     fonction de rappel pour inscrire un prof
     """
-    print ("GRRRRR", request.POST.get("prof",""), request.POST.get("salle",""))
+    ok="ok"
+    prof=request.POST.get("prof","")
+    salle=request.POST.get("salle","")
+    barrette=request.POST.get("barrette","")
+    libres=getProfsLibres(barrette)
+    trouve=[p for p in libres if "{nom} {prenom}".format(**p) == prof]
+    if trouve:
+        print("GRRRR", trouve[0])
+        try:
+            enseignant, created = Enseignant.objects.get_or_create(uid=trouve[0]["uid"], nom=trouve[0]["nom"], prenom=trouve[0]["prenom"], salle=salle)
+            bb=[b.nom for b in list(Barrette.objects.filter(enseignant__in=[enseignant.pk]))]
+            if barrette in bb:
+                pass # pas besoin d'ajouter la barrette pour cet enseignant
+            else:
+                b=Barrette.objects.get(nom=barrette)
+                enseignant.barrettes.add(b)
+            message="%s est enregistré(e)" %prof
+        except Exception as e:
+            message="Erreur %s" %e
+            ok="ko"
+    else:
+        message="Le professeur n'a pas été trouvé"
+        ok="ko"
     return JsonResponse({
-        "message" : "professeur enregistré",
-        "ok"      : "ok",
+        "message" : message,
+        "ok"      : ok,
     })
 
 def addProfs(request):
