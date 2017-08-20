@@ -224,10 +224,11 @@ def addEleves(request):
         }
     )
 
-def getAllProfs():
+def getProfsLibres(barrette):
     """
     fait la liste de tous les profs de l'annuaire et absents de la
     barrette
+    @param barrette un nom de barrette
     """
     base_dn = 'ou=Groups,dc=lycee,dc=jb'
     filtre  = '(cn=profs)'
@@ -256,7 +257,8 @@ def getAllProfs():
         attributes=["uidNumber", "sn", "givenName" ]
         )
     ## liste des uids de profs déjà dans la barrette
-    uids=[p.uid for p in Enseignant.objects.all()]
+    b=Barrette.objects.filter(nom=barrette)[0]
+    uids=[p.uid for p in Enseignant.objects.filter(barrettes__in=[b.pk])]
     for entry in connection.response:
         if int(entry['attributes']['uidNumber'][0]) not in uids:
             ## on n'ajoute le prof que s'il n'est pas encore dans la barrette
@@ -307,46 +309,32 @@ def getProfs(uids):
     profs.sort(key=lambda e: "{nom} {prenom}".format(**e))
     return profs
 
+def addUnProf(request):
+    """
+    fonction de rappel pour inscrire un prof
+    """
+    print ("GRRRRR", request.POST.get("prof",""), request.POST.get("salle",""))
+    return JsonResponse({
+        "message" : "professeur enregistré",
+        "ok"      : "ok",
+    })
+
 def addProfs(request):
     """
     Une page pour ajouter des profs à une barrette d'AP
     """
-    ajout=request.POST.get("ajout", "")
-    ajout1=request.POST.get("ajout1", "")
-    if ajout:
-        # on a sélectionné des profs pas encore dans la barrette
-        uids=[int(key) for key, val in request.POST.items() if val=="on"]
-        profs=getProfs(uids)
-        return render(
-            request, "addProfs1.html",
-            context={
-                "profs":  profs,
-                "uids": uids,
-            }
-        )
-    elif ajout1:
-        # on a renseigné les salles des profs choisis
-        uids=eval(request.POST.get("uids","[]"))
-        profs=getProfs(uids)
-        for p in profs:
-            p["salle"]=request.POST.get(p["uid"],"")
-            e, created = Enseignant.objects.update_or_create(
-                uid=p["uid"],
-                defaults=p
-            )
-        return render(
-            request, "addProfs2.html",
-            context={
-                "profs":  profs,
-                "uids": uids,
-            }
-        )        
-    ############### pas d'ajout en cours. on affiche une liste de profs
-    profs=getAllProfs()
+    barretteCourante=request.session.get("barrette")
+    b=Barrette.objects.filter(nom=barretteCourante)[0]
+    profsInscrits=list(Enseignant.objects.filter(barrettes__in=[b.pk]).order_by('nom'))
+    for p in profsInscrits:
+        p.bb=", ".join([b.nom for b in list(Barrette.objects.filter(enseignant__in=[p.pk]).order_by('nom'))])
+    profs=getProfsLibres(barretteCourante)
     return render(
         request, "addProfs.html",
         context={
             "profs":  profs,
+            "profsInscrits": profsInscrits,
+            "barretteCourante": barretteCourante,
         }
     )
 

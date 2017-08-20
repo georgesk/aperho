@@ -3,33 +3,57 @@
 {% block webTitle %}<title>Aperho : ajout de professeurs</title>{% endblock %}
 
 {% block localscripts %}
-<script type="text/javascript" src="/static/votes/js/addEleves.js">
+<script type="text/javascript" src="/static/votes/js/addProfs.js">
+</script>
+<script>
+$(function(){
+    var noms=[
+	{% for p in profs %}
+	"{{p.nom}} {{p.prenom}}",
+	{% endfor %}
+    ];
+
+    $("#prof").autocomplete({
+	source: noms,
+    });
+});
+$( "#accordeon" ).accordion({
+    collapsible: true,
+    active: -1,
+});
+
 </script>
 {% endblock %}
 
-{% block title %}<h1>Aperho : ajout de professeurs</h1>{% endblock %}
+{% block title %}<h1>Ajout de professeurs ({{barretteCourante}})</h1>{% endblock %}
 
 {% block contents %}
 {% if user.is_superuser %}
-<form method="post">
-  <fieldset>
-    <legend>Cocher les professeurs à ajouter dans la barrette d'AP.</legend>
-    <div>
-      {% if profs %}
-      {% for p in profs %}
-      <div class="profAcocher">
-	<input type="checkbox" id="{{p.uid}}" name="{{p.uid}}"/>
-	{{p.nom}} {{p.prenom}}
-      </div>
-      {% endfor %}
-      {% endif %}
-    </div>
-    <div id="profAvalider">
-      {% csrf_token %}
-      <input type="submit" name="ajout" value="Ajouter les professeurs cochés"/>
-    </div>
-  </fieldset>
-</form>
+<h2>Ajouter les profs en bas du tableau</h2>
+<table>
+  <tr><th>Nom Prénom</th><th>Salle</th><th>Barrettes</th></tr>
+  {% for p in profsInscrits %}
+  <tr>
+    <td>{{p.nom}} {{p.prenom}}</td>
+    <td>{{p.salle}}</td>
+    <td>{{p.bb}}</td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <td><input type="text" id="prof" name="prof" placeholder="Commencer à taper 3 lettres ..." size="40" /></td>
+    <td><input type="text" id="salle" name="salle" placeholder="Salle de cours"/></td>
+    <td><button onclick='addProf("{{csrf_token}}")'>Nouveau prof</button></td>
+  </tr>
+</table>
+
+<div id="accordeon">
+  <h2>Liste alphabétique des profs (pas dans "{{barretteCourante}}")</h2>
+  <div>
+    {% for p in profs %}
+    {{p.nom}} {{p.prenom}},
+    {% endfor %}
+  </div>
+</div>
 <div id="dialog">
 </div>
 {% else %}
