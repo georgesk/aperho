@@ -11,8 +11,11 @@ from votes.models import Cours, Inscription, Etudiant, Enseignant, \
     Orientation, Horaire, estProfesseur, barrettesPourUtilisateur
 
 def index(request):
-    initScript="" # script à insérer dans home.html
     if request.user.is_authenticated():
+        #########################################################
+        #   GESTION DE LA BARRETTE COURANTE POUR LA SESSION     #
+        #########################################################
+        initScript="" # script à insérer dans home.html
         bpu=barrettesPourUtilisateur(request.user)
         nomsBarrettes=[str(b.nom) for b in bpu]
         nouvelleBarrette=request.GET.get("nouvelleBarrette","")
@@ -32,7 +35,10 @@ def index(request):
                 # mais on propose de changer de barrette s'il y en plusieurs
                 if len(bpu) > 1:
                     initScript=""" $(function(){changebarrette(%s,%d)});""" %(json.dumps(nomsBarrettes),0)
-        cours=list(Cours.objects.all().order_by("formation__titre"))
+        #########################################################
+        # GESTION DES COURS À AFFICHER, DANS LA BARRETTE        #
+        #########################################################
+        cours=list(Cours.objects.filter(barrette__nom=barretteCourante).order_by("formation__titre"))
         choix=Orientation._meta.get_field("choix")
         orientations=[{"val": c[0], "label": c[1],} for c in choix.choices]
         # orientationOuverte est un booléen ; pour le forcer à vrai
