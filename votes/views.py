@@ -41,9 +41,20 @@ def lesClasses():
     )
     classes=[entry['attributes']['cn'][0] for entry in connection.response]
     notclasses=[ 'cdtower', 'cuisine',  'college' ]
-    classes=[nomClasse(c) for c in classes \
-             if c not in notclasses and 'smbadm' not in c and 'test' not in c]
+    classes=[nomClasse(c) for c in classes if classeValide(c)]
     return classes
+
+def classeValide(c):
+    """
+    décide si un nom de classe peut effectivement servir à des élèves
+    @param c nom de classe
+    @return un booléen
+    """
+    notclasses=[ 'cdtower', 'cuisine',  'college' ]
+    return c not in notclasses and \
+        "c"+c not in notclasses and \
+        'smbadm' not in c and \
+        'test' not in c
 
 def cop (request):
     """
@@ -156,10 +167,13 @@ def addEleves(request):
     """
     eleves=[]
     wantedClasses = request.POST.getlist("classes")
+    barrette = request.POST.get("barrette")
     ######################################
     # affichage des élèves ajoutés
     ######################################
     if wantedClasses:
+        # un appel à l'annuaire LDAP à ne pas mettre entre d'autres appel
+        lc=lesClasses() # liste des noms de classes autorisés
         for gid in wantedClasses:
             ### récupération du nom de la classe
             base_dn = 'ou=Groups,dc=lycee,dc=jb'
@@ -190,37 +204,50 @@ def addEleves(request):
                     }
                 )
         eleves.sort(key=lambda e: "{classe} {nom} {prenom}".format(**e))
+        b=Barrette.objects.get(nom=barrette)
         for e in eleves:
-            etudiant=Etudiant.objects.filter(uid=e["uid"])
-            if not etudiant:
-                ## création d'un nouvel enregistrement
-                etudiant=Etudiant(uidNumber=e["uidNumber"],uid=e["uid"],
-                                  nom=e["nom"], prenom=e["prenom"],
-                                  classe=e["classe"])
-                etudiant.save()
+            Etudiant.objects.get_or_create(
+                uidNumber=e["uidNumber"],uid=e["uid"],
+                nom=e["nom"], prenom=e["prenom"],
+                classe=e["classe"], barrette=b)
     base_dn = 'ou=Groups,dc=lycee,dc=jb'
     filtre = '(&(cn=c*)(!(cn=*smbadm))(objectclass=kwartzGroup))'
     connection.search(
         search_base = base_dn,
         search_filter = filtre,
-        attributes = ['cn', 'gidnumber'],
+        attributes = ['cn', 'gidNumber'],
     )
-    classes=[]
-    for entry in connection.response:
-        classes.append({
-            'gid':entry['attributes']['gidNumber'][0],
-            'classe':nomClasse(entry['attributes']['cn'][0]),
-        })
     ### Liste des classes déjà connues dans la base de données
     etudiants=list(Etudiant.objects.all())
-    classesDansDb=list(set([nomClasse(e.classe) for e in Etudiant.objects.all()]))
-    classesDansDb.sort()
+    classesDansDb=OrderedDict()
+    for e in Etudiant.objects.all():
+        nom=nomClasse(e.classe)
+        if nom in classesDansDb:
+            classesDansDb[nom].append("%s %s" %(e.nom,e.prenom))
+        else:
+            classesDansDb[nom]=["%s %s" %(e.nom,e.prenom)]
+    sortedClasses=sorted(list(classesDansDb.keys()))
+    classesDansDb=OrderedDict((key, ", ".join(sorted(classesDansDb[key]))) for key in sortedClasses)
+
+    classes=[]
+    for entry in connection.response:
+        nom=nomClasse(entry['attributes']['cn'][0])
+        if nom in classesDansDb.keys() or not classeValide(nom):
+            # ne pas mettre les classes déjà présentes dans la barrette
+            # ni les noms contenant "test", "cuisine", etc.
+            continue
+        classes.append({
+            'gid':entry['attributes']['gidNumber'][0],
+            'classe': nom,
+        })
+    classes=sorted(classes, key=lambda d: d["classe"])
     return render(
         request, "addEleves.html",
         context={
             "classes": classes,
             "eleves":  eleves,
             "classesDansDb" : classesDansDb,
+            "barretteCourante": request.session.get("barrette","undef.")
         }
     )
 

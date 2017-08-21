@@ -1,62 +1,60 @@
 {% extends "home.html" %}
 
-{% block webTitle %}<title>Aperho : ajout d'élèves</title>{% endblock %}
+{% block webTitle %}<title>Aperho : gestion des élèves</title>{% endblock %}
 
 {% block localscripts %}
 <script type="text/javascript" src="/static/votes/js/addEleves.js">
 </script>
+<script src="/static/votes/js/multiselectable.js" type="text/javascript"></script>
 <script type="text/javascript">
 $(document).ready(function() {
-    $( "#accordeon" ).accordion({
-        collapsible: true,
-	active: -1,
+    $('.multi').multiselectable({
+	selectableLabel:"Disponibles",
+	selectedLabel:"Sélectionnées"
     });
 });
 </script>
 {% endblock %}
 
-{% block title %}<h1>Aperho : ajout d'élèves</h1>{% endblock %}
+{% block title %}<h1>Gestion des élèves ({{barretteCourante}})</h1>{% endblock %}
 
 {% block contents %}
 {% if user.is_superuser %}
-<div id="accordeon">
-  {% if eleves %}
-  <h2>{{ eleves|length }} élèves ont été ajoutés </h2>
-  <table style="joli">
-    <tr><th>Classe</th><th>Nom</th><th>Prénom</th><th>Uid</th></tr>
-    {% for e in eleves %}
-    <tr><td>{{e.classe}}</td><td>{{e.nom}}</td><td>{{e.prenom}}</td><td>{{e.uid}}</td></tr>
-    {% endfor %}
-  </table>
-  {% endif %}
-  <h2>Nouvelles classes à ajouter </h2>
-  <form method="post" action="#">
-    <fieldset class="joli">
-      <legend>Choisissez une ou <br/>plusieurs classes ci-dessous :</legend>
-      {% csrf_token %}
-      <div style="float:left; width:25%;">
-	<select name="classes" multiple="multiple" style="height: 30ex;">
-	  {% for option in classes %}
-	  <option value="{{option.gid}}">{{option.classe}}</option>
-	  {% endfor %}
-	</select><br/>
-	<input type="submit" value="Ajouter les élèves"/>
+{% if classesDansDb %}
+<h3 style="text-align: center;">Classes dans la barrette (voir plus bas pour en ajouter)</h3>
+<table border="1" class="joli" style="width: 100%">
+  <tr style="background: lightcyan;">
+    <th colspan="2">Classe</th>
+    <th style="width: 70%;">Élèves</th>
+  </tr>
+  {% for c, el in classesDansDb.items %}
+  <tr>
+    <td>
+      <div class="delButton">
+	<img src="/static/votes/img/del.png" onclick="effacerClasse('{{c}}')" alt="Bouton de suppression" title="Supprimer"/>
       </div>
-      <div style="float:right; width:70%;">
-	{% if classesDansDb %}
-	<h3 style="text-align: center;">Classes déjà importées</h3>
-	{% endif %}
-	{% for c in classesDansDb %}
-	<div class="classeConnue">
-	  <h3>{{c}}</h3>
-	  <button type="button" onclick="voirClasse('{{c}}')">Voir</button><br/>
-	  <button type="button" onclick="effacerClasse('{{c}}')">Effacer</button>
-	</div>
-	{% endfor %}
-      </div>
-    </fieldset>
-  </form>
-</div>
+    </td>
+    <td>{{c}}</td>
+    <td><div style="height: 3em; overflow-y: auto">{{el}}</div></td>
+  </tr>
+  {% endfor %}
+</table> 
+{% endif %}
+
+<h2>Nouvelles classes à ajouter </h2>
+<form method="post" action="#">
+  {% csrf_token %}
+  <div style="width: 80%; margin: 0 auto;">
+    <select class="multi" name="classes" multiple="multiple" style="height: 30ex;">
+      {% for option in classes %}
+      <option value="{{option.gid}}">{{option.classe}}</option>
+      {% endfor %}
+    </select><br/>
+    <div style="clear:both"></div>
+    <input style="margin-top: 4em;" type="submit" value="Ajouter les classes et les élèves"/>
+    <input type="hidden" name="barrette" value="{{barretteCourante}}"/>
+  </div>
+</form>
 <div id="dialog">
 </div>
 {% else %}

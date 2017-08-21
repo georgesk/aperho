@@ -36,7 +36,7 @@ function effacerClasse(c){
 		    },
 		    click: function() {
 			$( this ).dialog( "close" );
-			location.reload(); // on rafraîchit la page
+			location.assign("addEleves"); // on recharge la page
 		    }
 		}
 	    ]
