@@ -536,14 +536,22 @@ def addInscription(request):
    
 def lesCours(request):
     """
-    affiche les cours d'un prof
+    affiche les cours des profs pour la barrettes courante
+    et pour la dernière "Ouverture" en date.
     """
     prof=estProfesseur(request.user)
     pourqui=request.GET.get("uid","")
     csv=request.GET.get("csv","")
     ods=request.GET.get("ods","")
     odt=request.GET.get("odt","")
-    cours=Cours.objects.all()
+    # filtrage des cours : barrette courante et dernière session d'ouverture
+    barrette=request.session.get("barrette","")
+    ouverture=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
+    if not len(ouverture):
+        cours=Cours.objects.filter(barrette__nom=barrette)
+    else:
+        # ajouter un critère basé sur ouverture.last() !!!!
+        cours=Cours.objects.filter(barrette__nom=barrette, ouverture=ouverture.last().pk)
     noninscrits=set([])
     if pourqui:
         ### on ne garde que les cours du seul prof qui demande
@@ -592,7 +600,6 @@ def lesCours(request):
         # il suffit qu'il y ait au moins un object Orientation avec
         # la bonne date d'ouverture, même si les autres champs sont par défaut.
         orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
-        barrette=request.session.get("barrette","")
 
         return render(
             request, "lesCours.html",
