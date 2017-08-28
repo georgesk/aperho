@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^addBarrette$', views.addBarrette, name='addBarrette'),
     url(r'^delBarrette$', views.delBarrette, name='delBarrette'),
     url(r'^editBarrette$', views.editBarrette, name='editBarrette'),
+    url(r'^addOuverture$', views.addOuverture, name='addOuverture'),
 ]

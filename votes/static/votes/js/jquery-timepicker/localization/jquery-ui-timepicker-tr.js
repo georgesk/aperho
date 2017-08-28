@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.tr={timeOnlyTitle:"Zaman Seçiniz",timeText:"Zaman",hourText:"Saat",minuteText:"Dakika",secondText:"Saniye",millisecText:"Milisaniye",timezoneText:"Zaman Dilimi",currentText:"Şu an",closeText:"Tamam",timeFormat:"HH:mm",amNames:["ÖÖ","Ö"],pmNames:["ÖS","S"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.tr)})(jQuery);

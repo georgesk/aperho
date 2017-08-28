@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.vi={timeOnlyTitle:"Chọn giờ",timeText:"Thời gian",hourText:"Giờ",minuteText:"Phút",secondText:"Giây",millisecText:"Phần nghìn giây",timezoneText:"Múi giờ",currentText:"Hiện thời",closeText:"Đóng",timeFormat:"H:m",amNames:["SA","AM","A"],pmNames:["CH","PM","P"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.vi)})(jQuery);

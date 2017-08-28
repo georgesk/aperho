@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.he={timeOnlyTitle:"בחירת זמן",timeText:"שעה",hourText:"שעות",minuteText:"דקות",secondText:"שניות",millisecText:"אלפית השנייה",timezoneText:"אזור זמן",currentText:"עכשיו",closeText:"סגור",timeFormat:"HH:mm",amNames:['לפנה"צ',"AM","A"],pmNames:['אחה"צ',"PM","P"],isRTL:true};a.timepicker.setDefaults(a.timepicker.regional.he)})(jQuery);

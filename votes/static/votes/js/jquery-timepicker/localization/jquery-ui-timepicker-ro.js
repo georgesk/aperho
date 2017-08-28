@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.ro={timeOnlyTitle:"Alegeţi o oră",timeText:"Timp",hourText:"Ore",minuteText:"Minute",secondText:"Secunde",millisecText:"Milisecunde",timezoneText:"Fus orar",currentText:"Acum",closeText:"Închide",timeFormat:"HH:mm",amNames:["AM","A"],pmNames:["PM","P"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.ro)})(jQuery);

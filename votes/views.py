@@ -814,3 +814,25 @@ def editBarrette(request):
     b.classesJSON=classes
     b.save()
     return HttpResponseRedirect('addBarrette')
+
+def addOuverture(request):
+    """
+    Cette page sert à la gestion des périodes d'AP. Il faut commencer à
+    vérifier le statut de l'utilisateur, et le renvoyer éventuellement vers
+    une page d'erreur, ou alors lui permettre seulement de voir la liste des
+    périodes d'AP.
+    """
+    avertissement=""
+    if not request.user.is_superuser:
+        avertissement="Il faut avoir un rôle d'administrateur pour utiliser cette page."
+    barrette=request.session.get("barrette")
+    ouvertures=list(Ouverture.objects.filter(barrette__nom=barrette).order_by("debut"))
+    return render(
+        request, "addOuverture.html",
+        {
+            "ouvertures": ouvertures,
+            "barrette" : barrette,
+            "avertissement" : avertissement,
+        }
+    )
+

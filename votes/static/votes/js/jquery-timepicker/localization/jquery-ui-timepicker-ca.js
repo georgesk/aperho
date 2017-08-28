@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.ca={timeOnlyTitle:"Escollir una hora",timeText:"Hora",hourText:"Hores",minuteText:"Minuts",secondText:"Segons",millisecText:"Milisegons",timezoneText:"Fus horari",currentText:"Ara",closeText:"Tancar",timeFormat:"HH:mm",amNames:["AM","A"],pmNames:["PM","P"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.ca)})(jQuery);

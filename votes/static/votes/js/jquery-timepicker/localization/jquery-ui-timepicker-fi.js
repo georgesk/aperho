@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.fi={timeOnlyTitle:"Valitse aika",timeText:"Aika",hourText:"Tunti",minuteText:"Minuutti",secondText:"Sekunti",millisecText:"Millisekunnin",timezoneText:"Aikavyöhyke",currentText:"Nyt",closeText:"Sulje",timeFormat:"HH:mm",amNames:["ap.","AM","A"],pmNames:["ip.","PM","P"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.fi)})(jQuery);

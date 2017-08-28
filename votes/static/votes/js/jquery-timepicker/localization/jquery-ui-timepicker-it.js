@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.it={timeOnlyTitle:"Scegli orario",timeText:"Orario",hourText:"Ora",minuteText:"Minuto",secondText:"Secondo",millisecText:"Millisecondo",timezoneText:"Fuso orario",currentText:"Adesso",closeText:"Chiudi",timeFormat:"HH:mm",amNames:["m.","AM","A"],pmNames:["p.","PM","P"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.it)})(jQuery);

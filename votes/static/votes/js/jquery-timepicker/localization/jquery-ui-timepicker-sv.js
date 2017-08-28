@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.sv={timeOnlyTitle:"Välj en tid",timeText:"Timme",hourText:"Timmar",minuteText:"Minuter",secondText:"Sekunder",millisecText:"Millisekunder",timezoneText:"Tidszon",currentText:"Nu",closeText:"Stäng",timeFormat:"HH:mm",amNames:["AM","A"],pmNames:["PM","P"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.sv)})(jQuery);

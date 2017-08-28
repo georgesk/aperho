@@ -1,0 +1,170 @@
+{% extends "base1.html" %}
+
+{% block mesactions %}
+<ul>
+  {% if user.is_superuser %}
+  <li><a id="cno" href="#nb">Créer une nouvelle période d'AP</a></li>
+  <li><a href="/votes/addEleves">Élèves</a></li>
+  <li><a href="/votes/addProfs">Profs</a></li>
+  <li><a href="/votes/addFormation">Formations d'AP</a></li>
+  <li><a href="/admin/votes/cours/add/">Nouvelle séance  d'AP</a></li>
+  <li><a href="/votes/listCours">Séances d'AP</a></li>
+  <li><a href="/votes/cop">Élèves -> COPs</a></li>
+  <li><hr/></li>
+  <li><a href="/admin/">Administration directe de Django</a></li>
+  {% else %}
+  {% endif %}
+  <li><hr/></li>
+  <li><a href="/logout">Déconnexion</a></li>
+</ul>
+{% endblock %}
+
+{% block localscripts %}
+<script src="/static/votes/js/jquery-timepicker/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script src="/static/votes/js/jquery-timepicker/localization/jquery-ui-timepicker-fr.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-timepicker/jquery-ui-timepicker-addon.css"/>
+<link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-timepicker/jquery-ui-sliderAccess.js"/>
+<script type="text/javascript">
+$(document).ready(function() {
+    if("{{avertissement}}".length > 0){
+	$( "#message" ).attr({title: "Avertissement",})
+	$( "#message" ).text("{{avertissement|safe}}");
+	$( "#message" ).dialog({
+	    modal: true,
+	    buttons: [
+		{
+		    text: "OK",
+		    click: function() {
+			$( this ).dialog( "close" );
+		    }
+		}
+	    ]
+	});
+    }
+    $.datepicker.regional['fr'] = {
+	closeText: 'Fermer',
+	prevText: '< préc',
+	nextText: 'suiv >',
+	currentText: 'Courant',
+	monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin',
+		     'Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
+	monthNamesShort: ['Jan','Fév','Mar','Avr','Mai','Jun',
+		     'Jul','Aoû','Sep','Oct','Nov','Déc'],
+	dayNames: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi',
+		   'Vendredi','Samedi'],
+	dayNamesShort: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
+	dayNamesMin: ['Di','Lu','Ma','Me','Je','Ve','Sa'],
+	weekHeader: 'Sem',
+	dateFormat: 'dd/mm/yy',
+	firstDay: 1,
+	isRTL: false,
+	showMonthAfterYear: false,
+	yearSuffix: ''
+    };
+    $.datepicker.setDefaults($.datepicker.regional.fr);
+    $.timepicker.setDefaults($.timepicker.regional.fr);
+    $( "#debut" ).datetimepicker({altField: "#debut_h"});
+    $( "#fin" ).datetimepicker({altField: "#fin_h"});
+});
+
+/**
+ * suppression d'une barrette
+ * @param el un élément fils de la barrette
+ **/
+function delBarrette(el){
+    var nom=$(el).parents('.unebarrette').first().text();
+    var ajaxQuery=$.get(
+	"delBarrette", {nom: nom},
+	function(){
+	    $("#message").html("Effacement de la barrette "+nom);
+	    $( "#message" ).dialog(
+		{
+		    autoOpen: true,
+		    modal: true,
+		    buttons: [
+			{
+			    text: "OK",
+			    icons: {
+				primary: "ui-icon-heart"
+			    },
+			    click: function() {
+				$( this ).dialog( "close" );
+				location.reload(); // on rafraîchit la page
+			    }
+			},
+		    ],
+		}
+	    )
+	}
+    ).fail(
+	function(){alert("Échec de la suppression de "+nom);}
+    );
+}
+
+$( ".accordeon" ).accordion({
+    collapsible: true,
+    active: -1,
+});
+
+</script>
+{% endblock %}
+
+{% block title %}
+<h1>Les périodes d'ouverture d'AP ({{barrette}})</h1> <!-- ' -->
+{% endblock %}
+
+{% block contents %}
+{% if ouvertures %}
+<h2>Périodes existantes</h2>
+{% endif %}
+<table border="1" class="joli">
+  <tr>
+    <th>Nom</th>
+    <th>Début</th>
+    <th>Fin</th>
+    <td></td>
+  </tr>
+  {% for o in ouvertures %}
+  <tr>
+    <th style="padding: 0 0.5em;">{{o.nom_session}}</th>
+    <td>{{o.debut}}</td>
+    <td>{{o.fin}}</td>
+    <td>
+      {% if user.is_superuser %}
+      <div class="delButton"><img src="/static/votes/img/del.png" onclick="delOuverture(this)" alt="Bouton de suppression"/></div>
+      <div class="editButton"><img src="/static/votes/img/edit.png" onclick="editOuverture(this)" alt="Bouton d'édition"/></div>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% if user.is_superuser %}
+<a name="nb"></a>
+<h2 id="nb">Créer une nouvelle période d'AP</h2>
+<form action="#" method="post"  onSubmit="collectclasses()">
+  {% csrf_token %}
+  <p>
+    <label style="font-size: 120%; font-weight: bold;">
+      Nom de la nouvelle Période d'AP :
+    </label>
+    <input type="text" name="nom" id="nom" placeholder="un nouveau nom ?"/>
+  </p>
+  <p>
+    <label>Début</label>
+    <input type="text" name="debut" id="debut" class="date"/>
+    <input type="text" name="debut_h" id="debut_h" class="heure"/>
+  </p>
+  <p>
+    <label>Fin</label>
+    <input type="text" name="fin" id="fin" class="date"/>
+    <input type="text" name="fin_h" id="fin_h" class="heure"/>
+  </p>
+  <div style="clear:both"></div>
+  <div style="margin-top: 3em;">
+    <input type="submit" id="submit" value="Créer une nouvelle période" style="font-size:120%; font-weight:bold;"/>
+  </div>
+</form>
+{% endif %}
+<div id="message"></div>
+{% endblock %}

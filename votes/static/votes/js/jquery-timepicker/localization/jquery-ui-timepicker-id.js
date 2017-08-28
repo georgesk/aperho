@@ -1,0 +1,1 @@
+(function(a){a.timepicker.regional.id={timeOnlyTitle:"Pilih Waktu",timeText:"Waktu",hourText:"Pukul",minuteText:"Menit",secondText:"Detik",millisecText:"Milidetik",timezoneText:"Zona Waktu",currentText:"Sekarang",closeText:"OK",timeFormat:"HH:mm",amNames:["AM","A"],pmNames:["PM","P"],isRTL:false};a.timepicker.setDefaults(a.timepicker.regional.id)})(jQuery);
