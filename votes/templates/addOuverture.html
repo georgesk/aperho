@@ -24,6 +24,7 @@
 <script src="/static/votes/js/jquery-timepicker/localization/jquery-ui-timepicker-fr.js" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-timepicker/jquery-ui-timepicker-addon.css"/>
 <link rel="stylesheet" type="text/css" href="/static/votes/js/jquery-timepicker/jquery-ui-sliderAccess.js"/>
+<script src="/static/votes/js/addOuverture.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
     if("{{avertissement}}".length > 0){
@@ -41,71 +42,7 @@ $(document).ready(function() {
 	    ]
 	});
     }
-    $.datepicker.regional['fr'] = {
-	closeText: 'Fermer',
-	prevText: '< préc',
-	nextText: 'suiv >',
-	currentText: 'Courant',
-	monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin',
-		     'Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
-	monthNamesShort: ['Jan','Fév','Mar','Avr','Mai','Jun',
-		     'Jul','Aoû','Sep','Oct','Nov','Déc'],
-	dayNames: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi',
-		   'Vendredi','Samedi'],
-	dayNamesShort: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
-	dayNamesMin: ['Di','Lu','Ma','Me','Je','Ve','Sa'],
-	weekHeader: 'Sem',
-	dateFormat: 'dd/mm/yy',
-	firstDay: 1,
-	isRTL: false,
-	showMonthAfterYear: false,
-	yearSuffix: ''
-    };
-    $.datepicker.setDefaults($.datepicker.regional.fr);
-    $.timepicker.setDefaults($.timepicker.regional.fr);
-    $( "#debut" ).datetimepicker({altField: "#debut_h"});
-    $( "#fin" ).datetimepicker({altField: "#fin_h"});
 });
-
-/**
- * suppression d'une barrette
- * @param el un élément fils de la barrette
- **/
-function delBarrette(el){
-    var nom=$(el).parents('.unebarrette').first().text();
-    var ajaxQuery=$.get(
-	"delBarrette", {nom: nom},
-	function(){
-	    $("#message").html("Effacement de la barrette "+nom);
-	    $( "#message" ).dialog(
-		{
-		    autoOpen: true,
-		    modal: true,
-		    buttons: [
-			{
-			    text: "OK",
-			    icons: {
-				primary: "ui-icon-heart"
-			    },
-			    click: function() {
-				$( this ).dialog( "close" );
-				location.reload(); // on rafraîchit la page
-			    }
-			},
-		    ],
-		}
-	    )
-	}
-    ).fail(
-	function(){alert("Échec de la suppression de "+nom);}
-    );
-}
-
-$( ".accordeon" ).accordion({
-    collapsible: true,
-    active: -1,
-});
-
 </script>
 {% endblock %}
 
@@ -125,10 +62,18 @@ $( ".accordeon" ).accordion({
     <td></td>
   </tr>
   {% for o in ouvertures %}
-  <tr>
+  <tr class="uneouverture">
     <th style="padding: 0 0.5em;">{{o.nom_session}}</th>
-    <td>{{o.debut}}</td>
-    <td>{{o.fin}}</td>
+    <td>
+      {{o.debut}}
+      <input type="hidden" class="jour" value="{{o.debut|date:'d/m/Y'}}"/>
+      <input type="hidden" class="heure" value="{{o.debut|date:'H:i'}}"/>
+    </td>
+    <td>
+      {{o.fin}}
+      <input type="hidden" class="jour" value="{{o.fin|date:'d/m/Y'}}"/>
+      <input type="hidden" class="heure" value="{{o.fin|date:'H:i'}}"/>
+    </td>
     <td>
       {% if user.is_superuser %}
       <div class="delButton"><img src="/static/votes/img/del.png" onclick="delOuverture(this)" alt="Bouton de suppression"/></div>
@@ -141,28 +86,49 @@ $( ".accordeon" ).accordion({
 
 {% if user.is_superuser %}
 <a name="nb"></a>
-<h2 id="nb">Créer une nouvelle période d'AP</h2>
+<h2 id="nb" style="margin-top:2em;">Créer une nouvelle période d'AP</h2>
 <form action="#" method="post"  onSubmit="collectclasses()">
   {% csrf_token %}
-  <p>
-    <label style="font-size: 120%; font-weight: bold;">
-      Nom de la nouvelle Période d'AP :
-    </label>
-    <input type="text" name="nom" id="nom" placeholder="un nouveau nom ?"/>
-  </p>
-  <p>
-    <label>Début</label>
-    <input type="text" name="debut" id="debut" class="date"/>
-    <input type="text" name="debut_h" id="debut_h" class="heure"/>
-  </p>
-  <p>
-    <label>Fin</label>
-    <input type="text" name="fin" id="fin" class="date"/>
-    <input type="text" name="fin_h" id="fin_h" class="heure"/>
-  </p>
-  <div style="clear:both"></div>
-  <div style="margin-top: 3em;">
+  <table class="joli">
+    <tr>
+      <td style="padding: 0 0.5em; text-align: right;">
+	<label style="font-weight: bold;">
+	  Nom de la nouvelle Période d'AP :
+	</label>
+      </td>
+      <td colspan="2">
+	<input type="text" name="nom" id="nom" placeholder="un nouveau nom ?" style="width:100%;"/>
+	<input type="hidden" name="cacheNom" id="cacheNom"/>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0 0.5em; text-align: right;">
+	<label style="font-weight: bold;">
+	  Début :
+	</label>
+      </td>
+      <td>
+	<input type="text" name="debut" id="debut" class="date"/>
+      </td>
+      <td>
+	<input type="text" name="debut_h" id="debut_h" class="heure"/>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0 0.5em; text-align: right;">
+	<label style="font-weight: bold;">Fin :</label>
+      </td>
+      <td>
+	<input type="text" name="fin" id="fin" class="date"/>
+      </td>
+      <td>
+	<input type="text" name="fin_h" id="fin_h" class="heure"/>
+      </td>
+    </tr>
+  </table>
+  <div style="margin-top: 1em;">
     <input type="submit" id="submit" value="Créer une nouvelle période" style="font-size:120%; font-weight:bold;"/>
+    <input type="hidden" name="barrette" id="barrette", value="{{barrette}}"/>
   </div>
 </form>
 {% endif %}

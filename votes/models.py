@@ -152,6 +152,8 @@ class Ouverture(models.Model):
     nom_session = models.CharField(max_length=50, default="Toussaint")
     barrette = models.ForeignKey('Barrette')
     
+    class Meta:
+        unique_together = ('nom_session', 'barrette',)
     def __str__(self):
         return "{} : {} ↦ {}".format(self.nom_session, self.debut, self.fin)
 

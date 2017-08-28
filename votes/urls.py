@@ -23,4 +23,6 @@ urlpatterns = [
     url(r'^delBarrette$', views.delBarrette, name='delBarrette'),
     url(r'^editBarrette$', views.editBarrette, name='editBarrette'),
     url(r'^addOuverture$', views.addOuverture, name='addOuverture'),
+    url(r'^delOuverture$', views.delOuverture, name='delOuverture'),
+    url(r'^editOuverture$', views.editOuverture, name='editOuverture'),
 ]

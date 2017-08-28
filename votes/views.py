@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.utils import timezone
+from django.utils.timezone import datetime
 from django.forms import ValidationError
 from django.db import IntegrityError
+from urllib.parse import urlencode
 import json
 
 from aperho.settings import connection
@@ -825,6 +827,36 @@ def addOuverture(request):
     avertissement=""
     if not request.user.is_superuser:
         avertissement="Il faut avoir un rôle d'administrateur pour utiliser cette page."
+    elif request.GET.get("editMsg",""):
+        ## il y a un message d'erreur au sujet de l'édition de période d'AP
+        avertissement=request.GET.get("editMsg","")
+    elif "editMsg" in request.GET:
+        ## édition d'une période réussie
+        avertissement="La période d'AP a été modifiée."
+    else:
+        nom=request.POST.get("nom","")
+        debut=request.POST.get("debut","")
+        debut_h=request.POST.get("debut_h","")
+        fin=request.POST.get("fin","")
+        fin_h=request.POST.get("fin_h","")
+        barrette=request.POST.get("barrette","")
+        if nom and debut and debut_h and fin and fin_h and barrette:
+            date_debut=datetime.strptime(debut+" "+debut_h,"%d/%m/%Y %H:%M")
+            date_debut=timezone.make_aware(date_debut)
+            date_fin=datetime.strptime(fin+" "+fin_h,"%d/%m/%Y %H:%M")
+            date_fin=timezone.make_aware(date_fin)
+            if date_fin < date_debut:
+                avertissement="erreur dans le choix des dates : %s est avant %s" % (date_fin, date_debut)
+            else:
+                try:
+                    b=Barrette.objects.get(nom=barrette)
+                    new=Ouverture(debut=date_debut, fin=date_fin, nom_session=nom, barrette=b)
+                    new.save()
+                    avertissement="Période d'AP bien enregistrée."
+                except Exception as e:
+                    avertissement="Erreur: %s" %e
+                    
+    # cette partie vaut pour tout le monde
     barrette=request.session.get("barrette")
     ouvertures=list(Ouverture.objects.filter(barrette__nom=barrette).order_by("debut"))
     return render(
@@ -836,3 +868,54 @@ def addOuverture(request):
         }
     )
 
+def delOuverture(request):
+    nom=request.POST.get("nom")
+    barrette=request.POST.get("barrette")
+    ok="ok"
+    message=""
+    try:
+        ouverture=Ouverture.objects.filter(nom_session=nom, barrette__nom=barrette)
+        result=ouverture.delete()
+    except Exception as e:
+        ok="ko"
+        message="Erreur : %s" %e
+    return JsonResponse({
+        "message" : message,
+        "ok"      : ok,
+    })
+
+def editOuverture(request):
+    nom=request.POST.get("nom")
+    cacheNom=request.POST.get("cacheNom")
+    barrette=request.POST.get("barrette")
+    debut=request.POST.get("debut","")
+    debut_h=request.POST.get("debut_h","")
+    fin=request.POST.get("fin","")
+    fin_h=request.POST.get("fin_h","")
+    barrette=request.POST.get("barrette","")
+    message=""
+    ok="ok"
+    if nom and debut and debut_h and fin and fin_h and barrette:
+        date_debut=datetime.strptime(debut+" "+debut_h,"%d/%m/%Y %H:%M")
+        date_debut=timezone.make_aware(date_debut)
+        date_fin=datetime.strptime(fin+" "+fin_h,"%d/%m/%Y %H:%M")
+        date_fin=timezone.make_aware(date_fin)
+        if date_fin < date_debut:
+            message="erreur dans le choix des dates : %s est avant %s" % (date_fin, date_debut)
+            ok="ko"
+        else:
+            try:
+                b=Barrette.objects.get(nom=barrette)
+                achanger=Ouverture.objects.get(nom_session=cacheNom, barrette=b)
+                achanger.nom_session=nom
+                achanger.debut=date_debut
+                achanger.fin=date_fin
+                achanger.save()
+            except Exception as e:
+                message="Erreur: %s" %e
+                ok="ko"
+    else:
+        message="appel de la page editOuverture incorrect."
+        ok="ko"
+    return HttpResponseRedirect('addOuverture?%s' %urlencode({"editMsg":message}))
+   
