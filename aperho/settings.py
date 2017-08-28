@@ -133,9 +133,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
     
 # LDAP connection
-server = Server('localhost', port=1389)
-connection = Connection(server)
-connection.bind()
+server=None
+connexion=None
+try:
+    server = Server('localhost', port=1389)
+    connection = Connection(server)
+    connection.bind()
+except Exception as e:
+    print("Service LDAP indisponible sur le port 1389 !!!")
 
 
 ############# for the LDAP AUTH BACKEND ########################

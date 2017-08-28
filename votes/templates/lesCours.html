@@ -21,12 +21,14 @@ $( function() { // lancement après le chargement
 
 {% block contents %}
 {% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
+{% if not pourqui %}
 <h3>Données dans un autre format</h3>
 <ul>
   <li>Pour un tableur, au <a href="/votes/lesCours?csv=yes">format CSV</a>.</li>  
   <li>Pour un tableur, au <a href="/votes/lesCours?ods=yes">format ODS</a>.</li>  
   <li>Pour un traitement de texte, au <a href="/votes/lesCours?odt=yes">format ODT</a>.</li>  
 </ul>
+{% endif %}
 <h1>Les cours d'AP, pour ...</h1>
 {% for e,ci in eci.items %}
 <div class="accordion">
@@ -55,6 +57,7 @@ $( function() { // lancement après le chargement
   </div>
 </div>
 {% endfor %}
+{% if not pourqui %}
 <div class="accordion">
   <h2>ÉLÈVES NON INSCRITS ({{noninscrits|length}} élèves)</h2>
   <div>
@@ -67,6 +70,8 @@ $( function() { // lancement après le chargement
     </table>
   </div>
 </div>
+{% endif %}
+{% if cops %}
 <h1>Conseillères d'orientation</h1>
 <div class="accordion">
   {% for cop, ci in cci.items %}
@@ -74,15 +79,22 @@ $( function() { // lancement après le chargement
   <div>
     {% for cours, inscr in ci.items %}
     <table style="margin-top:1em;">
+      {% if pourqui %}
+      <tr><td>{{cours.prof.uid}}</td><td>{{pourqui}}</td></tr>
+      <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>      
+      {% else %}
       <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>
-      {% for i in inscr %}
       <tr><td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td>{{i.etudiant.prenom}}</td><td>{{i.etudiant.classe}}</td></tr>
+      {% endif %}
+      {% for i in inscr %}
       {% endfor %}
     </table>
     {% endfor %}
   </div>
   {% endfor %}
-</div>      
+</div>
+{% endif %}
+
 {% else %}<!-- prof != "profAP" -->
 <h2>Votre statut ne vous permet pas d'utiliser cette page</h2>
 {% endifequal %}

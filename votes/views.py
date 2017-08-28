@@ -281,7 +281,7 @@ def getProfsLibres(barrette):
     connection.search(
         search_base = base_dn,
         search_filter = filtre,
-        attributes=["uidNumber", "sn", "givenName" ]
+        attributes=["uidNumber", "sn", "givenName", "uid" ]
         )
     ## liste des uids de profs déjà dans la barrette
     b=Barrette.objects.filter(nom=barrette)[0]
@@ -292,9 +292,10 @@ def getProfsLibres(barrette):
             try:
                 profs.append(
                     {
-                        "uid":entry['attributes']['uidNumber'][0],
-                        "nom":entry['attributes']['sn'][0],
-                        "prenom":entry['attributes']['givenName'][0],
+                        "uid": entry['attributes']['uidNumber'][0],
+                        "nom": entry['attributes']['sn'][0],
+                        "prenom": entry['attributes']['givenName'][0],
+                        "username": entry['attributes']['uid'][0],
                     }
                 )
             except:
@@ -375,7 +376,12 @@ def addUnProf(request):
     trouve=[p for p in libres if "{nom} {prenom}".format(**p) == prof]
     if trouve:
         try:
-            enseignant, created = Enseignant.objects.get_or_create(uid=trouve[0]["uid"], nom=trouve[0]["nom"], prenom=trouve[0]["prenom"], salle=salle)
+            enseignant, created = Enseignant.objects.get_or_create(
+                uid=trouve[0]["uid"],
+                nom=trouve[0]["nom"], prenom=trouve[0]["prenom"],
+                username=trouve[0]["username"],
+                salle=salle
+            )
             bb=[b.nom for b in list(Barrette.objects.filter(enseignant__in=[enseignant.pk]))]
             if barrette in bb:
                 pass # pas besoin d'ajouter la barrette pour cet enseignant
@@ -589,6 +595,7 @@ def lesCours(request):
                 "eci":   eci,
                 "cops": cops,
                 "cci" : cci,
+                "pourqui": pourqui,
                 "horaires": horaires,
                 "estprof": estProfesseur(request.user),
                 "username": request.user.username,

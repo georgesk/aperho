@@ -127,6 +127,12 @@ function delBarrette(el){
 	function(){alert("Échec de la suppression de "+nom);}
     );
 }
+
+$( ".accordeon" ).accordion({
+    collapsible: true,
+    active: -1,
+});
+
 </script>
 {% endblock %}
 
@@ -140,7 +146,7 @@ function delBarrette(el){
 {% endif %}
 {% for b in lesBarrettes %}
 <div class="barrette">
-  <div class="unebarrette">
+  <div class="unebarrette accordeon">
     {{b.nom}}
     {% if user.is_superuser %}
     <div class="delButton"><img src="/static/votes/img/del.png" onclick="delBarrette(this)" alt="Bouton de suppression"/></div>

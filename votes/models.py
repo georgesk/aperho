@@ -183,6 +183,7 @@ class Enseignant(models.Model):
     ou alors un groupe de salles, voire tout un étage de bâtiment).
     """
     uid    = models.IntegerField()
+    username = models.CharField(max_length=100)
     nom   = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     salle = models.CharField(max_length=50)
