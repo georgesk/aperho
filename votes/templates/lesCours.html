@@ -19,28 +19,35 @@ $( function() { // lancement après le chargement
 </script>
 {% endblock %}
 
+{% block title %}
+<!-- Pas de titre valide pour tous les cas -->
+{% endblock %}
+
+
 {% block contents %}
 {% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
-{% if not pourqui %}
-<h3>Données dans un autre format</h3>
+{% if pourqui %}
+<h1 classe="pagetitre">Mes cours d'AP pour la barrette {{barrette}}</h1>
+{% else %}
+<h1 classe="pagetitre">Cours d'AP pour la barrette {{barrette}}, par prof</h1>
+<h2>Données dans un autre format</h2>
 <ul>
   <li>Pour un tableur, au <a href="/votes/lesCours?csv=yes">format CSV</a>.</li>  
   <li>Pour un tableur, au <a href="/votes/lesCours?ods=yes">format ODS</a>.</li>  
   <li>Pour un traitement de texte, au <a href="/votes/lesCours?odt=yes">format ODT</a>.</li>  
 </ul>
 {% endif %}
-<h1>Les cours d'AP, pour ...</h1>
 {% for e,ci in eci.items %}
-<div class="accordion">
+<div {% if not pourqui %}class="accordion"{{% endif %}>
   <div>
-    <h2>{{e.prenom}} {{e.nom}} ({{e.nbEtudiants}} élèves)</h2>
     <div>
-      <table>
-	{% for c,inscriptions in ci.items %}
-	{% if forloop.counter > 1 %}
-	<!-- saut de ligne -->
-	<tr><td colspan="3" style="background: transparent; border-color:transparent"><br/></td></tr>
-	{% endif %}
+      {% for c,inscriptions in ci.items %}
+      {% if pourqui %}
+      <h2>Liste de {{inscriptions|length}} élèves</h2>
+      {% else %}
+      <h2>{{e.prenom}} {{e.nom}} ({{inscriptions|length}} élèves)</h2>
+      {% endif %}
+      <table border="1" class="joli">
 	<tr>
 	  <th colspan="3">
 	    {{c.horaire}} ({{c.formation.duree}} h) {{c.formation.titre}}
@@ -51,8 +58,8 @@ $( function() { // lancement après le chargement
 	  <td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td> {{i.etudiant.prenom}}</td>
 	</tr>
 	{% endfor %}
-	{% endfor %}
       </table>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -71,26 +78,31 @@ $( function() { // lancement après le chargement
   </div>
 </div>
 {% endif %}
-{% if cops %}
+{% if orientationOuverte %}
 <h1>Conseillères d'orientation</h1>
 <div class="accordion">
   {% for cop, ci in cci.items %}
+  {% if ci.items.inscr %}
   <h2>{{cop.nom}}</h2>
   <div>
     {% for cours, inscr in ci.items %}
+    {% if pourqui %}
+    {% ifequal cours.prof.username pourqui %}
     <table style="margin-top:1em;">
-      {% if pourqui %}
-      <tr><td>{{cours.prof.uid}}</td><td>{{pourqui}}</td></tr>
-      <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>      
-      {% else %}
       <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>
-      <tr><td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td>{{i.etudiant.prenom}}</td><td>{{i.etudiant.classe}}</td></tr>
-      {% endif %}
+    </table>
+    {% endifequal %}
+    {% else %}
+    <table style="margin-top:1em;">
+      <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>
       {% for i in inscr %}
+      <tr><td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td>{{i.etudiant.prenom}}</td><td>{{i.etudiant.classe}}</td></tr>
       {% endfor %}
     </table>
+    {% endif %}
     {% endfor %}
   </div>
+  {% endif %}
   {% endfor %}
 </div>
 {% endif %}

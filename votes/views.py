@@ -588,18 +588,26 @@ def lesCours(request):
         response=odtResponse(eci, horaires, noninscrits, cci)
         return response
     else:
+        # orientationOuverte est un booléen ; pour le forcer à vrai
+        # il suffit qu'il y ait au moins un object Orientation avec
+        # la bonne date d'ouverture, même si les autres champs sont par défaut.
+        orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
+        barrette=request.session.get("barrette","")
+
         return render(
             request, "lesCours.html",
             context={
                 "prof":  prof,
                 "eci":   eci,
                 "cops": cops,
+                "orientationOuverte": orientationOuverte,
                 "cci" : cci,
                 "pourqui": pourqui,
                 "horaires": horaires,
                 "estprof": estProfesseur(request.user),
                 "username": request.user.username,
                 "noninscrits": noninscrits,
+                "barrette": barrette,
             }
         ) 
 
