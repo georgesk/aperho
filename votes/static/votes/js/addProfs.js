@@ -21,30 +21,6 @@ function addProf(csrf, barrette){
 	  );
 }
 
-/**
- * changement de salle pour un prof dans une barrette
- **/
-function addProf(csrf, barrette){
-    $.post("addUnProf",
-	   {
-	       csrfmiddlewaretoken: csrf,
-	       prof: $("#prof").val(),
-	       salle: $("#salle").val(),
-	       barrette: barrette
-	   },
-	   function(data){
-	       alert(data.message);
-	       if (data.ok=="ok"){
-		   location.assign("addProfs");
-	       }
-	   }
-	  ).fail(
-	      function(){
-		  alert("Échec : problème de communication");
-	      }
-	  );
-}
-
 
 /**
  * Désinscrit un prof d'une barrette
@@ -82,7 +58,6 @@ function editProf(el){
     var salle=$(ligne).find("td:eq(2)").text().trim();
     var barrette=$("#barretteCourante").text().trim();
     var csrf=$("#csrf").text().trim();
-    console.log("Édition de ", prof, salle, barrette, csrf);
     /*************************************
      * Il faut récupérer la nouvelle salle
      *************************************/
@@ -118,3 +93,28 @@ function editProf(el){
     });
 }
 
+/**
+ * Suppression d'un prof d'une barrette
+ **/
+function delProf(el){
+    var ligne=$(el).parents("tr")[0];
+    var prof=$(ligne).find("td:eq(1)").text().trim();
+    var barrette=$("#barretteCourante").text().trim();
+    var csrf=$("#csrf").text().trim();
+
+    var ajaxQuery=$.post(
+	"delProfBarrette", {
+	    prof: prof,
+	    barrette: barrette,
+	    csrfmiddlewaretoken: csrf,
+	},
+	function(data){
+	    alert(data.message);
+	    if (data.ok=="ok"){
+		location.assign("addProfs");
+	    }
+	}
+    ).fail(
+	function(){alert("Échec de la suppression de "+prof);}
+    );
+}
