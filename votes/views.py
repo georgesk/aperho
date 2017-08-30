@@ -716,12 +716,17 @@ def majCours(request):
                     assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
                     if total<2: # un seul cours, il faut un deuxième
                         creeCoursParDefaut(c.barrette, c.ouverture, cours=c)
+                else:
+                    # duree ==2 supprimer le deuxième cours éventuellement
+                    deuxCours=list(Cours.objects.filter(enseignant=c.enseignant, barrette=c.barrette, ouverture=c.ouverture))
+                    if len(deuxCours) > 1:
+                        # garder le cours modifié, supprimer l'autre
+                        for dc in deuxCours:
+                            if dc != c:
+                                dc.delete()
             except Exception as e:
                 ok="ko"
                 message="Erreur : %s" %e
-            else:
-                # duree ==2 supprimer le deuxième cours éventuellement GRRR
-                pass
     return JsonResponse({
         "message" : message,
         "ok"      : ok,

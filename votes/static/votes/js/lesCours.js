@@ -24,20 +24,26 @@ function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capaci
 	    $("<input>",{
 		type: "text",
 		id: "dCourte",
+		name: "dCourte",
 		value: dCourte,
 	    }).css({margin: "1em", width: "38em",})
 	));
     t.append(tr);
-    var ta=
+    var ta="";
+    try {
+	ta=decodeURI(dLongue);
+    }
+    catch(err) {ta=dLongue;}
     tr=$("<tr>")
 	.append($("<td>").text("Description longue :")
 	       )
 	.append($("<td>").append(
 	    $("<textarea>",{
 		id: "dLongue",
+		name: "dLongue",
 		rows: "4",
 		cols: "60",
-	    }).css({margin: "1em",}).text(dLongue)
+	    }).css({margin: "1em",}).text(ta)
 	));
     t.append(tr);
     tr =$("<tr>")
@@ -47,6 +53,7 @@ function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capaci
 	    $("<input>",{
 		type: "text",
 		id: "duree",
+		name: "duree",
 		value: duree,
 	    }).css({margin: "1em",})
 	));
@@ -58,6 +65,7 @@ function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capaci
 	    $("<input>",{
 		type: "text",
 		id: "capacite",
+		name:  "capacite",
 		value: capacite,
 	    }).css({margin: "1em",})
 	));
@@ -105,7 +113,7 @@ function majCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capacit
 	       cours_id: cours_id,
 	       backLocation: backLocation,
 	       dCourte: dCourte,
-	       dLongue: dLongue,
+	       dLongue: encodeURI(dLongue),
 	       duree: duree,
 	       capacite: capacite,
 	   },

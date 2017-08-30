@@ -53,7 +53,7 @@ $( function() { // lancement après le chargement
       <table class="joli">
 	<tr>
 	  {% ifequal e.username user.username %}
-	  <td rowspan="2">
+	  <td rowspan="3">
 	    <div class="editButton">
 	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{user.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}', '{{c.capacite}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
 	    </div>
@@ -64,8 +64,12 @@ $( function() { // lancement après le chargement
 	  </th>
 	</tr>
 	<tr>
-	  <td>{{c.formation.contenu}}</td>
-	  <td>{{c.formation.duree}} h</td>
+	  <th>Durée</th>
+	  <th>Description longue</th>
+	</tr>
+	<tr>
+	  <th>{{c.formation.duree}} h</th>
+	  <td>{{c.formation.contenuWithLineBreaks|safe}}</td>
 	</tr>
       </table>
       {% if inscriptions %}
