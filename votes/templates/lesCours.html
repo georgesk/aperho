@@ -3,6 +3,8 @@
 {% block webTitle %}<title>Aperho : liste de cours</title>{% endblock %}
 
 {% block localscripts %}
+<script type="text/javascript" src="/static/votes/js/lesCours.js">
+</script>
 <script type="text/javascript">
 $( function() { // lancement après le chargement
 	$( "#userinfo" ).accordion({
@@ -25,6 +27,7 @@ $( function() { // lancement après le chargement
 
 
 {% block contents %}
+<div id="dialog" style="display: none;"></div>
 {% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
 {% if pourqui %}
 <h1 classe="pagetitre">Mes cours d'AP pour la barrette {{barrette}}</h1>
@@ -49,12 +52,20 @@ $( function() { // lancement après le chargement
       {% endif %}
       <table border="1" class="joli">
 	<tr>
-	  <th>
+	  <th {% ifequal e.username user.username %}colspan="3"{% else %}colspan="2"{% endifequal %}>
 	    {{c.formation.titre}}
 	  </th>
 	</tr>
 	<tr>
 	  <td>{{c.formation.contenu}}</td>
+	  <td>{{c.formation.duree}} h</td>
+	  {% ifequal e.username user.username %}
+	  <td>
+	    <div class="editButton">
+	      <img src="/static/votes/img/edit.png" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}')" alt="Bouton d'édition" title="Éditer"/>
+	    </div>
+	  </td>
+	{% endifequal %}
 	</tr>
       </table>
       <table border="1" class="joli">
@@ -75,9 +86,9 @@ $( function() { // lancement après le chargement
   <div>
     <table>
       {% for n in noninscrits %}
-      <tr>
-	<td>{{forloop.counter}}</td><td>{{n.nom}}</td><td> {{n.prenom}}</td>
-      </tr>
+        <tr>
+	  <td>{{forloop.counter}}</td><td>{{n.nom}}</td><td> {{n.prenom}}</td>
+	</tr>
       {% endfor %}
     </table>
   </div>
@@ -97,7 +108,7 @@ $( function() { // lancement après le chargement
       <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>
     </table>
     {% endifequal %}
-    {% else %}
+    {% else %} <!-- else, pourqui is empty -->
     <table style="margin-top:1em;">
       <tr><th colspan="4">{{cours.debut}} {{cours.choice}} avec {{cours.prof}}</th></tr>
       {% for i in inscr %}
