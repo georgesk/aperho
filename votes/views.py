@@ -624,7 +624,41 @@ def lesCours(request):
                 "noninscrits": noninscrits,
                 "barrette": barrette,
             }
-        ) 
+        )
+
+def majCours(request):
+    """
+    Mise à jour d'un cours. Après la mise à jour, on vérifie si le prof
+    donne bel et bien deux heures, et on agit en conséquence.
+    """
+    ok="ok"
+    message=""
+    c=Cours.objects.get(pk=request.POST.get("cours_id"))
+    try:
+        duree=int(request.POST.get("duree"))
+        assert duree in (1,2)
+    except Exception as e:
+        ok="ko"
+        message="Erreur : durée incorrecte %s, %s" %(request.POST.get("duree"), repr(e))
+    if ok=="ok":
+        c.duree=duree
+        f=Formation.objects.get(pk=c.formation_id)
+        f.titre=request.POST.get("dCourte")
+        f.contenu=request.POST.get("dLongue")
+
+        try:
+            f.save()
+            c.save()
+        except Exception as e:
+            ok="ko"
+            message="Erreur : %s" %e
+        
+    print("GRRRRR", c)
+    return JsonResponse({
+        "message" : message,
+        "ok"      : ok,
+    })
+
 
 def enroler(request):
     """

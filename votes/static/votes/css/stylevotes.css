@@ -103,6 +103,14 @@ input[disabled].btn:hover, input[disabled].btn:active, input[disabled].btn:focus
     z-index:30;
 }
 
+
+/**
+ * à cause du traitement de header et nav
+ **/
+.ui-dialog {
+    z-index: 1001 !important ;
+}
+
 #inscription_boutons {
     position: fixed;
     bottom: 10px;
