@@ -686,7 +686,9 @@ def creeCoursParDefaut(barrette, ouverture):
                 h=list(Horaire.objects.all())
                 c1=Cours(enseignant=e, horaire=h[0], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
                 c2=Cours(enseignant=e, horaire=h[1], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
-        print("GRRRR", e, cours)
+                c1.save()
+                c2.save()
+        cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture)
     return nouveaux
 
 def formationParDefaut(b):
