@@ -55,7 +55,7 @@ $( function() { // lancement après le chargement
 	  {% ifequal e.username user.username %}
 	  <td rowspan="2">
 	    <div class="editButton">
-	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{user.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
+	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{user.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}', '{{c.capacite}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
 	    </div>
 	  </td>
 	  {% endifequal %}

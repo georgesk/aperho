@@ -640,11 +640,30 @@ def majCours(request):
     except Exception as e:
         ok="ko"
         message="Erreur : durée incorrecte %s, %s" %(request.POST.get("duree"), repr(e))
+    minCapacite=16
+    maxCapacite=30
+    try:
+        capacite=int(request.POST.get("capacite"))
+        assert capacite in range(minCapacite,1+maxCapacite)
+    except Exception as e:
+        ok="ko"
+        message="Erreur : nombre d'élèves incorrect %s, %s" %(request.POST.get("capacite"), repr(e))
     if ok=="ok":
-        c.duree=duree
+        ## on vérifie, pour un cours de deux heures, s'il est à la première
+        ## des deux heures.
+        if duree==2:
+            h=Horaire.objects.get(pk=c.horaire_id)
+            premier=Horaire.objects.filter(barrette_id=c.barrette_id).order_by('heure').first()
+            debut=h.heure
+            if h != premier:
+                ok="ko"
+                message="Erreur : un cours de 2 heures doit commencer à %s" %premier.heure
+    if ok=="ok":
+        c.capacite=capacite
         f=Formation.objects.get(pk=c.formation_id)
         f.titre=request.POST.get("dCourte")
         f.contenu=request.POST.get("dLongue")
+        f.duree=duree
 
         try:
             f.save()
@@ -652,8 +671,15 @@ def majCours(request):
         except Exception as e:
             ok="ko"
             message="Erreur : %s" %e
-        
-    print("GRRRRR", c)
+        if ok=="ok":
+            ## À ce stade, le cours est sa formation sont valides,
+            ## reste à verifier si le prof fait bien deux heures.
+            if duree==1:
+                # chercher le deuxième cours GRRRR
+                pass
+            else:
+                # duree ==2 supprimer le deuxième cours éventuellement GRRR
+                pass
     return JsonResponse({
         "message" : message,
         "ok"      : ok,

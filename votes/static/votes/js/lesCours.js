@@ -9,8 +9,9 @@
  * @param dCourte description courte
  * @param dLongue description longue
  * @param duree la durée
+ * @param capacite la capacité en élèves
  **/
-function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree){
+function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capacite){
     /*********************************************************************
      * Il faut récupérer les nouvelles descriptions et la nouvelle durée *
      *********************************************************************/
@@ -50,6 +51,17 @@ function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree){
 	    }).css({margin: "1em",})
 	));
     t.append(tr);
+    tr =$("<tr>")
+	.append($("<td>").text("capacité (±18 élèves) :")
+	       )
+	.append($("<td>").append(
+	    $("<input>",{
+		type: "text",
+		id: "capacite",
+		value: capacite,
+	    }).css({margin: "1em",})
+	));
+    t.append(tr);
     
     $("#dialog").append(t);
     $('#dialog').dialog({
@@ -64,7 +76,8 @@ function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree){
 		var dCourte = $("#dCourte").val();
 		var dLongue = $("#dLongue").val();
 		var duree = $("#duree").val();
-		majCours(csrf, cours_id, backLocation, dCourte, dLongue, duree);
+		var capacite = $("#capacite").val();
+		majCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capacite);
                 $('#dialog').dialog('close');
             },
             'Échap': function () {
@@ -83,8 +96,9 @@ function editCours(csrf, cours_id, backLocation, dCourte, dLongue, duree){
  * @param dCourte description courte
  * @param dLongue description longue
  * @param duree la durée
+ * @param capacite la capacité en élèves
  **/
-function majCours(csrf, cours_id, backLocation, dCourte, dLongue, duree){
+function majCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capacite){
     $.post("majCours",
 	   {
 	       csrfmiddlewaretoken: csrf,
@@ -93,6 +107,7 @@ function majCours(csrf, cours_id, backLocation, dCourte, dLongue, duree){
 	       dCourte: dCourte,
 	       dLongue: dLongue,
 	       duree: duree,
+	       capacite: capacite,
 	   },
 	   function(data){
 	       if (data.ok=="ok"){
