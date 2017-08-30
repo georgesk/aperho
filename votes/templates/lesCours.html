@@ -46,9 +46,9 @@ $( function() { // lancement après le chargement
     <div>
       {% for c,inscriptions in ci.items %}
       {% if pourqui %}
-      <h2>Liste de {{inscriptions|length}} élèves</h2>
+      <h2>{{c.horaire.heure}} -- liste de {{inscriptions|length}} élèves</h2>
       {% else %}
-      <h2 style="text-align: left;">{{c.formation.titre}} ({{inscriptions|length}} élèves) : {{e.prenom}} {{e.nom}}</h2>
+      <h2 style="text-align: left;">{{c.formation.titre}} {{c.horaire.heure}} ({{inscriptions|length}} élèves) -- {{e.prenom}} {{e.nom}}</h2>
       {% endif %}
       <table class="joli">
 	<tr>
@@ -60,7 +60,7 @@ $( function() { // lancement après le chargement
 	  </td>
 	  {% endifequal %}
 	  <th colspan="2">
-	    {{c.formation.titre}}
+	    {{c.formation.titre}} (max. {{c.capacite}} élèves)
 	  </th>
 	</tr>
 	<tr>
