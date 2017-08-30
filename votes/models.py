@@ -231,9 +231,10 @@ class Horaire(models.Model):
         (5, "vendredi"),
         (6, "samedi"),
     ], default=1)
+    barrette = models.ForeignKey('Barrette')
 
     def __str__(self):
-        return str(self.heure)
+        return str("%s %s" %(self.barrette, self.heure))
 
 class Etudiant(models.Model):
     """
@@ -246,7 +247,7 @@ class Etudiant(models.Model):
     nom       = models.CharField(max_length=50)
     prenom    = models.CharField(max_length=50)
     classe    = models.CharField(max_length=10)
-    barrette   = models.ForeignKey('Barrette')
+    barrette  = models.ForeignKey('Barrette')
 
     def __str__(self):
         return "{nom} {prenom} {classe} {uid}, barrette={barrette_id}".format(**self.__dict__)
