@@ -2,6 +2,8 @@ body{
     padding-bottom: 50 px; /* permet de placer les boutons (fixed) */
 }
 
+table, td, th { border: 1px solid gray }
+
 .whichUser{
     font-size: 70%;
 }

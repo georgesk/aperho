@@ -1,11 +1,13 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     {% block webTitle %}
     <title>Aperho ..:: Web Titre ::..</title>
     {% endblock %}
-    <link rel="icon" type="image/icon" href="/static/votes/ico/aperho.ico">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="icon" type="image/icon" href="/static/votes/ico/aperho.ico"/>
     <link rel="stylesheet" href="/static/votes/css/stylevotes.css" type="text/css"/>
-    <link rel="stylesheet" type="text/css" href="/static/votes/attractive-fully-responsive-menu-by-usingcss3.com/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/votes/attractive-fully-responsive-menu-by-usingcss3.com/css/style.css"/>
     <link rel="stylesheet" href="/static/votes/js/jquery-ui/css/smoothness/jquery-ui.css" type="text/css"/>
     <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
     </script>
@@ -21,7 +23,7 @@
       <div class="container">
         <div class="logo">
 	  <div class="whichUser">{{user.first_name}} {{user.last_name}}</div>
-          <a href="#"><img src="/static/votes/ico/aperho.svg" alt="Aperho" title="Aperho, l'application du lycée Jean Bart pour l'Accompagnement Personnalisé"></a>
+          <a href="#"><img src="/static/votes/ico/aperho.svg" alt="Aperho" title="Aperho, l'application du lycée Jean Bart pour l'Accompagnement Personnalisé"/></a>
         </div>
 	<!-- Icône de recherche 
         <div class="search-box">
@@ -39,7 +41,7 @@
         </a>
         <nav class="navigation">
           <ul>
-            <li class="active" ><a href="http://www.lyceejeanbart.fr" target="_jb">Le site du lycée</a></li>
+            <li class="active" ><a href="http://www.lyceejeanbart.fr" target="jblycee">Le site du lycée</a></li>
             <li class="sub-menu"><a href="#">Mes actions</a>
 	      {% block mesactions %}
               <ul>
