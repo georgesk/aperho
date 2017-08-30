@@ -4,7 +4,9 @@ from django.utils import timezone
 from django.utils.timezone import datetime
 from django.forms import ValidationError
 from django.db import IntegrityError
+from django.db.models import Q
 from urllib.parse import urlencode
+from django.core.exceptions import ObjectDoesNotExist
 import json
 
 from aperho.settings import connection
@@ -548,12 +550,16 @@ def lesCours(request):
     odt=request.GET.get("odt","")
     # filtrage des cours : barrette courante et dernière session d'ouverture
     barrette=request.session.get("barrette","")
-    ouverture=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
-    if not len(ouverture):
+    ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
+    if not ouvertures:
         cours=Cours.objects.filter(barrette__nom=barrette)
     else:
-        # ajouter un critère basé sur ouverture.last() !!!!
-        cours=Cours.objects.filter(barrette__nom=barrette, ouverture=ouverture.last().pk)
+        # ajouter un critère basé sur ouvertures.last() !!!!
+        # on assure que chaque prof de la barrette ait au moins des cours
+        # par défaut
+        derniereOuverture=ouvertures.last()
+        creeCoursParDefaut(barrette, derniereOuverture)
+        cours=Cours.objects.filter(barrette__nom=barrette, ouverture=derniereOuverture.pk)
     noninscrits=set([])
     if pourqui:
         ### on ne garde que les cours du seul prof qui demande
@@ -644,6 +650,58 @@ def enroler(request):
                 "noninscrits": noninscrits,
             }
         )
+
+def creeCoursParDefaut(barrette, ouverture):
+    """
+    Enregistre un nouveau cours pour chaque enseignant de la barrette,
+    en reprenant les formations connues lors de la formation précédente,
+    quitte à en créer avec des formations par défaut
+    @param barrette le nom d'une barette
+    @param ouverture la dernière ouverture en date
+    @return le nombre de cours éventuellement créés
+    """
+    nouveaux=0
+    b=Barrette.objects.get(nom=barrette)
+    enseignants=Enseignant.objects.filter(barrettes__id=b.pk)
+    for e in enseignants:
+        cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture)
+        if not cours:
+            coursAnciensTrouves=False
+            ## on essaie d'abord de récupérer des cours donnés précédemment
+            ## dans la même barrette, à l'ouvrture précédente
+            try:
+                precOuverture=Ouverture.objects.filter(~Q(id = ouverture.pk)).latest('debut')
+                coursAnciens=Cours.objects.filter(enseignant=e, barrette=b, ouverture=precOuverture)
+                if coursAnciens:
+                    coursAnciensTrouves=True
+                    for c in coursAnciens:
+                        c.id=None # on prépare un duplicata
+                        c.ouverture=ouverture
+                        c.save()
+                        nouveaux+=1
+            except ObjectDoesNotExist:
+                # il n'y a pas eu d'ouverture précédemment, on doit tout créer
+                pass
+            if not coursAnciensTrouves:
+                h=list(Horaire.objects.all())
+                c1=Cours(enseignant=e, horaire=h[0], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
+                c2=Cours(enseignant=e, horaire=h[1], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
+        print("GRRRR", e, cours)
+    return nouveaux
+
+def formationParDefaut(b):
+    """
+    renvoie un objet formation par défaut, qu'il faut modifier
+    """
+    defaultTitre="Description courte, À MODIFIER !!"
+    defaultContenu="Description longue, À MODIFIER : Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim ..."
+    fs=Formation.objects.filter(titre=defaultTitre, contenu=defaultContenu, duree=1,public_designe=False,barrette=b)
+    if fs:
+        f= fs.last()
+    else:
+        f=Formation(titre=defaultTitre, contenu=defaultContenu, duree=1,public_designe=False,barrette=b)
+        f.save()
+    return f
 
 def enroleEleveCours(request):
     """
