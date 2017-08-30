@@ -626,6 +626,40 @@ def lesCours(request):
             }
         )
 
+def estEnPremier (c):
+    """
+    Vérifie si un cours est en premier
+    @param c une instance de Cours
+    @return True si le cours vient en premier dans l'horaire
+    """
+    h=Horaire.objects.get(pk=c.horaire_id)
+    premier=Horaire.objects.filter(barrette_id=c.barrette_id).order_by('heure').first()
+    return h.heure==premier.heure
+    
+def metEnPremier (c):
+    """
+    Modifie un cours pour le mettre premier dans l'horaire. On
+    n'appelle cette procédure qu'après avoir vérifié qu'un cours est bien seul
+    dans son horaire.
+    @param c une instance de Cours
+    """
+    h=Horaire.objects.get(pk=c.horaire_id)
+    premier=Horaire.objects.filter(barrette_id=c.barrette_id).order_by('heure').first()
+    c.horaire=premier
+    return
+
+def metEnDernier (c):
+    """
+    Modifie un cours pour le mettre premier dans l'horaire. On
+    n'appelle cette procédure qu'après avoir vérifié qu'un cours est bien seul
+    dans son horaire.
+    @param c une instance de Cours
+    """
+    h=Horaire.objects.get(pk=c.horaire_id)
+    dernier=Horaire.objects.filter(barrette_id=c.barrette_id).order_by('heure').last()
+    c.horaire=dernier
+    return
+    
 def majCours(request):
     """
     Mise à jour d'un cours. Après la mise à jour, on vérifie si le prof
@@ -636,7 +670,7 @@ def majCours(request):
     c=Cours.objects.get(pk=request.POST.get("cours_id"))
     try:
         duree=int(request.POST.get("duree"))
-        assert duree in (1,2)
+        assert duree in (1,2), "la durée doit être 1 ou 2 heures"
     except Exception as e:
         ok="ko"
         message="Erreur : durée incorrecte %s, %s" %(request.POST.get("duree"), repr(e))
@@ -644,7 +678,7 @@ def majCours(request):
     maxCapacite=30
     try:
         capacite=int(request.POST.get("capacite"))
-        assert capacite in range(minCapacite,1+maxCapacite)
+        assert capacite in range(minCapacite,1+maxCapacite), "nombre d'élèves incorrect"
     except Exception as e:
         ok="ko"
         message="Erreur : nombre d'élèves incorrect %s, %s" %(request.POST.get("capacite"), repr(e))
@@ -652,12 +686,9 @@ def majCours(request):
         ## on vérifie, pour un cours de deux heures, s'il est à la première
         ## des deux heures.
         if duree==2:
-            h=Horaire.objects.get(pk=c.horaire_id)
-            premier=Horaire.objects.filter(barrette_id=c.barrette_id).order_by('heure').first()
-            debut=h.heure
-            if h != premier:
+            if not estEnPremier (c):
                 ok="ko"
-                message="Erreur : un cours de 2 heures doit commencer à %s" %premier.heure
+                message="Erreur : un cours de 2 heures doit commencer en début d'horaire"
     if ok=="ok":
         c.capacite=capacite
         f=Formation.objects.get(pk=c.formation_id)
@@ -674,9 +705,20 @@ def majCours(request):
         if ok=="ok":
             ## À ce stade, le cours est sa formation sont valides,
             ## reste à verifier si le prof fait bien deux heures.
-            if duree==1:
-                # chercher le deuxième cours GRRRR
-                pass
+            try:
+                if duree==1:
+                    # chercher le deuxième cours
+                    deuxCours=list(Cours.objects.filter(enseignant=c.enseignant, barrette=c.barrette, ouverture=c.ouverture))
+                    total=0
+                    for dc in deuxCours:
+                        f=Formation.objects.get(pk=dc.formation_id)
+                        total+=f.duree
+                    assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
+                    if total<2: # un seul cours, il faut un deuxième
+                        creeCoursParDefaut(c.barrette, c.ouverture, cours=c)
+            except Exception as e:
+                ok="ko"
+                message="Erreur : %s" %e
             else:
                 # duree ==2 supprimer le deuxième cours éventuellement GRRR
                 pass
@@ -711,15 +753,26 @@ def enroler(request):
             }
         )
 
-def creeCoursParDefaut(barrette, ouverture):
+def creeCoursParDefaut(barrette, ouverture, cours=None):
     """
     Enregistre un nouveau cours pour chaque enseignant de la barrette,
     en reprenant les formations connues lors de la formation précédente,
     quitte à en créer avec des formations par défaut
     @param barrette le nom d'une barette
     @param ouverture la dernière ouverture en date
+    @param cours si non None, on crée un seul cours sur le modèle de celui-là
+    mais pas au même horaire
     @return le nombre de cours éventuellement créés
     """
+    if cours:
+        #place le cours en premier dans l'horaire
+        metEnPremier(cours)
+        cours.save()
+        # duplique le cours
+        cours.id=None
+        metEnDernier(cours)
+        cours.save()
+        return 1
     nouveaux=0
     b=Barrette.objects.get(nom=barrette)
     enseignants=Enseignant.objects.filter(barrettes__id=b.pk)
