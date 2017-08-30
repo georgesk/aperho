@@ -571,7 +571,7 @@ def lesCours(request):
         eleves=set([e for e in Etudiant.objects.all()])
         inscrits=set([i.etudiant for i in Inscription.objects.all()])
         noninscrits=eleves-inscrits
-    cours=list(cours.order_by("enseignant__nom","horaire",))
+    cours=list(cours.order_by("formation__titre","enseignant__nom","horaire",))
     enseignants=[c.enseignant for c in cours]
     cops=list(Cop.objects.all().order_by("nom"))
     horaires=set([c.horaire for c in cours])
@@ -696,7 +696,7 @@ def formationParDefaut(b):
     """
     renvoie un objet formation par défaut, qu'il faut modifier
     """
-    defaultTitre="Description courte, À MODIFIER !!"
+    defaultTitre="Matière -- Description courte, À MODIFIER !! (bien spécifier la matière)"
     defaultContenu="Description longue, À MODIFIER : Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim ..."
     fs=Formation.objects.filter(titre=defaultTitre, contenu=defaultContenu, duree=1,public_designe=False,barrette=b)
     if fs:

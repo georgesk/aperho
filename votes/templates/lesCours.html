@@ -45,14 +45,19 @@ $( function() { // lancement après le chargement
       {% if pourqui %}
       <h2>Liste de {{inscriptions|length}} élèves</h2>
       {% else %}
-      <h2>{{e.prenom}} {{e.nom}} ({{inscriptions|length}} élèves)</h2>
+      <h2 style="text-align: left;">{{c.formation.titre}} ({{inscriptions|length}} élèves) : {{e.prenom}} {{e.nom}}</h2>
       {% endif %}
       <table border="1" class="joli">
 	<tr>
-	  <th colspan="3">
-	    {{c.horaire}} ({{c.formation.duree}} h) {{c.formation.titre}}
+	  <th>
+	    {{c.formation.titre}}
 	  </th>
 	</tr>
+	<tr>
+	  <td>{{c.formation.contenu}}</td>
+	</tr>
+      </table>
+      <table border="1" class="joli">
 	{% for i in inscriptions %}
 	<tr>
 	  <td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td> {{i.etudiant.prenom}}</td>
