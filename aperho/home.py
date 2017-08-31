@@ -8,7 +8,8 @@ from django.contrib.auth.hashers import *
 import json
 
 from votes.models import Cours, Inscription, Etudiant, Enseignant, \
-    Orientation, Horaire, estProfesseur, barrettesPourUtilisateur
+    Orientation, Horaire, estProfesseur, barrettesPourUtilisateur, \
+    Barrette
 
 def index(request):
     if request.user.is_authenticated():
@@ -38,7 +39,12 @@ def index(request):
         #########################################################
         # GESTION DES COURS À AFFICHER, DANS LA BARRETTE        #
         #########################################################
-        cours=list(Cours.objects.filter(barrette__nom=barretteCourante).order_by("formation__titre"))
+        b=Barrette.objects.get(nom=barretteCourante)
+        cours=list(Cours.objects.filter(
+            barrette=b,                     # cours dans la barrette
+            enseignant__barrettes__id=b.pk  # et enseignant aussi
+        ).order_by("formation__titre"))     # par orde de titres
+        
         choix=Orientation._meta.get_field("choix")
         orientations=[{"val": c[0], "label": c[1],} for c in choix.choices]
         # orientationOuverte est un booléen ; pour le forcer à vrai
@@ -102,7 +108,7 @@ def index(request):
             "home.html",
             {
                 "initScript": initScript,
-                "barrette": request.session["barrette"],
+                "barrette": barretteCourante,
                 "actionChangeBarrette": actionChangeBarrette,
                 "tousLesCours": tousLesCours,
                 "horaires" : horaires,
