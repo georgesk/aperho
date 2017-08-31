@@ -18,11 +18,13 @@ def index(request):
         #########################################################
         initScript="" # script à insérer dans home.html
         bpu=barrettesPourUtilisateur(request.user)
+        if len(bpu)==1:
+            request.session["barrette"]=bpu[0].nom
         nomsBarrettes=[str(b.nom) for b in bpu]
         nouvelleBarrette=request.GET.get("nouvelleBarrette","")
         if nouvelleBarrette in nomsBarrettes:
             request.session["barrette"]=nouvelleBarrette
-        barretteCourante=request.session.get("barrette","")
+        barretteCourante=request.session.get("barrette")
         actionChangeBarrette="" # code HTML pour une ligne de menu
         if len(bpu)>1:
             # on donne un menu pour changer de barrette
