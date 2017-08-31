@@ -154,8 +154,15 @@ class Ouverture(models.Model):
     
     class Meta:
         unique_together = ('nom_session', 'barrette',)
+        
     def __str__(self):
         return "{} : {} ↦ {}".format(self.nom_session, self.debut, self.fin)
+    
+    @property
+    def abrege(self):
+        return "{} : {} ↦ {}".format(self.nom_session,
+                                     self.debut.strftime("%d/%m/%Y"),
+                                     self.fin.strftime("%d/%m/%Y"))
 
     def estActive(self):
         """

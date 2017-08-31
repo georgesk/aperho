@@ -550,6 +550,7 @@ def lesCours(request):
     odt=request.GET.get("odt","")
     # filtrage des cours : barrette courante et dernière session d'ouverture
     barrette=request.session.get("barrette","")
+    derniereOuverture=""
     ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
     if not ouvertures:
         cours=Cours.objects.filter(barrette__nom=barrette)
@@ -562,10 +563,15 @@ def lesCours(request):
         cours=Cours.objects.filter(barrette__nom=barrette, ouverture=derniereOuverture.pk)
     noninscrits=set([])
     if pourqui:
-        ### on ne garde que les cours du seul prof qui demande
-        nom=request.user.last_name
-        prenom=request.user.first_name
-        cours=cours.filter(enseignant__nom=nom, enseignant__prenom=prenom)
+        if request.user.is_superuser:
+            ### pour l'admin, on extrait les données de pourqui
+            enseignant=Enseignant.objects.get(username=pourqui)
+            cours=cours.filter(enseignant=enseignant)
+        else:
+            ### on ne garde que les cours du seul prof qui demande
+            nom=request.user.last_name
+            prenom=request.user.first_name
+            cours=cours.filter(enseignant__nom=nom, enseignant__prenom=prenom)
     else:
         ## calcul des non-inscrits
         eleves=set([e for e in Etudiant.objects.all()])
@@ -608,11 +614,12 @@ def lesCours(request):
         # il suffit qu'il y ait au moins un object Orientation avec
         # la bonne date d'ouverture, même si les autres champs sont par défaut.
         orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
-
+        ## on autorise à utiler cette page les profs d'AP et l'admin.
+        autorise = prof=="profAP" or request.user.is_superuser
         return render(
             request, "lesCours.html",
             context={
-                "prof":  prof,
+                "autorise":  autorise,
                 "eci":   eci,
                 "cops": cops,
                 "orientationOuverte": orientationOuverte,
@@ -623,6 +630,7 @@ def lesCours(request):
                 "username": request.user.username,
                 "noninscrits": noninscrits,
                 "barrette": barrette,
+                "ouverture" : derniereOuverture,
             }
         )
 

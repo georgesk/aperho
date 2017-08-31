@@ -28,9 +28,13 @@ $( function() { // lancement après le chargement
 
 {% block contents %}
 <div id="dialog" style="display: none;"></div>
-{% ifequal prof "profAP" %} <!-- accessible seulement aux profs d'AP -->
+{% if autorise %} <!-- accessible seulement aux profs d'AP et à l'admin -->
 {% if pourqui %}
-<h1 class="pagetitre">Mes cours d'AP pour la barrette {{barrette}}</h1>
+  {% if user.is_superuser %}
+  <h1 class="pagetitre">Cours d'AP de {{pourqui}} pour la barrette {{barrette}}</h1>
+  {% else %}
+  <h1 class="pagetitre">Mes cours d'AP pour la barrette {{barrette}}</h1>
+  {% endif %}
 {% else %}
 <h1 class="pagetitre">Cours d'AP pour la barrette {{barrette}}, par prof</h1>
 <h2>Données dans un autre format</h2>
@@ -46,19 +50,28 @@ $( function() { // lancement après le chargement
     <div>
       {% for c,inscriptions in ci.items %}
       {% if pourqui %}
-      <h2>{{c.horaire.heure}} -- liste de {{inscriptions|length}} élèves</h2>
+      <h2>{{c.horaire.heure}} -- liste de {{inscriptions|length}} élèves -- {{ouverture.abrege}}</h2>
       {% else %}
-      <h2 style="text-align: left;">{{c.formation.titre}} {{c.horaire.heure}} ({{inscriptions|length}} élèves) -- {{e.prenom}} {{e.nom}}</h2>
+      <h2 style="text-align: left;">{{c.formation.titre}} {{c.horaire.heure}} ({{inscriptions|length}} élèves) -- {{e.prenom}} {{e.nom}} -- {{ouverture.abrege}}</h2>
       {% endif %}
       <table class="joli">
 	<tr>
 	  {% ifequal e.username user.username %}
+	  <!-- il s'agit de « mon » enregistrement en tant que prof -->
 	  <td rowspan="3">
 	    <div class="editButton">
-	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{user.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}', '{{c.capacite}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
+	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{e.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}', '{{c.capacite}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
 	    </div>
 	  </td>
 	  {% endifequal %}
+	  {% if user.is_superuser %}
+	  <!-- je suis admin -->
+	  <td rowspan="3">
+	    <div class="editButton">
+	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{e.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}', '{{c.capacite}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
+	    </div>
+	  </td>
+	  {% endif %}
 	  <th colspan="2">
 	    {{c.formation.titre}} (max. {{c.capacite}} élèves)
 	  </th>
@@ -131,5 +144,5 @@ $( function() { // lancement après le chargement
 
 {% else %}<!-- prof != "profAP" -->
 <h2>Votre statut ne vous permet pas d'utiliser cette page</h2>
-{% endifequal %}
+{% endif %}
 {% endblock %}
