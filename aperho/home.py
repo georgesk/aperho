@@ -88,6 +88,7 @@ def index(request):
             etudiant=etudiants[0]
             cours_suivis=[i.cours for i in Inscription.objects.filter(etudiant=etudiant)]
             orientations_demandees = [o.choix for o in Orientation.objects.filter(etudiant=etudiant) if o.estOuvert()]
+            
         ## on s'assure qu'il y a bien deux horaires, pas plus, pas moins
         horaires=sorted(list(set([c.horaire for c in cours])))
         if len(horaires)==2:
@@ -103,6 +104,7 @@ def index(request):
         c0=capacite[h0]
         c1=capacite[h1]
         assert len(horaires)==2
+        
         ## on sépare les cours selon les deux horaires
         tousLesCours=[
             {
