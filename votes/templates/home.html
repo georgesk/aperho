@@ -134,7 +134,7 @@ ou
     </td>
   </tr>
   <tr class="ligneHeure{{forloop.parentloop.counter}}">
-    <td colspan="4" class="contenuap">{{c.formation.contenu}}</td>
+    <td colspan="4" class="contenuap">{{c.formation.contenuWithLineBreaks|safe}}</td>
   </tr>
   {% endfor %}
 </table>

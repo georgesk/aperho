@@ -249,6 +249,16 @@ class Horaire(models.Model):
     def __str__(self):
         return str("%s %s" %(self.barrette, self.heure))
 
+    def __lt__(self, other):
+        return self.jour < other.jour or self.heure < other.heure
+
+    @property
+    def hm(self):
+        """
+        Renvoie une présentation sous la forme HH:MM
+        """
+        return ("%s" %self.heure)[:5]
+
 class Etudiant(models.Model):
     """
     Représente un étudiant qui peut "voter". Les champs "uidNumber" et

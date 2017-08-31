@@ -50,7 +50,7 @@ def index(request):
         else:
             cours=[c for c in cours if c.estOuvert()]
         capacite={} # tableau heure -> nombre d'élèves accueillis
-        heures=[str(h.heure)[:5] for h in Horaire.objects.all()]
+        heures=[h.hm for h in Horaire.objects.all()]
         for h in heures:
             capacite[h]=0
         ## On enrichit les cours avec le remplissage actuel de chacun
@@ -68,7 +68,7 @@ def index(request):
                 for h in heures:
                     capacite[h]+=c.capacite
             else:
-                capacite[str(c.horaire.heure)[:5]]+=c.capacite
+                capacite[c.horaire.hm]+=c.capacite
         cours_suivis=[]
         orientations_demandees=[]
         etudiants=list(Etudiant.objects.filter(uid=request.user.username))
@@ -79,12 +79,24 @@ def index(request):
             cours_suivis=[i.cours for i in Inscription.objects.filter(etudiant=etudiant)]
             orientations_demandees = [o.choix for o in Orientation.objects.filter(etudiant=etudiant) if o.estOuvert()]
         ## on s'assure qu'il y a bien deux horaires, pas plus, pas moins
-        horaires=sorted(list(set([str(c.horaire) for c in cours])))
+        horaires=sorted(list(set([c.horaire for c in cours])))
         while len(horaires) < 2:
             horaires.append("remplissage_{}".format(len(horaires)))
             capacite["rempl"]="??" # au cas où on aurait rempli quelque chose
         assert len(horaires)==2
         ## on sépare les cours selon les deux horaires
+        tousLesCours=[
+            {
+                "cours": [c for c in cours if c.horaire==horaires[0]],
+                "horaire": horaires[0].hm,
+                "capacite" : capacite[horaires[0].hm]
+            },
+            {
+                "cours": [c for c in cours if c.horaire==horaires[1]],
+                "horaire": horaires[1].hm,
+                "capacite" : capacite[horaires[1].hm]
+            },
+        ]
         return render(
             request,
             "home.html",
@@ -92,20 +104,7 @@ def index(request):
                 "initScript": initScript,
                 "barrette": request.session["barrette"],
                 "actionChangeBarrette": actionChangeBarrette,
-                "tousLesCours": [
-                    {
-                        "cours": [c for c in cours
-                                  if str(c.horaire)==horaires[0]],
-                        "horaire": horaires[0][:5],
-                        "capacite" : capacite[horaires[0][:5]]
-                    },
-                    {
-                        "cours": [c for c in cours
-                                  if str(c.horaire)==horaires[1]],
-                        "horaire": horaires[1][:5],
-                        "capacite" : capacite[horaires[1][:5]]
-                    },
-                ],
+                "tousLesCours": tousLesCours,
                 "horaires" : horaires,
                 "etudiant" : etudiant,
                 "cours_suivis" : cours_suivis,
