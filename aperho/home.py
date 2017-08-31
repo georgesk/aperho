@@ -24,7 +24,7 @@ def index(request):
         nouvelleBarrette=request.GET.get("nouvelleBarrette","")
         if nouvelleBarrette in nomsBarrettes:
             request.session["barrette"]=nouvelleBarrette
-        barretteCourante=request.session.get("barrette")
+        barretteCourante=request.session.get("barrette","")
         actionChangeBarrette="" # code HTML pour une ligne de menu
         if len(bpu)>1:
             # on donne un menu pour changer de barrette
@@ -41,12 +41,14 @@ def index(request):
         #########################################################
         # GESTION DES COURS À AFFICHER, DANS LA BARRETTE        #
         #########################################################
-        b=Barrette.objects.get(nom=barretteCourante)
-        cours=list(Cours.objects.filter(
-            barrette=b,                     # cours dans la barrette
-            enseignant__barrettes__id=b.pk  # et enseignant aussi
-        ).order_by("formation__titre"))     # par orde de titres
-        
+        try:
+            b=Barrette.objects.get(nom=barretteCourante)
+            cours=list(Cours.objects.filter(
+                barrette=b,                     # cours dans la barrette
+                enseignant__barrettes__id=b.pk  # et enseignant aussi
+            ).order_by("formation__titre"))     # par orde de titres
+        except:
+            cours=[]
         choix=Orientation._meta.get_field("choix")
         orientations=[{"val": c[0], "label": c[1],} for c in choix.choices]
         # orientationOuverte est un booléen ; pour le forcer à vrai
@@ -88,21 +90,30 @@ def index(request):
             orientations_demandees = [o.choix for o in Orientation.objects.filter(etudiant=etudiant) if o.estOuvert()]
         ## on s'assure qu'il y a bien deux horaires, pas plus, pas moins
         horaires=sorted(list(set([c.horaire for c in cours])))
-        while len(horaires) < 2:
-            horaires.append("remplissage_{}".format(len(horaires)))
-            capacite["rempl"]="??" # au cas où on aurait rempli quelque chose
+        if len(horaires)==2:
+            h0=horaires[0].hm
+            h1=horaires[1].hm
+        else:
+            while len(horaires) < 2:
+                hi="remplissage_{}".format(len(horaires))
+                horaires.append(hi)
+                capacite[hi]="??"
+            h0=horaires[0]
+            h1=horaires[1]
+        c0=capacite[h0]
+        c1=capacite[h1]
         assert len(horaires)==2
         ## on sépare les cours selon les deux horaires
         tousLesCours=[
             {
                 "cours": [c for c in cours if c.horaire==horaires[0]],
-                "horaire": horaires[0].hm,
-                "capacite" : capacite[horaires[0].hm]
+                "horaire": h0,
+                "capacite" : c0,
             },
             {
                 "cours": [c for c in cours if c.horaire==horaires[1]],
-                "horaire": horaires[1].hm,
-                "capacite" : capacite[horaires[1].hm]
+                "horaire": h1,
+                "capacite" : c1,
             },
         ]
         return render(
