@@ -18,35 +18,7 @@
 {% endblock %}
 
 {% block localscripts %}
-<script type"text/javascript">
-$(document).ready(function() {
-    if("{{avertissement}}".length > 0){
-	$( "#message" ).empty();
-	$( "#message" ).attr({title: "Avertissement",});
-	$( "#message" ).html("{{avertissement|safe}}");
-	$( "#message" ).dialog({
-	    modal: true,
-	    buttons: [
-		{
-		    text: "OK",
-		    click: function() {
-			$( this ).dialog( "close" );
-		    }
-		}
-	    ]
-	});
-    }
-
-    var pdi=$("#id_public_designe_initial");
-    var pdn=$("#id_public_designe");
-    // force la boîte à cocher visible à la valeur du champ invisible
-    pdn.prop("checked", pdi.val()=="True");
-
-    // diminue la largeur des champs numériques
-    $("#id_duree").css({width: "50px"});
-    $("#id_capacite").css({width: "50px"});
-});
-
+<script type"text/javascript" src="/static/votes/static/js/editeCours.js">
 </script>
 {% endblock %}
 
@@ -113,5 +85,21 @@ $(document).ready(function() {
 <input type="submit" value="Valider les modifications" style="margin: 1em;"/>
 {{ form.non_field_errors }}
 </form>
+{% if anciennesFormations %}
+<h2>Formations anciennes qui peuvent être réactivées, ou jetées à la poubelle</h2>
+<table class="joli">
+  {% for f in anciennesFormations %}
+  <tr>
+    <td>
+      <div class="delButton"><img src="/static/votes/img/del.png" onclick="delFormation(this)" alt="Bouton de suppression" title="Cliquer pour supprimer ces textes"/></div>
+      <div class="editButton"><img src="/static/votes/img/edit.png" onclick="editFormation(this)" alt="Bouton d'ajout" title="Cliquer pour récupérer ces textes"/></div>
+      <div class="titre" style="display:none">{{f.titre}}</div>
+      <div class="contenu" style="display:none">{{f.contenuDecode}}</div>
+    </td>
+    <td>{{f.petitResume| safe}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
 <div id="message"></div>
 {% endblock %}

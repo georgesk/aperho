@@ -1015,7 +1015,18 @@ def editeCours(request):
     édition d'un cours et de la formation associée
     """
     cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
+    formationCourante=Formation.objects.get(pk=cours.formation_id)
     prof=Enseignant.objects.get(pk=cours.enseignant_id)
+    ## on récupère les anciennes formations, dans les cours actuels
+    ## du prof, et dans les formations qu'il a détachées d'un cours
+    ## suite à une édition
+    anciennesFormations=set()
+    for c in Cours.objects.filter(enseignant=prof):
+        anciennesFormations.add(c.formation)
+    for f in Formation.objects.filter(auteur=prof):
+        anciennesFormations.add(f)
+    anciennesFormations-=set([formationCourante])
+    print("GRRRR", anciennesFormations)
     horaire=Horaire.objects.get(pk=cours.horaire_id)
     if "editeCours" in request.META["HTTP_REFERER"]:
         ## la page se rappelle elle-même, on a cliqué sur le bouton
@@ -1031,12 +1042,21 @@ def editeCours(request):
                     form.add_error("duree","Erreur : un cours de 2 heures doit commencer en début d'horaire")
             if ok: # à ce stade le cours lui-même est valide
                 cours.capacite=form.cleaned_data["capacite"]
-                f=Formation.objects.get(pk=cours.formation_id)
-                f.titre=form.cleaned_data["titre"]
-                f.contenu=form.cleaned_data["contenu"]
-                f.duree=form.cleaned_data["duree"]
+                if formationCourante.titre != form.cleaned_data["titre"] or \
+                   formationCourante.contenu != form.cleaned_data["contenu"]:
+                    # on crée une nouvelle formation dès qu'il y a une variante
+                    # avant de détacher la formation du cours, on l'attache
+                    # à l'enseignant, sans quoi elle devient orpheline
+                    # dans la base de données
+                    formationCourante.auteur_id=cours.enseignant_id
+                    formationCourante.save()
+                    formationCourante.id=None
+                    formationCourante.titre=form.cleaned_data["titre"]
+                    formationCourante.contenu=form.cleaned_data["contenu"]
+                formationCourante.duree=form.cleaned_data["duree"]
                 try:
-                    f.save()
+                    formationCourante.save()
+                    cours.formation_id=formationCourante.id
                     cours.save()
                 except Exception as e:
                     ok=False
@@ -1076,6 +1096,7 @@ def editeCours(request):
                     'prof': prof,
                     'horaire': horaire,
                     "c_id": cours.id,
+                    "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre)
                 })
                 
         else:
@@ -1084,20 +1105,21 @@ def editeCours(request):
                 'prof': prof,
                 'horaire': horaire,
                 "c_id": cours.id,
+                "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre)
             })
     else:
         cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
-        formation=Formation.objects.get(pk=cours.formation_id)
+        formationCourante=Formation.objects.get(pk=cours.formation_id)
         back=request.POST.get("back")
         prof=Enseignant.objects.get(pk=cours.enseignant_id)
         horaire=Horaire.objects.get(pk=cours.horaire_id)
         form = editeCoursForm(initial={
-            "titre": formation.titre,
-            "contenu": formation.contenuDecode,
-            "duree": formation.duree,
+            "titre": formationCourante.titre,
+            "contenu": formationCourante.contenuDecode,
+            "duree": formationCourante.duree,
             "capacite": cours.capacite,
-            "public_designe": formation.public_designe,
-            "public_designe_initial": formation.public_designe,
+            "public_designe": formationCourante.public_designe,
+            "public_designe_initial": formationCourante.public_designe,
             "reponse": "ok",
             "back": back,
             "is_superuser": request.user.is_superuser,
@@ -1108,4 +1130,5 @@ def editeCours(request):
                 'prof': prof,
                 'horaire': horaire,
                 "c_id": cours.id,
+                "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre)
             })
