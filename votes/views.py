@@ -848,13 +848,6 @@ def delClasse(request):
         "status": "ok",
     })
 
-def listCours(request):
-    c=Cours.objects.all()
-    return render(
-        request, "listCours.html",
-        { "lesCours": c }
-    )
-
 def delCours(request):
     c=request.GET.get("cours")
     cours=Cours.objects.filter(pk=c)

@@ -17,7 +17,6 @@ urlpatterns = [
     url(r'^cop$', views.cop, name='cop'),
     url(r'^listClasse$', views.listClasse, name='listClasse'),
     url(r'^delClasse$', views.delClasse, name='delClasse'),
-    url(r'^listCours$', views.listCours, name='listCours'),
     url(r'^delCours$', views.delCours, name='delCours'),
     url(r'^addBarrette$', views.addBarrette, name='addBarrette'),
     url(r'^delBarrette$', views.delBarrette, name='delBarrette'),
