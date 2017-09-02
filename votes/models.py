@@ -215,6 +215,10 @@ class Formation(models.Model):
     duree   = models.IntegerField(default=1)
     public_designe = models.BooleanField(default=False, verbose_name="Public désigné")
     barrette = models.ForeignKey('Barrette')
+    auteur = models.ForeignKey(
+        'Enseignant', null=True, blank=True,
+        help_text="le dernier prof à avoir modifié le titre ou le contenu"
+    )
 
     @property
     def contenuDecode(self):
@@ -226,6 +230,16 @@ class Formation(models.Model):
             result=urllib.parse.unquote(self.contenu)
         except:
             result=""+self.contenu
+        return result
+
+    @property
+    def petitResume(self):
+        """
+        Un petit résumé, pour choisir parmi plusieurs formations autres
+        """
+        result = "<b>%s :</b>%s" %(self.titre, self.contenuDecode)
+        if len(result) > 80:
+            result=result[:76]+" ..."
         return result
     
     @property
