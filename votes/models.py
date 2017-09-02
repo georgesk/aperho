@@ -217,17 +217,24 @@ class Formation(models.Model):
     barrette = models.ForeignKey('Barrette')
 
     @property
-    def contenuWithLineBreaks(self):
+    def contenuDecode(self):
         """
         décode le contenu. S'il est au format encodedURI, ça le décode
-        puis les retours à la ligne sont remplacés par des <br/>
         """
         result=""
         try:
             result=urllib.parse.unquote(self.contenu)
         except:
             result=""+self.contenu
-        return result.replace("\n","<br/>")
+        return result
+    
+    @property
+    def contenuWithLineBreaks(self):
+        """
+        décode le contenu. S'il est au format encodedURI, ça le décode
+        puis les retours à la ligne sont remplacés par des <br/>
+        """
+        return self.contenuDecode().replace("\n","<br/>")
 
     def __str__(self):
         cours=Cours.objects.filter(formation=self)

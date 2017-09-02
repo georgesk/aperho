@@ -7,6 +7,7 @@ from django.db import IntegrityError
 from django.db.models import Q
 from urllib.parse import urlencode
 from django.core.exceptions import ObjectDoesNotExist
+
 import json
 
 from aperho.settings import connection
@@ -15,6 +16,7 @@ from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     CoursOrientation, Cop, Horaire, Barrette
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
+from .forms import editeCoursForm
 from collections import OrderedDict
 
 def index(request):
@@ -667,79 +669,6 @@ def metEnDernier (c):
     dernier=Horaire.objects.filter(barrette_id=c.barrette_id).order_by('heure').last()
     c.horaire=dernier
     return
-    
-def majCours(request):
-    """
-    Mise à jour d'un cours. Après la mise à jour, on vérifie si le prof
-    donne bel et bien deux heures, et on agit en conséquence.
-    """
-    ok="ok"
-    message=""
-    c=Cours.objects.get(pk=request.POST.get("cours_id"))
-    try:
-        duree=int(request.POST.get("duree"))
-        assert duree in (1,2), "la durée doit être 1 ou 2 heures"
-    except Exception as e:
-        ok="ko"
-        message="Erreur : durée incorrecte %s, %s" %(request.POST.get("duree"), repr(e))
-    minCapacite=16
-    maxCapacite=30
-    try:
-        capacite=int(request.POST.get("capacite"))
-        assert capacite in range(minCapacite,1+maxCapacite), "nombre d'élèves incorrect"
-    except Exception as e:
-        ok="ko"
-        message="Erreur : nombre d'élèves incorrect %s, %s" %(request.POST.get("capacite"), repr(e))
-    if ok=="ok":
-        ## on vérifie, pour un cours de deux heures, s'il est à la première
-        ## des deux heures.
-        if duree==2:
-            if not estEnPremier (c):
-                ok="ko"
-                message="Erreur : un cours de 2 heures doit commencer en début d'horaire"
-    if ok=="ok":
-        c.capacite=capacite
-        f=Formation.objects.get(pk=c.formation_id)
-        f.titre=request.POST.get("dCourte")
-        f.contenu=request.POST.get("dLongue")
-        f.duree=duree
-
-        try:
-            f.save()
-            c.save()
-        except Exception as e:
-            ok="ko"
-            message="Erreur : %s" %e
-        if ok=="ok":
-            ## À ce stade, le cours est sa formation sont valides,
-            ## reste à verifier si le prof fait bien deux heures.
-            try:
-                if duree==1:
-                    # chercher le deuxième cours
-                    deuxCours=list(Cours.objects.filter(enseignant=c.enseignant, barrette=c.barrette, ouverture=c.ouverture))
-                    total=0
-                    for dc in deuxCours:
-                        f=Formation.objects.get(pk=dc.formation_id)
-                        total+=f.duree
-                    assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
-                    if total<2: # un seul cours, il faut un deuxième
-                        creeCoursParDefaut(c.barrette, c.ouverture, cours=c)
-                else:
-                    # duree ==2 supprimer le deuxième cours éventuellement
-                    deuxCours=list(Cours.objects.filter(enseignant=c.enseignant, barrette=c.barrette, ouverture=c.ouverture))
-                    if len(deuxCours) > 1:
-                        # garder le cours modifié, supprimer l'autre
-                        for dc in deuxCours:
-                            if dc != c:
-                                dc.delete()
-            except Exception as e:
-                ok="ko"
-                message="Erreur : %s" %e
-    return JsonResponse({
-        "message" : message,
-        "ok"      : ok,
-    })
-
 
 def enroler(request):
     """
@@ -1105,4 +1034,103 @@ def editOuverture(request):
         message="appel de la page editOuverture incorrect."
         ok="ko"
     return HttpResponseRedirect('addOuverture?%s' %urlencode({"editMsg":message}))
-   
+    
+def editeCours(request):
+    """
+    édition d'un cours et de la formation associée
+    """
+    cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
+    prof=Enseignant.objects.get(pk=cours.enseignant_id)
+    horaire=Horaire.objects.get(pk=cours.horaire_id)
+    if "editeCours" in request.META["HTTP_REFERER"]:
+        ## la page se rappelle elle-même, on a cliqué sur le bouton
+        ## de validation donc on peut récupérer les valeurs de form
+        form=editeCoursForm(request.POST)
+        if form.is_valid():
+            ok=True
+            ## on vérifie, pour un cours de deux heures, s'il est à la première
+            ## des deux heures.
+            if form.cleaned_data["duree"]==2:
+                if not estEnPremier (cours):
+                    ok=False
+                    form.add_error("duree","Erreur : un cours de 2 heures doit commencer en début d'horaire")
+            if ok: # à ce stade le cours lui-même est valide
+                cours.capacite=form.cleaned_data["capacite"]
+                f=Formation.objects.get(pk=cours.formation_id)
+                f.titre=form.cleaned_data["titre"]
+                f.contenu=form.cleaned_data["contenu"]
+                f.duree=form.cleaned_data["duree"]
+                try:
+                    f.save()
+                    cours.save()
+                except Exception as e:
+                    ok=False
+                    message="Erreur : %s" %e
+                    form.add_error(None, message)
+            if ok:
+                # à ce stade si duree==1, il faut vérifier le deuxième cours
+                # et si duree==2, il faut supprimer le deuxième cours
+                try:
+                    if form.cleaned_data["duree"]==1:
+                        # chercher le deuxième cours
+                        deuxCours=list(Cours.objects.filter(enseignant=cours.enseignant, barrette=cours.barrette, ouverture=cours.ouverture))
+                        total=0
+                        for dc in deuxCours:
+                            f=Formation.objects.get(pk=dc.formation_id)
+                            total+=f.duree
+                        assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
+                        if total<2: # un seul cours, il faut un deuxième
+                            creeCoursParDefaut(cours.barrette, cours.ouverture, cours=cours)
+                    else:
+                        # duree ==2 supprimer le deuxième cours éventuellement
+                        deuxCours=list(Cours.objects.filter(enseignant=cours.enseignant, barrette=cours.barrette, ouverture=cours.ouverture))
+                        if len(deuxCours) > 1:
+                            # garder le cours modifié, supprimer l'autre
+                            for dc in deuxCours:
+                                if dc != cours:
+                                    dc.delete()
+                except Exception as e:
+                    ok=False
+                    message="Erreur : %s" %e
+                    form.add_error(None, message)
+            if ok:
+                return HttpResponseRedirect(form.cleaned_data["back"])
+            else:
+                return render(request, "editeCours.html",  {
+                    'form': form,
+                    'prof': prof,
+                    'horaire': horaire,
+                    "c_id": c_id,
+                })
+                
+        else:
+            return render(request, "editeCours.html",  {
+                'form': form,
+                'prof': prof,
+                'horaire': horaire,
+                "c_id": c_id,
+            })
+    else:
+        cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
+        formation=Formation.objects.get(pk=cours.formation_id)
+        back=request.POST.get("back")
+        prof=Enseignant.objects.get(pk=cours.enseignant_id)
+        horaire=Horaire.objects.get(pk=cours.horaire_id)
+        form = editeCoursForm(initial={
+            "titre": formation.titre,
+            "contenu": formation.contenuDecode,
+            "duree": formation.duree,
+            "capacite": cours.capacite,
+            "public_designe": formation.public_designe,
+            "public_designe_initial": formation.public_designe,
+            "reponse": "ok",
+            "back": back,
+            "is_superuser": request.user.is_superuser,
+        })
+        return render(
+            request, "editeCours.html",  {
+                'form': form,
+                'prof': prof,
+                'horaire': horaire,
+                "c_id": cours.id,
+            })

@@ -1,0 +1,115 @@
+{% extends "base1.html" %}
+
+{% block mesactions %}
+<ul>
+  {% if user.is_superuser %}
+  <li><a href="/votes/addEleves">Élèves</a></li>
+  <li><a href="/votes/addProfs">Profs</a></li>
+  <li><a href="/votes/addFormation">Formations d'AP<!-- ' --></a></li>
+  <li><a href="/admin/votes/cours/add/">Nouvelle séance  d'AP<!-- ' --></a></li>
+  <li><a href="/votes/listCours">Séances d'AP<!-- ' --></a></li>
+  <li><a href="/votes/cop">Élèves -> COPs</a></li>
+  <li><hr/></li>
+  <li><a href="/admin/">Administration directe de Django</a></li>
+  {% else %}
+  <!-- actions pour le non-administrateur -->
+  {% endif %}
+  <li><hr/></li>
+  <li><a href="/logout">Déconnexion</a></li>
+</ul>
+{% endblock %}
+
+{% block localscripts %}
+<script type"text/javascript">
+$(document).ready(function() {
+    if("{{avertissement}}".length > 0){
+	$( "#message" ).empty();
+	$( "#message" ).attr({title: "Avertissement",});
+	$( "#message" ).html("{{avertissement|safe}}");
+	$( "#message" ).dialog({
+	    modal: true,
+	    buttons: [
+		{
+		    text: "OK",
+		    click: function() {
+			$( this ).dialog( "close" );
+		    }
+		}
+	    ]
+	});
+    }
+
+    var pdi=$("#id_public_designe_initial");
+    var pdn=$("#id_public_designe");
+    // force la boîte à cocher visible à la valeur du champ invisible
+    pdn.prop("checked", pdi.val()=="True");
+});
+
+</script>
+{% endblock %}
+
+{% block title %}
+<h1>Modification d'un cours ({{prof.nom}} {{prof.prenom}} -- {{horaire}})</h1> <!-- ' -->
+{% endblock %}
+
+{% block contents %}
+<form method="post">
+<table border="1" class="joli">
+  <tr class="fieldWrapper">
+    <td>
+      <label for="{{form.titre.id_for_label}}">
+	Description courte :
+      </label>
+    </td>
+    <td colspan="4">
+      {{form.titre}}
+    </td>
+  </tr>
+  <tr class="fieldWrapper">
+    <td>
+      <label for="{{form.contenu.id_for_label}}">
+	Description longue :
+      </label>
+    </td>
+    <td colspan="4">
+      {{form.contenu}}
+    </td>
+  </tr>
+  <tr class="fieldWrapper">
+    <td>
+      <label for="{{form.duree.id_for_label}}">
+	Durée (1 ou 2 heures) :
+      </label>
+    </td>
+    <td>
+      {{ form.duree.errors }}<br/>
+      {{form.duree}}
+    </td>
+    <td>
+      <label for="{{form.capacite.id_for_label}}">
+	capacité (±18 élèves) :
+      </label>
+    </td>
+    <td>
+      {{ form.capacite.errors }}<br/>
+      {{form.capacite}}
+    </td>
+    <td>
+      {{ form.public_designe.errors }}<br/>
+      <label for="{{form.public_designe.id_for_label}}">
+	Public désigné :
+      </label>
+      {{form.public_designe}}
+    <div id="hiddenFields">
+      <input type="hidden" name="c_id" id="c_id" value="{{c_id}}"/>
+      {{form.back}} {{form.is_superuser}} {{form.public_designe_initial}}
+      </div>
+      {% csrf_token %}
+    </td>
+  </tr>
+</table>
+<input type="submit" value="Valider les modifications" style="margin: 1em;"/>
+{{ form.non_field_errors }}
+</form>
+<div id="message"></div>
+{% endblock %}

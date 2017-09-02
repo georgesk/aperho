@@ -60,7 +60,17 @@ $( function() { // lancement après le chargement
 	  <!-- il s'agit de « mon » enregistrement en tant que prof -->
 	  <td rowspan="3">
 	    <div class="editButton">
-	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{e.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}', '{{c.capacite}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
+	      <form method="post" action="editeCours">
+		{% csrf_token %}
+		<input type="hidden" name="c_id"
+		       value="{{c.id}}"/>
+		<input type="hidden" name="back"
+		       value="lesCours?uid={{e.username}}"/>
+		<button type="submit" style="background: #00000000">
+		  <img src="/static/votes/img/edit.svg" alt="Bouton d'édition"
+		       title="Éditer" width="100"/>
+		  </button>
+	      </form>
 	    </div>
 	  </td>
 	  {% endifequal %}
@@ -68,7 +78,17 @@ $( function() { // lancement après le chargement
 	  <!-- je suis admin -->
 	  <td rowspan="3">
 	    <div class="editButton">
-	      <img src="/static/votes/img/edit.svg" onclick="editCours('{{csrf_token}}','{{c.id}}', 'lesCours?uid={{e.username}}', '{{c.formation.titre}}', '{{c.formation.contenu}}', '{{c.formation.duree}}', '{{c.capacite}}')" alt="Bouton d'édition" title="Éditer" width="100"/>
+	      <form method="post" action="editeCours">
+		{% csrf_token %}
+		<input type="hidden" name="c_id"
+		       value="{{c.id}}"/>
+		<input type="hidden" name="back"
+		       value="lesCours?uid={{e.username}}"/>
+		<button type="submit" style="background: #00000000">
+		  <img src="/static/votes/img/edit.svg" alt="Bouton d'édition"
+		       title="Éditer" width="100"/>
+		  </button>
+	      </form>
 	    </div>
 	  </td>
 	  {% endif %}

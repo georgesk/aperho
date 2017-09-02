@@ -25,5 +25,5 @@ urlpatterns = [
     url(r'^addOuverture$', views.addOuverture, name='addOuverture'),
     url(r'^delOuverture$', views.delOuverture, name='delOuverture'),
     url(r'^editOuverture$', views.editOuverture, name='editOuverture'),
-    url(r'^majCours$', views.majCours, name='majCours'),
+    url(r'^editeCours$', views.editeCours, name='editeCours'),
 ]
