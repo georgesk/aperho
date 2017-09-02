@@ -9,7 +9,6 @@ urlpatterns = [
     url(r'^delProfBarrette$', views.delProfBarrette, name='delProfBarrette'),
     url(r'^addUnProf$', views.addUnProf, name='addUnProf'),
     url(r'^changeSalle$', views.changeSalle, name='changeSalle'),
-    url(r'^addFormation$', views.addFormation, name='addFormation'),
     url(r'^addInscription$', views.addInscription, name='addInscription'),
     url(r'^lesCours$', views.lesCours, name='lesCours'),
     url(r'^enroler$', views.enroler, name='enroler'),

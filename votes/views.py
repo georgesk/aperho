@@ -449,29 +449,6 @@ def addProfs(request):
         }
     )
 
-def addFormation(request):
-    """
-    ajout d'une formation dans la barrette
-    """
-    if request.POST.get("ok",""):
-        # on a validé la formation, il faut l'enregistrer
-        f=Formation(
-            titre=request.POST.get("titre",""),
-            contenu=request.POST.get("contenu",""),
-            duree=int(request.POST.get("duree",1)),
-        )
-        f.save()
-        return render(
-            request, "addFormation1.html",
-            context={
-                "f": f,
-            }
-        )
-    ### pas encore de formation à valider : on demande
-    return render(
-        request, "addFormation.html",
-    )
-
 def addInscription(request):
     """
     ajoute une inscription à un cours
