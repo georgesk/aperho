@@ -674,6 +674,7 @@ def enroler(request):
             request, "enroler.html",
             context={
                 "autorise":    estProfesseur(request.user)=="profAP" or request.user.is_superuser,
+                "estprof":    estProfesseur(request.user),
                 "username":    request.user.username,
                 "cours0":      cours0,
                 "cours1":      cours1,
@@ -758,9 +759,10 @@ def enroleEleveCours(request):
     enrole un élève dans un cours request.POST doit contenir deux variables,
     uid et cours.
     """
-    uid=request.GET.get("uid","")
-    cours=request.GET.get("cours","")
-    cours2=request.GET.get("cours2","")
+    uid=request.POST.get("uid","")
+    cours=request.POST.get("cours","")
+    cours2=request.POST.get("cours2","")
+    print("GRRRR", request.POST, request.POST.get("cours",""), request.POST.get("cours2",""))
     possible="je ne peux pas enrôler"
     if "profAP" == estProfesseur(request.user):
         possible="je peux enrôler"

@@ -4,14 +4,19 @@
 
 function enroler(){
     var eleve=$("#eleve").val();
-    var cours=$("#cours").val();
-    var cours2=$("#cours2").val();
-    var re = /.*\((\S*)\)/;
+    var cours0val=$("#cours0").val();
+    var cours1val=$("#cours1").val();
+    console.log(cours0)
+    var re = /^.*\((\S*)\)$/;
     var uid=eleve.match(re)[1];
-    console.log("inscrire dans le cours :", cours, uid);
+    var id0=cours0val.match(re)[1];
+    var m1=cours1val.match(re);
+    if (m1) id1=m1[1]; else id1=-1;
+    var csrf=$("#csrf").val();
+    console.log("inscrire dans le cours :", id0, id1, uid);
     var url="/votes/enroleEleveCours"
-    $.get(url,
-	  { cours: cours, cours2: cours2, uid: uid, }
+    $.post(url,
+	   { cours: id0, cours2: id1, uid: uid, csrfmiddlewaretoken: csrf}
 	 ).done(function(data){
 	     console.log(data, data.msg);
 	      $("#dialog").dialog({

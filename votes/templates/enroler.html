@@ -1,5 +1,28 @@
 {% extends 'home.html' %}
 {% block webTitle %}<title>Aperho : enrôler des élèves</title>{% endblock %}
+{% block mesactions %}
+
+<ul>
+  {% if user.is_superuser %}
+  <li><a href="/votes/addEleves">Élèves</a></li>
+  <li><a href="/votes/addProfs">Profs</a></li>
+  <li><a href="/votes/lesCours">Séances d'AP<!-- ' --></a></li>
+  <li><a href="/votes/cop">Élèves -> COPs</a></li>
+  <li><hr/></li>
+  <li><a href="/admin/">Administration directe de Django</a></li>
+  {% else %}
+  <!-- actions pour le non-administrateur -->
+  {% ifequal estprof "profAP" %}
+  <li><a href="/votes/lesCours?uid={{username}}">Mes cours d'AP</a></li>
+  <li><a href="/votes/lesCours">Tous les cours d'AP</a></li>
+  <li><a href="/votes/enroler">Enrôler des élèves</a></li>
+  {% endifequal %}
+  {% endif %}
+  <li><hr/></li>
+  <li><a href="/logout">Déconnexion</a></li>
+</ul>
+{% endblock %}
+
 {% block localscripts %}
 <script type="text/javascript">
     $( function() { // lancement après le chargement
@@ -21,23 +44,30 @@
 	];
 	$("#eleve").autocomplete({
 	    source: noninscrits,
+	    minLength: 3,
 	});
 
-	var cours0 = [
+	var cours0list = [
 	    {% for c in cours0 %}
-	    "{{c.enseignant.nom}} {{c.horaire}}, durée : {{c.formation.duree}}h ({{c.n}}/{{c.capacite}}) {{c.formation.titre}}",
+	    "{{c.enseignant.nom}} {{c.horaire}}, durée : {{c.formation.duree}}h ({{c.n}}/{{c.capacite}}) {{c.formation.titre}} ({{c.id}})",
 	    {% endfor %}
 	];
+
 	$("#cours0").autocomplete({
-	    source: cours0,
+	    source: cours0list,
+	    minLength: 3,
 	});
-	var cours1 = [
+	
+	var cours1list = [
 	    {% for c in cours1 %}
-	    "{{c.enseignant.nom}} {{c.horaire}}, durée : {{c.formation.duree}}h ({{c.n}}/{{c.capacite}}) {{c.formation.titre}}",
+	    "{{c.enseignant.nom}} {{c.horaire}}, durée : {{c.formation.duree}}h ({{c.n}}/{{c.capacite}}) {{c.formation.titre}} ({{c.id}})",
 	    {% endfor %}
 	];
+	
+	
 	$("#cours1").autocomplete({
-	    source: cours1,
+	    source: cours1list,
+	    minLength: 3,
 	});
     } );
 </script>
@@ -84,9 +114,11 @@
   <tr>
     <th colspan="2">
       <button type="button" onclick="enroler()">Enrôler</button>
+      <input type="hidden" id="csrf" value="{{csrf_token}}"/>
     </th>
   </tr>
 </table>
+<div id="dialog" style="display:none"></div>
 {% else %}<!-- not autorise -->
 <h2>Votre statut ne vous permet pas d'utiliser cette page</h2>
 {% endif %} <!-- endifequal prof "profAP" -->
