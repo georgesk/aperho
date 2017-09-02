@@ -1022,7 +1022,7 @@ def editeCours(request):
     ## du prof, et dans les formations qu'il a détachées d'un cours
     ## suite à une édition
     anciennesFormations=set()
-    for c in Cours.objects.filter(enseignant=prof):
+    for c in Cours.objects.filter(~Q(ouverture=cours.ouverture),enseignant=prof):
         anciennesFormations.add(c.formation)
     for f in Formation.objects.filter(auteur=prof):
         anciennesFormations.add(f)
@@ -1096,7 +1096,8 @@ def editeCours(request):
                     'prof': prof,
                     'horaire': horaire,
                     "c_id": cours.id,
-                    "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre)
+                    "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
+                    "estprof": estProfesseur(request.user),
                 })
                 
         else:
@@ -1105,7 +1106,8 @@ def editeCours(request):
                 'prof': prof,
                 'horaire': horaire,
                 "c_id": cours.id,
-                "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre)
+                "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
+                "estprof": estProfesseur(request.user),
             })
     else:
         cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
@@ -1130,7 +1132,8 @@ def editeCours(request):
                 'prof': prof,
                 'horaire': horaire,
                 "c_id": cours.id,
-                "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre)
+                "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
+                "estprof": estProfesseur(request.user),
             })
 
 def delFormation(request):

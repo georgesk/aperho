@@ -11,6 +11,11 @@
   <li><a href="/admin/">Administration directe de Django</a></li>
   {% else %}
   <!-- actions pour le non-administrateur -->
+  {% ifequal estprof "profAP" %}
+  <li><a href="/votes/lesCours?uid={{username}}">Mes cours d'AP</a></li>
+  <li><a href="/votes/lesCours">Tous les cours d'AP</a></li>
+  <li><a href="/votes/enroler">Enrôler des élèves</a></li>
+  {% endifequal %}
   {% endif %}
   <li><hr/></li>
   <li><a href="/logout">Déconnexion</a></li>
