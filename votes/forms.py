@@ -27,7 +27,7 @@ class editeCoursForm(forms.Form):
         max_length=400,
         widget=forms.Textarea(attrs={
             "cols": 80,
-            "rows": 20,
+            "rows": 5,
         })
     )
     duree = dureeField()
