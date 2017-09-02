@@ -44,7 +44,7 @@
 	];
 	$("#eleve").autocomplete({
 	    source: noninscrits,
-	    minLength: 3,
+	    minLength: 1,
 	});
 
 	var cours0list = [
@@ -55,7 +55,7 @@
 
 	$("#cours0").autocomplete({
 	    source: cours0list,
-	    minLength: 3,
+	    minLength: 1,
 	});
 	
 	var cours1list = [
@@ -67,8 +67,10 @@
 	
 	$("#cours1").autocomplete({
 	    source: cours1list,
-	    minLength: 3,
+	    minLength: 1,
 	});
+
+	$("#eleve")[0].focus();
     } );
 </script>
 <script type="text/javascript" src="/static/votes/js/enroler.js">
@@ -84,7 +86,7 @@
   <tr><th colspan="2">Choisir un élève, puis un ou deux cours</th></tr>
   <tr>
     <th>
-      Élève
+      Élève (parmi {{noninscrits|length}} non-inscrits)
     </th>
     <td>
       <div class="delButton"><img src="/static/votes/img/editclear.png" onclick="$('#eleve').val('')" alt="Bouton pour effacer"/></div>
