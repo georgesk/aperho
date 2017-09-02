@@ -1,0 +1,8 @@
+#! /bin/sh
+
+python3 -i -c "\
+import os, django;\
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aperho.settings');\
+django.setup();\
+from votes.models import Barrette, Ouverture, Enseignant, Formation, Horaire, Etudiant, Cours, Inscription"
+
