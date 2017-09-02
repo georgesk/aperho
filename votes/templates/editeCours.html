@@ -18,7 +18,27 @@
 {% endblock %}
 
 {% block localscripts %}
-<script type"text/javascript" src="/static/votes/static/js/editeCours.js">
+<script type"text/javascript" src="/static/votes/js/editeCours.js">
+</script>
+<script type"text/javascript">
+$(document).ready(function() {
+    if("{{avertissement}}".length > 0){
+	$( "#message" ).empty();
+	$( "#message" ).attr({title: "Avertissement",});
+	$( "#message" ).html("{{avertissement|safe}}");
+	$( "#message" ).dialog({
+	    modal: true,
+	    buttons: [
+		{
+		    text: "OK",
+		    click: function() {
+			$( this ).dialog( "close" );
+		    }
+		}
+	    ]
+	});
+    }
+});
 </script>
 {% endblock %}
 
@@ -95,6 +115,7 @@
       <div class="editButton"><img src="/static/votes/img/edit.png" onclick="editFormation(this)" alt="Bouton d'ajout" title="Cliquer pour récupérer ces textes"/></div>
       <div class="titre" style="display:none">{{f.titre}}</div>
       <div class="contenu" style="display:none">{{f.contenuDecode}}</div>
+      <div class="formation_id" style="display:none">{{f.id}}</div>
     </td>
     <td>{{f.petitResume| safe}}</td>
   </tr>

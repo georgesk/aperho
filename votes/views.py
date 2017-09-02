@@ -533,14 +533,14 @@ def lesCours(request):
     derniereOuverture=""
     ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
     if not ouvertures:
-        cours=Cours.objects.filter(barrette__nom=barrette)
+        cours=Cours.objects.filter(barrette__nom=barrette).order_by("horaire")
     else:
         # ajouter un critère basé sur ouvertures.last() !!!!
         # on assure que chaque prof de la barrette ait au moins des cours
         # par défaut
         derniereOuverture=ouvertures.last()
         creeCoursParDefaut(barrette, derniereOuverture)
-        cours=Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=derniereOuverture.pk).order_by("horaire__debut")
+        cours=Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=derniereOuverture.pk).order_by("horaire")
     noninscrits=set([])
     if pourqui:
         if request.user.is_superuser:
@@ -557,10 +557,11 @@ def lesCours(request):
         eleves=set([e for e in Etudiant.objects.all()])
         inscrits=set([i.etudiant for i in Inscription.objects.all()])
         noninscrits=eleves-inscrits
-    cours=list(cours.order_by("formation__titre","enseignant__nom","horaire",))
+    cours=list(cours.order_by("formation__titre","enseignant__nom","horaire"))
     enseignants=[c.enseignant for c in cours]
     cops=list(Cop.objects.all().order_by("nom"))
     horaires=set([c.horaire for c in cours])
+    horaires=sorted(list(horaires), key=lambda h: h.heure)
     cci=OrderedDict() ## dictionnaire cop -> coursOrientation -> inscriptionOrientations
     for c in cops:
         cc=[co for co in CoursOrientation.objects.all().order_by("debut") if co.cop==c]
@@ -573,7 +574,7 @@ def lesCours(request):
     eci=OrderedDict() ## dictionnaire enseignant -> cours -> inscriptions
     for e in enseignants:
         ec=[c for c in cours if c.enseignant==e]
-        eci[e]={}
+        eci[e]=OrderedDict()
         i=0
         for c in ec:
             inscriptions=Inscription.objects.filter(cours=c)
@@ -701,7 +702,7 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
     b=Barrette.objects.get(nom=barrette)
     enseignants=Enseignant.objects.filter(barrettes__id=b.pk)
     for e in enseignants:
-        cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture)
+        cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture).order_by("horaire")
         if not cours:
             coursAnciensTrouves=False
             ## on essaie d'abord de récupérer des cours donnés précédemment
@@ -726,7 +727,7 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
                 c1.save()
                 c2.save()
                 nouveaux+=2
-        cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture)
+        cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture).order_by("horaire")
     return nouveaux
 
 def formationParDefaut(b):
@@ -1026,7 +1027,6 @@ def editeCours(request):
     for f in Formation.objects.filter(auteur=prof):
         anciennesFormations.add(f)
     anciennesFormations-=set([formationCourante])
-    print("GRRRR", anciennesFormations)
     horaire=Horaire.objects.get(pk=cours.horaire_id)
     if "editeCours" in request.META["HTTP_REFERER"]:
         ## la page se rappelle elle-même, on a cliqué sur le bouton
@@ -1132,3 +1132,19 @@ def editeCours(request):
                 "c_id": cours.id,
                 "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre)
             })
+
+def delFormation(request):
+    formation_id=int(request.POST.get("formation_id"))
+    ok="ok"
+    message=""
+    try:
+        formation=Formation.objects.get(pk=formation_id)
+        result=formation.delete()
+    except Exception as e:
+        ok="ko"
+        message="Erreur : %s" %e
+    return JsonResponse({
+        "message" : message,
+        "ok"      : ok,
+    })
+

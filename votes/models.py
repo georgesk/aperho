@@ -238,8 +238,8 @@ class Formation(models.Model):
         Un petit résumé, pour choisir parmi plusieurs formations autres
         """
         result = "<b>%s :</b>%s" %(self.titre, self.contenuDecode)
-        if len(result) > 80:
-            result=result[:76]+" ..."
+        if len(result) > 100:
+            result=result[:96]+" ..."
         return result
     
     @property
@@ -251,9 +251,7 @@ class Formation(models.Model):
         return self.contenuDecode.replace("\n","<br/>")
 
     def __str__(self):
-        cours=Cours.objects.filter(formation=self)
-        profs="/".join([c.enseignant.nom for c in cours])
-        result="{} heure(s) : {} -- {} --- {}".format(self.duree, self.titre, profs, self.contenu)
+        result="{} heure(s) : {} -- {}".format(self.duree, self.titre, self.contenu)
         max=120
         if len(result) > max:
             result=result[:max-4]+" ..."
@@ -277,7 +275,9 @@ class Horaire(models.Model):
     def __str__(self):
         return str("%s %s" %(self.barrette, self.heure))
 
+    
     def __lt__(self, other):
+        print("GRRRR", self.heure, "<", other.heure, self.heure < other.heure)
         return self.jour < other.jour or self.heure < other.heure
 
     @property
