@@ -234,7 +234,7 @@ class Formation(models.Model):
         décode le contenu. S'il est au format encodedURI, ça le décode
         puis les retours à la ligne sont remplacés par des <br/>
         """
-        return self.contenuDecode().replace("\n","<br/>")
+        return self.contenuDecode.replace("\n","<br/>")
 
     def __str__(self):
         cours=Cours.objects.filter(formation=self)

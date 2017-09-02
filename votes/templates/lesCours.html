@@ -94,6 +94,9 @@ $( function() { // lancement après le chargement
 	  {% endif %}
 	  <th colspan="2">
 	    {{c.formation.titre}} (max. {{c.capacite}} élèves)
+	    {% if c.formation.public_designe %}
+	    <b>Public désigné</b>
+	    {% endif %}
 	  </th>
 	</tr>
 	<tr>

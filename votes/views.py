@@ -710,9 +710,13 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
         #place le cours en premier dans l'horaire
         metEnPremier(cours)
         cours.save()
-        # duplique le cours
+        # duplique le cours et la formation
         cours.id=None
         metEnDernier(cours)
+        f=Formation.objects.get(pk=cours.formation_id)
+        f.id=None
+        f.save()
+        cours.formation_id=f.id
         cours.save()
         return 1
     nouveaux=0
@@ -1100,7 +1104,7 @@ def editeCours(request):
                     'form': form,
                     'prof': prof,
                     'horaire': horaire,
-                    "c_id": c_id,
+                    "c_id": cours.id,
                 })
                 
         else:
@@ -1108,7 +1112,7 @@ def editeCours(request):
                 'form': form,
                 'prof': prof,
                 'horaire': horaire,
-                "c_id": c_id,
+                "c_id": cours.id,
             })
     else:
         cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
