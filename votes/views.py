@@ -654,10 +654,17 @@ def enroler(request):
     Les profs du groupe d'AP peuvent enrôler des élèves non-inscrits
     grâce à cette page
     """
-    cours=list(Cours.objects.all().order_by("enseignant__nom", "horaire"))
+    barrette=request.session.get("barrette","")
+    b=Barrette.objects.get(nom=barrette)
+    ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
+    derniereOuverture=ouvertures.last()
+    cours=list(Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=derniereOuverture.pk).order_by("enseignant__nom", "horaire"))
+    horaires=sorted(list(set([c.horaire for c in cours])))
     for c in cours:
         # on ajout l'attribut n, remplissage du cours
         c.n= len(Inscription.objects.filter(cours=c))
+    cours0=[c for c in cours if estEnPremier(c)]
+    cours1=[c for c in cours if not estEnPremier(c)]
     ## calcul des non-inscrits
     eleves=set([e for e in Etudiant.objects.all()])
     inscrits=set([i.etudiant for i in Inscription.objects.all()])
@@ -666,10 +673,12 @@ def enroler(request):
     return render(
             request, "enroler.html",
             context={
-                "prof":        estProfesseur(request.user),
-                "estprof":     estProfesseur(request.user),
+                "autorise":    estProfesseur(request.user)=="profAP" or request.user.is_superuser,
                 "username":    request.user.username,
-                "cours":       cours,
+                "cours0":      cours0,
+                "cours1":      cours1,
+                "h0":          horaires[0],
+                "h1":          horaires[1],
                 "noninscrits": noninscrits,
             }
         )
