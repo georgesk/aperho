@@ -563,7 +563,7 @@ def lesCours(request):
         # par défaut
         derniereOuverture=ouvertures.last()
         creeCoursParDefaut(barrette, derniereOuverture)
-        cours=Cours.objects.filter(enseignant__barrettes_id=b.id, ouverture=derniereOuverture.pk).order_by("horaire__debut")
+        cours=Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=derniereOuverture.pk).order_by("horaire__debut")
     noninscrits=set([])
     if pourqui:
         if request.user.is_superuser:

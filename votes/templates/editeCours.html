@@ -43,6 +43,10 @@ $(document).ready(function() {
     var pdn=$("#id_public_designe");
     // force la boîte à cocher visible à la valeur du champ invisible
     pdn.prop("checked", pdi.val()=="True");
+
+    // diminue la largeur des champs numériques
+    $("#id_duree").css({width: "50px"});
+    $("#id_capacite").css({width: "50px"});
 });
 
 </script>
@@ -61,7 +65,7 @@ $(document).ready(function() {
 	Description courte :
       </label>
     </td>
-    <td colspan="4">
+    <td>
       {{form.titre}}
     </td>
   </tr>
@@ -71,36 +75,36 @@ $(document).ready(function() {
 	Description longue :
       </label>
     </td>
-    <td colspan="4">
+    <td>
       {{form.contenu}}
     </td>
   </tr>
   <tr class="fieldWrapper">
-    <td>
-      <label for="{{form.duree.id_for_label}}">
-	Durée (1 ou 2 heures) :
-      </label>
-    </td>
-    <td>
-      {{ form.duree.errors }}<br/>
-      {{form.duree}}
-    </td>
-    <td>
-      <label for="{{form.capacite.id_for_label}}">
-	capacité (±18 élèves) :
-      </label>
-    </td>
-    <td>
-      {{ form.capacite.errors }}<br/>
-      {{form.capacite}}
-    </td>
-    <td>
-      {{ form.public_designe.errors }}<br/>
-      <label for="{{form.public_designe.id_for_label}}">
-	Public désigné :
-      </label>
-      {{form.public_designe}}
-    <div id="hiddenFields">
+    <td colspan="2">
+      <div id="smallFields">
+	<div style="display: inline-block; float: left; width: 300px; margin-right: auto;">
+	  {% if form.duree.errors %}{{ form.duree.errors }}<br/>{% endif %}
+	  <label for="{{form.duree.id_for_label}}">
+	    Durée (1 ou 2 heures) :
+	  </label>
+	  {{form.duree}}
+	</div>
+	<div style="display: inline-block; width: 300px; margins: auto 0;">
+	  {% if form.capacite.errors %}{{ form.capacite.errors }}<br/>{% endif %}
+	  <label for="{{form.capacite.id_for_label}}">
+	    capacité (±18 élèves) :
+	  </label>
+	  {{form.capacite}}
+	</div>
+	<div style="display: inline-block; float:right;">
+	  {% if form.public_designe.errors %}{{ form.public_designe.errors }}<br/>{% endif %}
+	  <label for="{{form.public_designe.id_for_label}}">
+	    Public désigné :
+	  </label>
+	  {{form.public_designe}}
+	</div>
+      </div>
+      <div id="hiddenFields">
       <input type="hidden" name="c_id" id="c_id" value="{{c_id}}"/>
       {{form.back}} {{form.is_superuser}} {{form.public_designe_initial}}
       </div>

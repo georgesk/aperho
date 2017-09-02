@@ -16,13 +16,20 @@ class capaciteField(forms.IntegerField):
        elif value > maxCap:
            raise forms.ValidationError("Trop d'élèves.")
 
-
-       
-    
-
 class editeCoursForm(forms.Form):
-    titre = forms.CharField(max_length=80)
-    contenu = forms.CharField(max_length=400, widget=forms.Textarea)
+    titre = forms.CharField(
+        max_length=80,
+        widget=forms.TextInput(attrs={
+            "size": 61,
+        })
+    )
+    contenu = forms.CharField(
+        max_length=400,
+        widget=forms.Textarea(attrs={
+            "cols": 80,
+            "rows": 20,
+        })
+    )
     duree = dureeField()
     capacite=capaciteField()
     public_designe=forms.BooleanField(required=False)

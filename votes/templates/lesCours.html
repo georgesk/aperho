@@ -41,8 +41,9 @@ $( function() { // lancement après le chargement
 <ul>
   <li>Pour un tableur, au <a href="/votes/lesCours?csv=yes">format CSV</a>.</li>  
   <li>Pour un tableur, au <a href="/votes/lesCours?ods=yes">format ODS</a>.</li>  
-  <li>Pour un traitement de texte, au <a href="/votes/lesCours?odt=yes">format ODT</a>.</li>  
+  <li>Pour un traitement de texte, au <a href="/votes/lesCours?odt=yes">format ODT</a>.</li>
 </ul>
+<h2>Liste des cours d'AP (dérouler les items)</h2>
 {% endif %}
 {% for e,ci in eci.items %}
 <div {% if not pourqui %}class="accordion"{{% endif %}>
