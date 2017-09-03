@@ -9,7 +9,7 @@ import json
 
 from votes.models import Cours, Inscription, Etudiant, Enseignant, \
     Orientation, Horaire, estProfesseur, barrettesPourUtilisateur, \
-    Barrette
+    Barrette, Ouverture
 
 def index(request):
     if request.user.is_authenticated():
@@ -56,10 +56,9 @@ def index(request):
         # la bonne date d'ouverture, même si les autres champs sont par défaut.
         orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
         if request.user.is_superuser or "profAP"==estProfesseur(request.user):
-            cours=[c for c in cours if c.estRecent()]
+            cours=[c for c in cours if c.estRecent]
         else:
-            cours=[c for c in cours if c.estOuvert()]
-        print("GRRRRR cours=", cours)
+            cours=[c for c in cours if c.estOuvert]
         capacite={} # tableau heure -> nombre d'élèves accueillis
         heures=[h.hm for h in Horaire.objects.all()]
         for h in heures:
@@ -119,6 +118,7 @@ def index(request):
                 "capacite" : c1,
             },
         ]
+        od=Ouverture.derniere()
         return render(
             request,
             "home.html",
@@ -133,6 +133,8 @@ def index(request):
                 "orientations_demandees": orientations_demandees,
                 "orientations" : orientations,
                 "orientationOuverte" : orientationOuverte,
+                "od": od,
+                "ouverte": od.estActive(),
                 "estprof": estProfesseur(request.user),
                 "username": request.user.username,
             }

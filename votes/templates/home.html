@@ -41,7 +41,12 @@ $( function() { // lancement après le chargement
 
     // on cache les boutons pour les profs et l'admin
     if("{{estprof}}"!="non" || "{{user.is_superuser}}"=="True"){
-	$("#inscription_boutons").hide();
+	$("#inscription_boutons").empty();
+	var text="Période d'inscription : <b>{{od.nom_session}}</b>";
+	if ("{{ouverte}}"=="True"){
+	    text="Les inscriptions pour <b>{{od.nom_session}}</b> <br/>sont en cours ! Passez de temps en temps<br/>pour voir l'évolution.";
+	}
+	$("#inscription_boutons").html(text);
     }
 } );
 </script>

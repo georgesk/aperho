@@ -553,7 +553,7 @@ def lesCours(request):
     # filtrage des cours : barrette courante et dernière session d'ouverture
     barrette=request.session.get("barrette","")
     b=Barrette.objects.get(nom=barrette)
-    od=Ouverture.derniere(barrette)
+    od=Ouverture.derniere()
     if not od:
         ## il faut définir au moins une première période d'ouverture d'aperho
         return HttpResponseRedirect('addOuverture')

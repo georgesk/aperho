@@ -205,10 +205,9 @@ class Ouverture(models.Model):
         return recente.debut==self.debut
 
     @staticmethod
-    def derniere(barrette):
+    def derniere():
         """
         renvoie la dernière ouverture en date si elle existe
-        @param barrette le nom d'une barrette
         @return une instance d'Ouverture sinon None
         """
         ouvertures=Ouverture.objects.all().order_by("debut")
@@ -356,6 +355,7 @@ class Cours(models.Model):
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
 
+    @property
     def estOuvert(self):
         """
         Dit si l'inscription au cours est ouverte
@@ -363,6 +363,7 @@ class Cours(models.Model):
         """
         return self.ouverture.estActive()
 
+    @property
     def estRecent(self):
         """
         Dit si la date d'inscription pour ce cours est la plus récente

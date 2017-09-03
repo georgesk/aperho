@@ -238,3 +238,31 @@ function changeattribut(el,trigger, attrib, valFalse, valTrue){
 	element.attr(attrib, valFalse);
     }
 }
+
+/**
+ * signale qu'on ne peut pas éditer un cours pendant la période
+ * d'ouverture des inscriptions et empêche le submit d'aller au bout
+ * @param tabou vaut 'True' quand on ne peut pas.
+ **/
+function interditCoursOuvert(tabou){
+    if(tabou=="True"){
+	$("#dialog").empty();
+	$("#dialog").text("On ne peut pas modifier le contenu d'un cours d'AP pendant la période des inscriptions")
+	$('#dialog').dialog({
+            autoOpen: true,
+            width: 750,
+	    modal:true,
+            closeOnEscape: true,
+            draggable: true,
+            title: 'Interdiction',
+            buttons: {
+		'OK': function () {
+                    $('#dialog').dialog('close');
+		},
+            }
+	});
+	return false;
+    } else {
+	return true;
+    }
+}

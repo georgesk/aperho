@@ -69,7 +69,7 @@ $( function() { // lancement après le chargement
 	  <!-- il s'agit de « mon » enregistrement en tant que prof -->
 	  <td rowspan="3">
 	    <div class="editButton">
-	      <form method="post" action="editeCours">
+	      <form method="post" action="editeCours" onsubmit="return interditCoursOuvert('{{c.estOuvert}}')">
 		{% csrf_token %}
 		<input type="hidden" name="c_id"
 		       value="{{c.id}}"/>
