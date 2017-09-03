@@ -61,10 +61,11 @@ function message(msg, reload){
     var closeFunction=function(){};
     if (reload){
 	closeFunction=function(){
-	    window.location.reload();
+	    window.location.assign(window.location);
 	}
     }
     var d = $("#dialog");
+    d.empty();
     d.html("<p>"+msg+"</p>");
     d.dialog({
 	title: "Information",
@@ -109,13 +110,13 @@ function valideCours(orientationOuverte){
 	    };
 	    var successFunction=function(data){
 		if (data.ok){
-		    message("OK ; "+data.message, /*reload*/ true);
+		    message(data.message, /*reload*/ true);
 		} else {
 		    message("Échec ; "+data.message);
 		}
 	    };
 	    var failFunction=function(data){
-		message("Erreur de traitement (/vote/addInscription). " + JSON.stringify(data));
+		message("Erreur : " + JSON.stringify(data));
 	    };
 	    $.get(url, inData)
 		.done(successFunction)
@@ -139,7 +140,7 @@ function annuleCours(){
     };
     var successFunction=function(data){
 	if (data.ok){
-	    message("OK ; "+data.message, /*reload*/ true);
+	    message(data.message, /*reload*/ true);
 	} else {
 	    message("Échec ; "+data.message);
 	}

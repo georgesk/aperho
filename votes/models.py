@@ -370,6 +370,14 @@ class Cours(models.Model):
         des dates d'inscriptions
         """
         return self.ouverture.estRecente()
+
+    @property
+    def complet(self):
+        """
+        dit si une classe a atteint son effectif maximum
+        """
+        jauge=Inscription.objects.filter(cours=self).count()
+        return jauge >= self.capacite
         
 
 class Inscription(models.Model):

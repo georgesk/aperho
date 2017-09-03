@@ -529,12 +529,23 @@ def addInscription(request):
         if clData == "": # cas d'un effacement demandé
             message="Effacement terminé."
         else:
+            jaugeOK=True
             message="Inscriptions : "
+            complets=[]
             for c in classes:
-                classe=Cours.objects.filter(pk=c)[0]
-                inscription=Inscription(etudiant=etudiant, cours=classe)
-                inscription.save()
-                message+="« {}, {}...» ".format(classe.formation.titre, classe.formation.contenu[:20])
+                classe=Cours.objects.get(pk=c)
+                ## on vérifie la jauge de cette classe
+                if classe.complet :
+                    jaugeOK=False
+                    complets.append("<span style='color:red; font-weight: bold;'>La classe {} -- {} était déjà pleine</span> ... ".format(classe.formation.titre, classe.formation.contenu[:20]))
+            if jaugeOK:
+                for c in classes:
+                    classe=Cours.objects.get(pk=c)
+                    inscription=Inscription(etudiant=etudiant, cours=classe)
+                    inscription.save()
+                    message+="« {}, {}» ... ".format(classe.formation.titre, classe.formation.contenu[:20])
+            else:
+                message="Désolé, mais :"+", ".join(complets)
     return JsonResponse({
         "message" : message,
         "ok"      : ok,
