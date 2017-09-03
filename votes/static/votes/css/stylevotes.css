@@ -323,3 +323,7 @@ ul.errorlist li{
     padding: 0.3em;
     border-radius: 0.5em;
 }
+
+.ui-datepicker {
+    z-index: 1001 !important;
+}
