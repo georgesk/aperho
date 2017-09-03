@@ -114,7 +114,7 @@ function delBarrette(el){
 			    },
 			    click: function() {
 				$( this ).dialog( "close" );
-				location.reload(); // on rafraîchit la page
+				location.assign("addBarrette"); // on recharge la page
 			    }
 			},
 		    ],
@@ -162,7 +162,7 @@ $( ".accordeon" ).accordion({
 {% if user.is_superuser %}
 <a name="nb"></a>
 <h2 id="nb">Créer une nouvelle barrette</h2>
-<form action="#" method="post"  onSubmit="collectclasses()">
+<form method="post"  onSubmit="collectclasses()">
   {% csrf_token %}
   <p>
     <label style="font-size: 120%; font-weight: bold;">
@@ -178,6 +178,36 @@ $( ".accordeon" ).accordion({
     </select>
   </p>
   <div style="clear:both"></div>
+  <table border="1" class="joli" style="margin-top: 3em;">
+    <tr>
+      <th>Première heure</th>
+      <td>
+	<select name="j1">
+	  <option value="1">lundi</option>
+	  <option value="2">mardi</option>
+	  <option value="3">mercredi</option>
+	  <option value="4">jeudi</option>
+	  <option value="5">vendredi</option>
+	  <option value="6">samedi</option>
+	</select>
+	<input type="text" id="h1" name="h1" placeholder="HH:MM" size="6"/> h
+      </td>
+    </tr>
+      <th>Deuxième heure</th>
+      <td>
+	<select name="j2">
+	  <option value="1">lundi</option>
+	  <option value="2">mardi</option>
+	  <option value="3">mercredi</option>
+	  <option value="4">jeudi</option>
+	  <option value="5">vendredi</option>
+	  <option value="6">samedi</option>
+	</select>
+	<input type="text" id="h2" name="h2" placeholder="HH:MM" size="6"/> h
+      </td>
+    <tr>
+    </tr>
+  </table>
   <div style="margin-top: 3em;">
     <input type="submit" id="submit" value="Créer une nouvelle barrette" style="font-size:120%; font-weight:bold;"/>
     <input type="hidden" name="selectedclasses" id="selectedclasses"/>

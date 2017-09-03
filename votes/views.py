@@ -166,6 +166,59 @@ def cop (request):
             "affectations": affectations,
         }
     )
+
+def inscritClasse(gid, barrette, cn=""):
+    """
+    Interroge l'annuaire et inscrit les élèves d'une classe dans la BD
+    @param gid l'identifiant d'une classe dans l'annuaire LDAP
+    @param barrette une instance de Barrette
+    @param cn un nom de classe (sans le "c" initial), qui prend
+    la précédence sur gid quand il est donné
+    @return une liste d'instance d'Etudiant
+    """
+    eleves=[]
+    if cn:
+        ### récupération du groupe de la classe
+        base_dn = 'ou=Groups,dc=lycee,dc=jb'
+        filtre  = '(cn=c{})'.format(cn)
+        connection.search(
+            search_base = base_dn,
+            search_filter = filtre,
+            attributes=["gidNumber" ]
+            )
+        for entry in connection.response:
+            gid=nomClasse(entry['attributes']['gidNumber'][0])
+    else:
+        ### récupération du nom de la classe
+        base_dn = 'ou=Groups,dc=lycee,dc=jb'
+        filtre  = '(gidNumber={})'.format(gid)
+        connection.search(
+            search_base = base_dn,
+            search_filter = filtre,
+            attributes=["cn" ]
+            )
+        for entry in connection.response:
+            cn=nomClasse(entry['attributes']['cn'][0])
+    ## à ce stade, cn est un nom de classe dans l'annuaire LDAP.
+    ## récupération des élèves inscrits dans la classe
+    base_dn = 'ou=Users,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes=["uidNumber", "sn", "givenName", "uid" ]
+        )
+    for entry in connection.response:
+        e,status=Etudiant.objects.get_or_create(
+            uidNumber=entry['attributes']['uidNumber'][0],
+            uid=entry['attributes']['uid'][0],
+            nom=entry['attributes']['sn'][0],
+            prenom=entry['attributes']['givenName'][0],
+            classe=cn,
+            barrette=barrette,
+        )
+        eleves.append(e)
+    return eleves
     
 def addEleves(request):
     """
@@ -178,44 +231,13 @@ def addEleves(request):
     # affichage des élèves ajoutés
     ######################################
     if wantedClasses:
-        # un appel à l'annuaire LDAP à ne pas mettre entre d'autres appel
-        lc=lesClasses() # liste des noms de classes autorisés
-        for gid in wantedClasses:
-            ### récupération du nom de la classe
-            base_dn = 'ou=Groups,dc=lycee,dc=jb'
-            filtre  = '(gidNumber={})'.format(gid)
-            connection.search(
-                search_base = base_dn,
-                search_filter = filtre,
-                attributes=["cn" ]
-                )
-            for entry in connection.response:
-                cn=nomClasse(entry['attributes']['cn'][0])
-            ### récupération des élèves inscrits dans la classe
-            base_dn = 'ou=Users,dc=lycee,dc=jb'
-            filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
-            connection.search(
-                search_base = base_dn,
-                search_filter = filtre,
-                attributes=["uidNumber", "sn", "givenName", "uid" ]
-                )
-            for entry in connection.response:
-                eleves.append(
-                    {
-                        "uidNumber":entry['attributes']['uidNumber'][0],
-                        "uid":entry['attributes']['uid'][0],
-                        "nom":entry['attributes']['sn'][0],
-                        "prenom":entry['attributes']['givenName'][0],
-                        "classe": cn,
-                    }
-                )
-        eleves.sort(key=lambda e: "{classe} {nom} {prenom}".format(**e))
         b=Barrette.objects.get(nom=barrette)
-        for e in eleves:
-            Etudiant.objects.get_or_create(
-                uidNumber=e["uidNumber"],uid=e["uid"],
-                nom=e["nom"], prenom=e["prenom"],
-                classe=e["classe"], barrette=b)
+        for gid in wantedClasses:
+            nouveaux=inscritClasse(gid,b)
+            if nouveaux:
+                eleves+=nouveaux
+                b.addClasse(nouveaux[0].classe)
+        eleves.sort(key=lambda e: "{classe} {nom} {prenom}".format(classe=e.classe, nom=e.nom, prenom=e.prenom))
     base_dn = 'ou=Groups,dc=lycee,dc=jb'
     filtre = '(&(cn=c*)(!(cn=*smbadm))(objectclass=kwartzGroup))'
     connection.search(
@@ -224,9 +246,10 @@ def addEleves(request):
         attributes = ['cn', 'gidNumber'],
     )
     ### Liste des classes déjà connues dans la base de données
-    etudiants=list(Etudiant.objects.all())
+    barrette=request.session.get("barrette")
+    etudiants=list(Etudiant.objects.filter(barrette__nom=barrette))
     classesDansDb=OrderedDict()
-    for e in Etudiant.objects.all():
+    for e in etudiants:
         nom=nomClasse(e.classe)
         if nom in classesDansDb:
             classesDansDb[nom].append("%s %s" %(e.nom,e.prenom))
@@ -532,7 +555,8 @@ def lesCours(request):
     b=Barrette.objects.get(nom=barrette)
     od=Ouverture.derniere(barrette)
     if not od:
-        cours=Cours.objects.filter(barrette__nom=barrette).order_by("horaire")
+        ## il faut définir au moins une première période d'ouverture d'aperho
+        return HttpResponseRedirect('addOuverture')
     else:
         # on assure que chaque prof de la barrette ait au moins des cours
         # par défaut pour la dernière ouverture en date
@@ -759,7 +783,6 @@ def enroleEleveCours(request):
     uid=request.POST.get("uid","")
     cours=request.POST.get("cours","")
     cours2=request.POST.get("cours2","")
-    print("GRRRR", request.POST, request.POST.get("cours",""), request.POST.get("cours2",""))
     possible="je ne peux pas enrôler"
     if "profAP" == estProfesseur(request.user):
         possible="je peux enrôler"
@@ -829,6 +852,10 @@ def listClasse(request):
 def delClasse(request):
     c=request.GET.get("classe")
     etudiants=Etudiant.objects.filter(classe=c)
+    if etudiants:
+        # on enleve la classe de la barrette
+        b=etudiants[0].barrette
+        b.removeClasse(c)
     etudiants.delete()
     return JsonResponse({
         "status": "ok",
@@ -862,6 +889,10 @@ def addBarrette(request):
     barrettes=list(Barrette.objects.all())
     nom=request.POST.get("nom","")
     classes=request.POST.get("selectedclasses","")
+    h1=request.POST.get("h1","")
+    h2=request.POST.get("h2","")
+    j1=request.POST.get("j1","")
+    j2=request.POST.get("j2","")
     if nom and classes:
         try:
             b=Barrette(nom=nom, classesJSON=classes)
@@ -869,12 +900,18 @@ def addBarrette(request):
                 avertissement="On ne peut pas enregistrer plusieurs fois les mêmes classes"
                 raise ValidationError(avertissement)
             b.save()
+            Horaire(heure=h1.strip(), jour=int(j1),barrette=b).save()
+            Horaire(heure=h2.strip(), jour=int(j2),barrette=b).save()
             avertissement="Nouvelle barrette : {nom}".format(nom=nom)
             barrettes.append(b)
+            for c in json.loads(classes):
+                inscritClasse(None, b, cn=c)
         except ValidationError as e:
             avertissement="Erreur : %s" %e.messages[0]
         except IntegrityError as e:
             avertissement="Le nom de barrette doit être unique (%s)" %e
+        except Exception as e:
+            avertissement="Erreur : %s" %e
     # ajoute une liste "ordinaire" des classes à chaque barrette
     for b in barrettes:
         b.l=sorted(json.loads(b.classesJSON))

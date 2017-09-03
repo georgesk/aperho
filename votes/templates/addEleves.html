@@ -42,7 +42,7 @@ $(document).ready(function() {
 {% endif %}
 
 <h2>Nouvelles classes à ajouter </h2>
-<form method="post" action="#">
+<form method="post">
   {% csrf_token %}
   <div style="width: 80%; margin: 0 auto;">
     <select class="multi" name="classes" multiple="multiple" style="height: 30ex;">

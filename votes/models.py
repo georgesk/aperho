@@ -139,6 +139,32 @@ class Barrette(models.Model):
 
     def __str__(self):
         return "Barrette : {}".format(self.nom)
+
+    def addClasse(self, classe):
+        """
+        ajoute une classe (à la manière ensembliste) dans
+        self.classesJSON
+        """
+        l=set(json.loads(self.classesJSON))
+        if classe in l:
+            return
+        l.add(classe)
+        self.classesJSON=json.dumps(sorted(list(l)))
+        self.save()
+        return
+    
+    def removeClasse(self, classe):
+        """
+        retire une classe (à la manière ensembliste) de
+        self.classesJSON
+        """
+        l=set(json.loads(self.classesJSON))
+        if classe not in l:
+            return
+        l.remove(classe)
+        self.classesJSON=json.dumps(sorted(list(l)))
+        self.save()
+        return
     
 class Ouverture(models.Model):
     """
