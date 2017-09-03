@@ -38,6 +38,11 @@ $( function() { // lancement après le chargement
 	collapsible: true,
 	active: false,
     });
+
+    // on cache les boutons pour les profs et l'admin
+    if("{{estprof}}"!="non" || "{{user.is_superuser}}"=="True"){
+	$("#inscription_boutons").hide();
+    }
 } );
 </script>
 <script type="text/javascript" src="/static/votes/js/changeCours.js">
