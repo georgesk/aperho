@@ -32,3 +32,17 @@ l'application permet d'exporter les groupes dans un fichier de
 traitement de texte au format ODF (Open Document Format), qui est une
 norme ISO que l'on doit utiliser de préférence pour tous nos documents
 pérennes.
+
+Le fichier db.sqlite3.sample contient une base de données vide, qui permet
+de se connecter la première fois avec login/passe = admin/administrator
+
+L'administrateur doit d'abord créer une barrette, puis une période d'AP,
+puis inscrire des profs pour la barrette, et jeter un coup d'œil aux
+"cours d'AP", ce qui crée des cours par défaut, comme effet de bord.
+
+Ensuite chaque prof peut se loger, modifier ses cours d'AP en temps et 
+en heure.
+
+Quand la période d'AP est en cours d'ouverture, les élèves peuvent s'inscrire.
+
+
