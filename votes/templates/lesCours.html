@@ -101,7 +101,7 @@ $( function() { // lancement après le chargement
 	    </div>
 	  </td>
 	  {% endif %}
-	  <th colspan="4">
+	  <th colspan="4" style="padding: 0.5em;">
 	    {{c.formation.titre}} (max. {{c.capacite}} élèves)
 	    {% if c.formation.public_designe %}
 	    <b>Public désigné</b>
@@ -118,7 +118,7 @@ $( function() { // lancement après le chargement
 	</tr>
 	{% if inscriptions %}
 	<tr>
-	  <th class="changeattribut" data-onload="changeattribut(el,'{{e.username}}'=='{{user.username}}' || '{{user.is_superuser}}'=='True', 'colspan', '4', '5')">
+	  <th class="changeattribut" data-onload="changeattribut(el,'{{e.username}}'=='{{user.username}}' || '{{user.is_superuser}}'=='True', 'colspan', '4', '5')" style="padding: 0.5em;">
 	    <span style="font-size: 140%">Liste des élèves inscrits</span>
 	  </th>
 	</tr>
@@ -127,8 +127,7 @@ $( function() { // lancement après le chargement
 	  <td>
 	    {{forloop.counter}}
 	  </td>
-	  <td {% ifequal e.username user.username %}colspan="2"{% endifequal %}
-	      {% if user.is_superuser %}colspan="2"{% endif %}>
+	  <td class="changeattribut" data-onload="changeattribut(el,'{{e.username}}'=='{{user.username}}' || '{{user.is_superuser}}'=='True', 'colspan', '1', '2')">
 	    {{i.etudiant.nom}}
 	  </td>
 	  <td> {{i.etudiant.prenom}}</td>
