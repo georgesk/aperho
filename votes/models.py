@@ -181,6 +181,18 @@ class Ouverture(models.Model):
         """
         recente=Ouverture.objects.all().order_by('-debut')[0]
         return recente.debut==self.debut
+
+    @staticmethod
+    def derniere(barrette):
+        """
+        renvoie la dernière ouverture en date si elle existe
+        @param barrette le nom d'une barrette
+        @return une instance d'Ouverture sinon None
+        """
+        ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
+        if ouvertures:
+            return ouvertures.last()
+        return None
     
 class Enseignant(models.Model):
     """

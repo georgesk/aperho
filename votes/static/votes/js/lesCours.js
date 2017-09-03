@@ -221,3 +221,20 @@ function majCours(csrf, cours_id, backLocation, dCourte, dLongue, duree, capacit
 	      }
 	  );
 }
+
+/**
+ * modifie un attribut dans un élément, selon la valeur du booléen trigger
+ * @param el l'élément à toucher
+ * @param trigger un booléen
+ * @param attrib nom de l'attribut à mettre
+ * @param valFalse valeur à attribuer si trigger est faux
+ * @param valTrue valeur à attribuer si trigger est vrai
+ **/
+function changeattribut(el,trigger, attrib, valFalse, valTrue){
+    var element=$(el);
+    if(trigger){
+	element.attr(attrib, valTrue);
+    } else {
+	element.attr(attrib, valFalse);
+    }
+}

@@ -12,8 +12,8 @@ import json
 
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
-    estProfesseur, Ouverture, Orientation, InscriptionOrientation, \
-    CoursOrientation, Cop, Horaire, Barrette
+    estProfesseur, Ouverture, Orientation, \
+    InscriptionOrientation, CoursOrientation, Cop, Horaire, Barrette
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
@@ -530,17 +530,14 @@ def lesCours(request):
     # filtrage des cours : barrette courante et dernière session d'ouverture
     barrette=request.session.get("barrette","")
     b=Barrette.objects.get(nom=barrette)
-    derniereOuverture=""
-    ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
-    if not ouvertures:
+    od=Ouverture.derniere(barrette)
+    if not od:
         cours=Cours.objects.filter(barrette__nom=barrette).order_by("horaire")
     else:
-        # ajouter un critère basé sur ouvertures.last() !!!!
         # on assure que chaque prof de la barrette ait au moins des cours
-        # par défaut
-        derniereOuverture=ouvertures.last()
-        creeCoursParDefaut(barrette, derniereOuverture)
-        cours=Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=derniereOuverture.pk).order_by("horaire")
+        # par défaut pour la dernière ouverture en date
+        creeCoursParDefaut(barrette, od)
+        cours=Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=od).order_by("horaire")
     noninscrits=set([])
     if pourqui:
         if request.user.is_superuser:
@@ -611,7 +608,7 @@ def lesCours(request):
                 "username": request.user.username,
                 "noninscrits": noninscrits,
                 "barrette": barrette,
-                "ouverture" : derniereOuverture,
+                "ouverture" : od,
             }
         )
 

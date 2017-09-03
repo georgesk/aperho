@@ -17,6 +17,14 @@ $( function() { // lancement après le chargement
 	collapsible: true,
 	active: false,
     });
+
+    $.each($(".changeattribut"),
+	   function(index,el){
+	       tocall=$(el).attr("data-onload");
+	       //console.log($(el), tocall)
+	       eval(tocall);
+	   }
+    )
 } );
 </script>
 {% endblock %}
@@ -93,7 +101,7 @@ $( function() { // lancement après le chargement
 	    </div>
 	  </td>
 	  {% endif %}
-	  <th colspan="2">
+	  <th colspan="4">
 	    {{c.formation.titre}} (max. {{c.capacite}} élèves)
 	    {% if c.formation.public_designe %}
 	    <b>Public désigné</b>
@@ -102,22 +110,33 @@ $( function() { // lancement après le chargement
 	</tr>
 	<tr>
 	  <th>Durée</th>
-	  <th>Description longue</th>
+	  <th colspan="3">Description longue</th>
 	</tr>
 	<tr>
 	  <th>{{c.formation.duree}} h</th>
-	  <td>{{c.formation.contenuWithLineBreaks|safe}}</td>
+	  <td colspan="3" style="width: 400px;">{{c.formation.contenuWithLineBreaks|safe}}</td>
 	</tr>
-      </table>
-      {% if inscriptions %}
-      <table class="joli">
-	{% for i in inscriptions %}
+	{% if inscriptions %}
 	<tr>
-	  <td>{{forloop.counter}}</td><td>{{i.etudiant.nom}}</td><td> {{i.etudiant.prenom}}</td>
+	  <th class="changeattribut" data-onload="changeattribut(el,'{{e.username}}'=='{{user.username}}' || '{{user.is_superuser}}'=='True', 'colspan', '4', '5')">
+	    <span style="font-size: 140%">Liste des élèves inscrits</span>
+	  </th>
+	</tr>
+	{% for i in inscriptions %}
+	   <tr>
+	  <td>
+	    {{forloop.counter}}
+	  </td>
+	  <td {% ifequal e.username user.username %}colspan="2"{% endifequal %}
+	      {% if user.is_superuser %}colspan="2"{% endif %}>
+	    {{i.etudiant.nom}}
+	  </td>
+	  <td> {{i.etudiant.prenom}}</td>
+	  <td> {{i.etudiant.classe}}</td>
 	</tr>
 	{% endfor %}
-      </table>
       {% endif %}
+      </table>
       {% endfor %}
     </div>
   </div>
