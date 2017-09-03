@@ -32,11 +32,12 @@
 {% block localscripts %}
 <script type="text/javascript">
 /* début */{{initScript|safe}}/* fin de script venant de django */
+
 $( function() { // lancement après le chargement
-	$( "#userinfo" ).accordion({
-	    collapsible: true,
-	    active: false,
-	});
+    $( "#userinfo" ).accordion({
+	collapsible: true,
+	active: false,
+    });
 } );
 </script>
 <script type="text/javascript" src="/static/votes/js/changeCours.js">
@@ -76,10 +77,13 @@ $( function() { // lancement après le chargement
 </fieldset>
 {% endif %}
 
-{% if orientationOuverte %}
 <div id="inscription_boutons">
-  Choisir au moins un type d'orientation pour la première,</br/>
-cocher les cases à gauche, et ...<br/>
+  {% if orientationOuverte %}
+  Choisir au moins un type d'orientation pour la première,<br/>
+  cocher les cases à gauche, et ...<br/>
+{% else %}
+Cocher les cases à gauche, et ...<br/>
+{% endif %}
 <button type="button" onclick="valideCours('{{orientationOuverte}}')">
   Valider les inscriptions
 </button>
@@ -88,7 +92,6 @@ ou
   Annuler les inscriptions
 </button>
 </div>
-{% endif %}
 
 <input type="hidden" id="etudiantUid" value="{{etudiant.uid}}"/>
 {% for coursHoraire in tousLesCours %}

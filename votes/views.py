@@ -677,7 +677,7 @@ def enroler(request):
     """
     barrette=request.session.get("barrette","")
     b=Barrette.objects.get(nom=barrette)
-    ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
+    ouvertures=Ouverture.objects.all().order_by("debut")
     derniereOuverture=ouvertures.last()
     cours=list(Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=derniereOuverture.pk).order_by("enseignant__nom", "horaire"))
     horaires=sorted(list(set([c.horaire for c in cours])))
@@ -988,8 +988,7 @@ def addOuverture(request):
                 avertissement="erreur dans le choix des dates : %s est avant %s" % (date_fin, date_debut)
             else:
                 try:
-                    b=Barrette.objects.get(nom=barrette)
-                    new=Ouverture(debut=date_debut, fin=date_fin, nom_session=nom, barrette=b)
+                    new=Ouverture(debut=date_debut, fin=date_fin, nom_session=nom)
                     new.save()
                     avertissement="Période d'AP bien enregistrée."
                 except Exception as e:
@@ -997,7 +996,7 @@ def addOuverture(request):
                     
     # cette partie vaut pour tout le monde
     barrette=request.session.get("barrette")
-    ouvertures=list(Ouverture.objects.filter(barrette__nom=barrette).order_by("debut"))
+    ouvertures=list(Ouverture.objects.all().order_by("debut"))
     return render(
         request, "addOuverture.html",
         {
@@ -1013,7 +1012,7 @@ def delOuverture(request):
     ok="ok"
     message=""
     try:
-        ouverture=Ouverture.objects.filter(nom_session=nom, barrette__nom=barrette)
+        ouverture=Ouverture.objects.filter(nom_session=nom)
         result=ouverture.delete()
     except Exception as e:
         ok="ko"
@@ -1026,15 +1025,13 @@ def delOuverture(request):
 def editOuverture(request):
     nom=request.POST.get("nom")
     cacheNom=request.POST.get("cacheNom")
-    barrette=request.POST.get("barrette")
     debut=request.POST.get("debut","")
     debut_h=request.POST.get("debut_h","")
     fin=request.POST.get("fin","")
     fin_h=request.POST.get("fin_h","")
-    barrette=request.POST.get("barrette","")
     message=""
     ok="ok"
-    if nom and debut and debut_h and fin and fin_h and barrette:
+    if nom and debut and debut_h and fin and fin_h:
         date_debut=datetime.strptime(debut+" "+debut_h,"%d/%m/%Y %H:%M")
         date_debut=timezone.make_aware(date_debut)
         date_fin=datetime.strptime(fin+" "+fin_h,"%d/%m/%Y %H:%M")
@@ -1044,8 +1041,7 @@ def editOuverture(request):
             ok="ko"
         else:
             try:
-                b=Barrette.objects.get(nom=barrette)
-                achanger=Ouverture.objects.get(nom_session=cacheNom, barrette=b)
+                achanger=Ouverture.objects.get(nom_session=cacheNom)
                 achanger.nom_session=nom
                 achanger.debut=date_debut
                 achanger.fin=date_fin

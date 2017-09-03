@@ -175,12 +175,8 @@ class Ouverture(models.Model):
     """
     debut = models.DateTimeField()
     fin   = models.DateTimeField()
-    nom_session = models.CharField(max_length=50, default="Toussaint")
-    barrette = models.ForeignKey('Barrette')
+    nom_session = models.CharField(max_length=50, default="Toussaint", unique="True")
     
-    class Meta:
-        unique_together = ('nom_session', 'barrette',)
-        
     def __str__(self):
         return "{} : {} ↦ {}".format(self.nom_session, self.debut, self.fin)
     
@@ -215,7 +211,7 @@ class Ouverture(models.Model):
         @param barrette le nom d'une barrette
         @return une instance d'Ouverture sinon None
         """
-        ouvertures=Ouverture.objects.filter(barrette__nom=barrette).order_by("debut")
+        ouvertures=Ouverture.objects.all().order_by("debut")
         if ouvertures:
             return ouvertures.last()
         return None
@@ -315,7 +311,6 @@ class Horaire(models.Model):
 
     
     def __lt__(self, other):
-        print("GRRRR", self.heure, "<", other.heure, self.heure < other.heure)
         return self.jour < other.jour or self.heure < other.heure
 
     @property

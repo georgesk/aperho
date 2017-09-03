@@ -59,6 +59,7 @@ def index(request):
             cours=[c for c in cours if c.estRecent()]
         else:
             cours=[c for c in cours if c.estOuvert()]
+        print("GRRRRR cours=", cours)
         capacite={} # tableau heure -> nombre d'élèves accueillis
         heures=[h.hm for h in Horaire.objects.all()]
         for h in heures:
