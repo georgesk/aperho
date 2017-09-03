@@ -902,6 +902,8 @@ def addBarrette(request):
             b.save()
             Horaire(heure=h1.strip(), jour=int(j1),barrette=b).save()
             Horaire(heure=h2.strip(), jour=int(j2),barrette=b).save()
+            ## changement de barrette par défaut
+            request.session["barrette"]=nom
             avertissement="Nouvelle barrette : {nom}".format(nom=nom)
             barrettes.append(b)
             for c in json.loads(classes):
