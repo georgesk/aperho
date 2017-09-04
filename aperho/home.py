@@ -119,6 +119,10 @@ def index(request):
             },
         ]
         od=Ouverture.derniere()
+        if od:
+            ouverte=od.estActive()
+        else:
+            ouverte=False
         return render(
             request,
             "home.html",
@@ -134,7 +138,7 @@ def index(request):
                 "orientations" : orientations,
                 "orientationOuverte" : orientationOuverte,
                 "od": od,
-                "ouverte": od.estActive(),
+                "ouverte": ouverte,
                 "estprof": estProfesseur(request.user),
                 "username": request.user.username,
             }
