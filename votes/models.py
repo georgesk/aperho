@@ -228,8 +228,9 @@ class Enseignant(models.Model):
     username = models.CharField(max_length=100)
     nom   = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
-    salle = models.CharField(max_length=50)
+    salle = models.CharField(max_length=50, default="??")
     barrettes= models.ManyToManyField(Barrette)
+    matiere=models.CharField(max_length=50, default="??")
 
     class Meta:
         unique_together = ('uid', 'salle',)
