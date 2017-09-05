@@ -577,7 +577,7 @@ def lesCours(request):
     if pourqui:
         if request.user.is_superuser:
             ### pour l'admin, on extrait les données de pourqui
-            enseignant=Enseignant.objects.get(username=pourqui)
+            enseignant=Enseignant.objects.get(username=pourqui, barrettes__id=b.id)
             cours=cours.filter(enseignant=enseignant)
         else:
             ### on ne garde que les cours du seul prof qui demande
@@ -605,7 +605,7 @@ def lesCours(request):
             cci[c][co]=list(io.order_by('etudiant__nom','etudiant__prenom'))
     eci=OrderedDict() ## dictionnaire enseignant -> cours -> inscriptions
     for e in enseignants:
-        ec=[c for c in cours if c.enseignant==e]
+        ec=[c for c in cours if c.enseignant==e and c.barrette==b]
         eci[e]=OrderedDict()
         i=0
         for c in ec:
@@ -734,7 +734,7 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
         # duplique le cours et la formation
         cours.id=None
         metEnDernier(cours)
-        f=Formation.objects.get(pk=cours.formation_id)
+        f=Formation.objects.get(pk=cours.formation_id, barrette__nom=barrette)
         f.id=None
         f.save()
         cours.formation_id=f.id
@@ -763,7 +763,7 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
                 # il n'y a pas eu d'ouverture précédemment, on doit tout créer
                 pass
             if not coursAnciensTrouves:
-                h=list(Horaire.objects.all())
+                h=list(Horaire.objects.filter(barrette__nom=barrette))
                 c1=Cours(enseignant=e, horaire=h[0], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
                 c2=Cours(enseignant=e, horaire=h[1], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
                 c1.save()
@@ -776,7 +776,7 @@ def formationParDefaut(b):
     """
     renvoie un objet formation par défaut, qu'il faut modifier
     """
-    defaultTitre="Matière -- Description courte, À MODIFIER !! (bien spécifier la matière)"
+    defaultTitre="Matière -- Description courte, À MODIFIER !!)"
     defaultContenu="Description longue, À MODIFIER : Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim ..."
     fs=Formation.objects.filter(titre=defaultTitre, contenu=defaultContenu, duree=1,public_designe=False,barrette=b)
     if fs:
