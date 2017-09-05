@@ -589,7 +589,10 @@ def lesCours(request):
         eleves=set([e for e in Etudiant.objects.all()])
         inscrits=set([i.etudiant for i in Inscription.objects.all()])
         noninscrits=eleves-inscrits
-    cours=list(cours.order_by("formation__titre","enseignant__nom","horaire"))
+    if pourqui:
+        cours=list(cours.order_by("horaire"))
+    else:
+        cours=list(cours.order_by("formation__titre","enseignant__nom","horaire"))
     enseignants=[c.enseignant for c in cours]
     cops=list(Cop.objects.all().order_by("nom"))
     horaires=set([c.horaire for c in cours])
@@ -1081,6 +1084,17 @@ def editeCours(request):
     for f in Formation.objects.filter(auteur=prof):
         anciennesFormations.add(f)
     anciennesFormations-=set([formationCourante])
+    ## on détermine si une formation ancienne est jetable ou non
+    for af in anciennesFormations:
+        coursLies=list(Cours.objects.filter(formation=af))
+        ajeter=False
+        if not coursLies:
+            ajeter=True # formation orpheline
+        else:
+            coursRecents=[ c for c in coursLies if c.ouverture.estRecente()]
+            ajeter= not coursRecents
+        af.ajeter=ajeter # on ajoute un attribut à l'ancienne formation
+            
     horaire=Horaire.objects.get(pk=cours.horaire_id)
     if "editeCours" in request.META["HTTP_REFERER"]:
         ## la page se rappelle elle-même, on a cliqué sur le bouton

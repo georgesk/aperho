@@ -39,7 +39,6 @@ function delFormation(el){
 	    if (data.ok!="ok"){
 		avertissement(data.message);
 	    } else {
-		avertissement("Formation supprimée")
 		var tr=td.parents("tr").first();
 		tr.remove();
 	    }

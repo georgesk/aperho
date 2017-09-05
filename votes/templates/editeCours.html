@@ -116,8 +116,10 @@ $(document).ready(function() {
   {% for f in anciennesFormations %}
   <tr>
     <td>
+      {% if f.ajeter %}
       <div class="delButton"><img src="/static/votes/img/del.png" onclick="delFormation(this)" alt="Bouton de suppression" title="Cliquer pour supprimer ces textes"/></div>
-      <div class="editButton"><img src="/static/votes/img/edit.png" onclick="editFormation(this)" alt="Bouton d'ajout" title="Cliquer pour récupérer ces textes"/></div>
+      {% endif %}
+      <div class="editButton"><img src="/static/votes/img/restore.png" width="16" onclick="editFormation(this)" alt="Bouton d'ajout" title="Cliquer pour récupérer ces textes"/></div>
       <div class="titre" style="display:none">{{f.titre}}</div>
       <div class="contenu" style="display:none">{{f.contenuDecode}}</div>
       <div class="formation_id" style="display:none">{{f.id}}</div>
