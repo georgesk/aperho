@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^addEleves$', views.addEleves, name='addEleves'),
     url(r'^addProfs$', views.addProfs, name='addProfs'),
+    url(r'^chargeProf$', views.chargeProf, name='chargeProf'),
     url(r'^delProfBarrette$', views.delProfBarrette, name='delProfBarrette'),
     url(r'^addUnProf$', views.addUnProf, name='addUnProf'),
     url(r'^changeSalle$', views.changeSalle, name='changeSalle'),

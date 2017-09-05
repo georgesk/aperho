@@ -6,12 +6,14 @@ function addProf(csrf, barrette){
 	       csrfmiddlewaretoken: csrf,
 	       prof: $("#prof").val(),
 	       salle: $("#salle").val(),
+	       matiere: $("#matiere").val(),
 	       barrette: barrette
 	   },
 	   function(data){
-	       alert(data.message);
 	       if (data.ok=="ok"){
 		   location.assign("addProfs");
+	       } else {
+		   alert(data.message);
 	       }
 	   }
 	  ).fail(
@@ -118,3 +120,27 @@ function delProf(el){
 	function(){alert("Échec de la suppression de "+prof);}
     );
 }
+
+/**
+ * quand on quitte le champ de saisie de nom de prof, on regarde
+ * si le prof est déjà dans la base et si c'est le cas, on met à jour
+ * les autres champs
+ **/
+function chargeProf(el){
+    var nomPrenom=$(el).val();
+    var csrf=$("#csrf").text();
+    $.post(
+	"chargeProf",
+	{ nomPrenom: nomPrenom, csrfmiddlewaretoken: csrf},
+	function(data){
+	    if (data.ok=="ok"){
+		$("#matiere").val(data.matiere);
+		$("#salle").val(data.salle);
+	    }
+	}
+    ).fail(
+	function(){alert("Problème de communication");}
+    );
+
+}
+

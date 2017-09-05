@@ -16,6 +16,8 @@ $(function(){
     $("#prof").autocomplete({
 	source: noms,
     });
+
+    $('html,body').animate({scrollTop: $("#prof").offset().top-260},'slow');
 });
 $( "#accordeon" ).accordion({
     collapsible: true,
@@ -33,7 +35,7 @@ $( "#accordeon" ).accordion({
 <div style="display:none" id="csrf">{{csrf_token}}</div>
 <h2>Ajouter les profs en bas du tableau</h2>
 <table border="1" class="joli">
-  <tr style="background: lightcyan"><th colspan="2">Nom Prénom</th><th>Salle</th><th>Barrettes</th></tr>
+  <tr style="background: lightcyan"><th colspan="2">Nom Prénom</th><th>Salle</th><th>matière</th><th>Barrettes</th></tr>
   {% for p in profsInscrits %}
   <tr>
     <td>
@@ -46,12 +48,14 @@ $( "#accordeon" ).accordion({
     </td>
     <td>{{p.nom}} {{p.prenom}}</td>
     <td>{{p.salle}}</td>
+    <td>{{p.matiere}}</td>
     <td>{{p.bb}}</td>
   </tr>
   {% endfor %}
   <tr style="background: lightcyan">
-    <td colspan="2"><input type="text" id="prof" name="prof" placeholder="Commencer à taper 3 lettres ..." size="40" /></td>
+    <td colspan="2"><input type="text" id="prof" name="prof" placeholder="Commencer à taper 3 lettres ..." size="40" onblur="chargeProf(this)"/></td>
     <td><input type="text" id="salle" name="salle" placeholder="Salle de cours"/></td>
+    <td><input type="text" id="matiere" name="matiere" placeholder="Matière"/></td>
     <td><button onclick='addProf("{{csrf_token}}", "{{barretteCourante}}")'>Nouveau prof</button></td>
   </tr>
 </table>

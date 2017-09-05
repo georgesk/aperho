@@ -398,19 +398,23 @@ def addUnProf(request):
     fonction de rappel pour inscrire un prof
     """
     ok="ok"
-    prof=request.POST.get("prof","")
-    salle=request.POST.get("salle","")
-    barrette=request.POST.get("barrette","")
+    prof=request.POST.get("prof")
+    salle=request.POST.get("salle")
+    matiere=request.POST.get("matiere")
+    barrette=request.POST.get("barrette")
     libres=getProfsLibres(barrette)
     trouve=[p for p in libres if "{nom} {prenom}".format(**p) == prof]
     if trouve:
         try:
-            enseignant, created = Enseignant.objects.get_or_create(
-                uid=trouve[0]["uid"],
-                nom=trouve[0]["nom"], prenom=trouve[0]["prenom"],
+            enseignant=Enseignant.objects.filter(
+                nom=trouve[0]["nom"],
+                prenom=trouve[0]["prenom"],
                 username=trouve[0]["username"],
-                salle=salle
-            )
+            ).first()
+            if enseignant.salle!=salle or enseignant.matiere!=matiere:
+                enseignant.salle=salle
+                enseignant.matiere=matiere
+                enseignant.save()
             bb=[b.nom for b in list(Barrette.objects.filter(enseignant__in=[enseignant.pk]))]
             if barrette in bb:
                 pass # pas besoin d'ajouter la barrette pour cet enseignant
@@ -471,6 +475,25 @@ def addProfs(request):
             "barretteCourante": barretteCourante,
         }
     )
+
+def chargeProf(request):
+    """
+    récpère un prof d'après son nom et son prénom
+    """
+    trouves=[e for e in Enseignant.objects.all()
+             if request.POST.get("nomPrenom")== e.nom+" "+e.prenom]
+    if trouves:
+        e=trouves[0]
+        return JsonResponse({
+            "ok"      : "ok",
+            "salle"   : e.salle,
+            "matiere" : e.matiere,
+        })
+    return JsonResponse({
+        "ok"      : "ko",
+    })
+    
+        
 
 def addInscription(request):
     """
@@ -767,19 +790,24 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
                 pass
             if not coursAnciensTrouves:
                 h=list(Horaire.objects.filter(barrette__nom=barrette))
-                c1=Cours(enseignant=e, horaire=h[0], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
-                c2=Cours(enseignant=e, horaire=h[1], formation=formationParDefaut(b), ouverture=ouverture,barrette=b)
+                c1=Cours(enseignant=e, horaire=h[0], formation=formationParDefaut(b,e), ouverture=ouverture,barrette=b)
+                c2=Cours(enseignant=e, horaire=h[1], formation=formationParDefaut(b,e), ouverture=ouverture,barrette=b)
                 c1.save()
                 c2.save()
                 nouveaux+=2
         cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture).order_by("horaire")
     return nouveaux
 
-def formationParDefaut(b):
+def formationParDefaut(b,e):
     """
     renvoie un objet formation par défaut, qu'il faut modifier
+    @param b une instance de Barrette
+    @param e une instance d'Enseignant
     """
-    defaultTitre="Matière -- Description courte, À MODIFIER !!)"
+    matiere="Matière"
+    if e.matiere!="??":
+        matiere=e.matiere
+    defaultTitre="%s -- Description courte, À MODIFIER !!)" %matiere
     defaultContenu="Description longue, À MODIFIER : Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim ..."
     fs=Formation.objects.filter(titre=defaultTitre, contenu=defaultContenu, duree=1,public_designe=False,barrette=b)
     if fs:
