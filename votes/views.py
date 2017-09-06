@@ -374,14 +374,17 @@ def changeSalle(request):
     salle=request.POST.get("salle","")
     barrette=request.POST.get("barrette","")
     nouvelleSalle=request.POST.get("nouvelleSalle","")
+    matiere=request.POST.get("matiere","")
+    nouvelleMatiere=request.POST.get("nouvelleMatiere","")
     b=Barrette.objects.get(nom=barrette)
     trouve=[e for e in Enseignant.objects.filter(barrettes__in=[b.pk]) if "%s %s" %(e.nom, e.prenom)==prof]
     if trouve:
         try:
             ok="ok"
             trouve[0].salle=nouvelleSalle
+            trouve[0].matiere=nouvelleMatiere
             trouve[0].save()
-            message="Mis %s en salle %s" %(prof,nouvelleSalle)
+            message="Mis %s en salle %s (%s)" %(prof,nouvelleSalle,nouvelleMatiere)
         except Exception as e:
             ok="ko"
             message="Erreur: %s" %e
@@ -405,16 +408,29 @@ def addUnProf(request):
     libres=getProfsLibres(barrette)
     trouve=[p for p in libres if "{nom} {prenom}".format(**p) == prof]
     if trouve:
+        prof=trouve[0]
         try:
             enseignant=Enseignant.objects.filter(
-                nom=trouve[0]["nom"],
-                prenom=trouve[0]["prenom"],
-                username=trouve[0]["username"],
+                nom=prof["nom"],
+                prenom=prof["prenom"],
+                username=prof["username"],
             ).first()
-            if enseignant.salle!=salle or enseignant.matiere!=matiere:
-                enseignant.salle=salle
-                enseignant.matiere=matiere
+            if enseignant:
+                if enseignant.salle!=salle or enseignant.matiere!=matiere:
+                    enseignant.salle=salle
+                    enseignant.matiere=matiere
+                    enseignant.save()
+            else:
+                enseignant=Enseignant(
+                    uid=prof["uid"],
+                    nom=prof["nom"],
+                    prenom=prof["prenom"],
+                    username=prof["username"],
+                    salle=salle,
+                    matiere=matiere,
+                )
                 enseignant.save()
+                
             bb=[b.nom for b in list(Barrette.objects.filter(enseignant__in=[enseignant.pk]))]
             if barrette in bb:
                 pass # pas besoin d'ajouter la barrette pour cet enseignant
@@ -1146,13 +1162,14 @@ def editeCours(request):
                     # dans la base de données
                     formationCourante.auteur_id=cours.enseignant_id
                     formationCourante.save()
+                    # elle est sauvée, on la duplique
                     formationCourante.id=None
                     formationCourante.titre=form.cleaned_data["titre"]
                     formationCourante.contenu=form.cleaned_data["contenu"]
                 formationCourante.duree=form.cleaned_data["duree"]
                 try:
                     formationCourante.save()
-                    cours.formation_id=formationCourante.id
+                    cours.formation=formationCourante
                     cours.save()
                 except Exception as e:
                     ok=False
@@ -1170,6 +1187,12 @@ def editeCours(request):
                             f=Formation.objects.get(pk=dc.formation_id)
                             total+=f.duree
                         assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
+                        if "v2" in request.POST:
+                            # on a validé "Enregistrer pour tous les cours"
+                            for dc in deuxCours:
+                                if dc != cours:
+                                    dc.formation=formationCourante
+                                    dc.save()
                         if total<2: # un seul cours, il faut un deuxième
                             creeCoursParDefaut(cours.barrette, cours.ouverture, cours=cours)
                     else:

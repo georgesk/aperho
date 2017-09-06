@@ -27,7 +27,8 @@ function addProf(csrf, barrette){
 /**
  * Désinscrit un prof d'une barrette
  **/
-function changeSalle(prof, barrette, salle, nouvelleSalle, csrf){
+function changeSalle(prof, barrette, salle, nouvelleSalle,
+		     matiere, nouvelleMatiere, csrf){
     $.post(
 	"changeSalle",
 	{
@@ -36,9 +37,10 @@ function changeSalle(prof, barrette, salle, nouvelleSalle, csrf){
 	    barrette: barrette,
 	    salle: salle,
 	    nouvelleSalle: nouvelleSalle,
+	    matiere: matiere,
+	    nouvelleMatiere: nouvelleMatiere,
 	},
 	function(data){
-	    alert(data.message);
 	    if (data.ok=="ok"){
 		location.assign("addProfs");
 	    }
@@ -52,26 +54,39 @@ function changeSalle(prof, barrette, salle, nouvelleSalle, csrf){
 
 /**
  * édite les données d'un prof dans la barrette courante
- * en fait le seul degré de liberté, c'est sa salle !
  **/
 function editProf(el){
     var ligne=$(el).parents("tr")[0];
     var prof=$(ligne).find("td:eq(1)").text().trim();
     var salle=$(ligne).find("td:eq(2)").text().trim();
+    var matiere=$(ligne).find("td:eq(3)").text().trim();
     var barrette=$("#barretteCourante").text().trim();
     var csrf=$("#csrf").text().trim();
     /*************************************
      * Il faut récupérer la nouvelle salle
      *************************************/
     $("#dialog").empty()
-    $("#dialog").append(
-	$("<span>").css({"margin-right": "1ex"}).text("Nouvelle salle :")
-    ).append(
-	$("<input>",{
-	    type: "text",
-	    placeholder: "à renseigner",
-	    id:"newSalle"
-	})
+    $("#dialog").html(
+	"<table> \
+           <tr> \
+	     <td> \
+	       Salle : \
+	     </td> \
+	     <td> \
+	       <input type='text' placeholder='à renseigner' \
+                id='newSalle' value='"+salle+"'/> \
+	     </td> \
+	   </tr> \
+           <tr> \
+	     <td> \
+	       Matière : \
+	     </td> \
+	     <td> \
+	       <input type='text' placeholder='à renseigner' \
+                id='newMatiere' value='"+matiere+"'/> \
+	     </td> \
+	   </tr> \
+         </table>"
     );
     $('#dialog').dialog({
         autoOpen: true,
@@ -84,7 +99,9 @@ function editProf(el){
         buttons: {
             'OK': function () {
 		var nouvelleSalle = $("#newSalle").val();
-		changeSalle(prof, barrette, salle, nouvelleSalle, csrf);
+		var nouvelleMatiere =$("#newMatiere").val();
+		changeSalle(prof, barrette, salle, nouvelleSalle,
+			    matiere, nouvelleMatiere, csrf);
                 $('#dialog').dialog('close');
             },
             'Échap': function () {

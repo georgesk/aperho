@@ -14,9 +14,9 @@ $(document).ready(function() {
  * DIVs voisines de l'élément el
  **/
 function editFormation(el){
-    var td=$(el).parents("td").first();
-    var titre=td.find(".titre").first().text();
-    var contenu=td.find(".contenu").first().text();
+    var tr=$(el).parents("tr").first();
+    var titre=tr.find(".titre").first().text();
+    var contenu=tr.find(".contenu").first().text();
     $("#id_titre").val(titre);
     $("#id_contenu").val(contenu);
 }

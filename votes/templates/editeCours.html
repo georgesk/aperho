@@ -107,7 +107,9 @@ $(document).ready(function() {
     </td>
   </tr>
 </table>
-<input type="submit" value="Valider les modifications" style="margin: 1em;"/>
+<input type="submit" name="v1" value="Valider les modifications pour ce cours" style="margin: 1em;"/>
+ou ...
+<input type="submit" name="v2" value="Valider les modifications pour tous les cours" style="margin: 1em;"/>
 {{ form.non_field_errors }}
 </form>
 {% if anciennesFormations %}
