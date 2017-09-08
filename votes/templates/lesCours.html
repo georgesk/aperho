@@ -59,9 +59,9 @@ $( function() { // lancement après le chargement
     <div>
       {% for c,inscriptions in ci.items %}
       {% if pourqui %}
-      <h2>{{c.horaire.heure}} -- liste de {{inscriptions|length}} élèves -- {{ouverture.abrege}}</h2>
+      <h2>{{c.horaire.heure}} -- liste de {{inscriptions|length}} élèves -- {{ouverture}}</h2>
       {% else %}
-      <h2 style="text-align: left;">{{c.formation.titre}} {{c.horaire.heure}} ({{inscriptions|length}} élèves) -- {{e.prenom}} {{e.nom}} -- {{ouverture.abrege}}</h2>
+      <h2 style="text-align: left;">{{c.formation.titre}} {{c.horaire.heure}} ({{inscriptions|length}} élèves) -- {{e.prenom}} {{e.nom}} -- {{ouverture}}</h2>
       {% endif %}
       <table class="joli">
 	<tr>
@@ -147,10 +147,10 @@ $( function() { // lancement après le chargement
 <div class="accordion">
   <h2>ÉLÈVES NON INSCRITS ({{noninscrits|length}} élèves)</h2>
   <div>
-    <table>
+    <table class="joli">
       {% for n in noninscrits %}
         <tr>
-	  <td>{{forloop.counter}}</td><td>{{n.nom}}</td><td> {{n.prenom}}</td>
+	  <td>{{forloop.counter}}</td><td>{{n.classe}}</td><td>{{n.nom}}</td><td>{{n.prenom}}</td>
 	</tr>
       {% endfor %}
     </table>

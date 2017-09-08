@@ -625,9 +625,10 @@ def lesCours(request):
             cours=cours.filter(enseignant__nom=nom, enseignant__prenom=prenom)
     else:
         ## calcul des non-inscrits
-        eleves=set([e for e in Etudiant.objects.all()])
+        eleves=set([e for e in Etudiant.objects.all()
+                    if e.classe in json.loads(b.classesJSON)])
         inscrits=set([i.etudiant for i in Inscription.objects.all()])
-        noninscrits=eleves-inscrits
+        noninscrits=sorted(list(eleves-inscrits), key=lambda e: e.classe+e.nom)
     if pourqui:
         cours=list(cours.order_by("horaire"))
     else:

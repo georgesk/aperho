@@ -178,7 +178,11 @@ class Ouverture(models.Model):
     nom_session = models.CharField(max_length=50, default="Toussaint", unique="True")
     
     def __str__(self):
-        return "{} : {} ↦ {}".format(self.nom_session, self.debut, self.fin)
+        return "INSCRIPTIONS « {} » : {} ↦ {}".format(
+            self.nom_session,
+            self.debut.strftime("%d/%m"),
+            self.fin.strftime("%d/%m"),
+        )
     
     @property
     def abrege(self):
