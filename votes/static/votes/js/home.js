@@ -153,3 +153,9 @@ function annuleCours(){
 	.fail(failFunction);
 }
 
+/**
+ *
+ **/
+function avertissementCoursAchanger(){
+    message("<p style='margin: 5px 0;'>Bienvenue dans Aperho, le logiciel de saisie des Accompagnements Personnalisés du Lycée Jean Bart.</p><p>Il reste encore au moins un cours d'AP à renseigner, veuillez voir dans le menu, ci-dessus :</p><p style='color: red; background: yellow; border: 1px black solid; border-radius: 0.5em; padding: 0.3em;'>MES ACTIONS ⟿ Mes Cours d'AP</p>")
+}

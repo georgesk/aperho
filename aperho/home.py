@@ -60,6 +60,16 @@ def index(request):
             cours=[c for c in cours if c.estRecent]
         else:
             cours=[c for c in cours if c.estOuvert]
+        coursAchanger=[]
+        if "profAP"==estProfesseur(request.user):
+            ## on se prépare à avertir le prof s'il reste du Lorem ipsum
+            ## dans un de ses cours, c'est à dire qu'il n'a pas modifié
+            ## les données par défaut
+            coursAchanger=[c for c in cours
+                           if not c.invalide and
+                           c.enseignant.nom == request.user.last_name and
+                           ("MODIFIER" in c.formation.contenu or
+                            "MODIFIER" in c.formation.titre)]
         capacite={} # tableau heure -> nombre d'élèves accueillis
         heures=[h.hm for h in Horaire.objects.all()]
         for h in heures:
@@ -142,6 +152,7 @@ def index(request):
                 "ouverte": ouverte,
                 "estprof": estProfesseur(request.user),
                 "username": request.user.username,
+                "coursAchanger": coursAchanger,
             }
         )
     else:
