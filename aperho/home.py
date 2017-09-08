@@ -44,9 +44,10 @@ def index(request):
         try:
             b=Barrette.objects.get(nom=barretteCourante)
             cours=list(Cours.objects.filter(
-                barrette=b,                     # cours dans la barrette
-                enseignant__barrettes__id=b.pk  # et enseignant aussi
-            ).order_by("formation__titre"))     # par orde de titres
+                barrette=b,                     # cours dans la barrette,
+                enseignant__barrettes__id=b.pk, # et enseignant aussi.
+                invalide=False,                 # cours non invalide
+            ).order_by("formation__titre"))     # triés par orde de titres
         except:
             cours=[]
         choix=Orientation._meta.get_field("choix")

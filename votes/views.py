@@ -648,7 +648,7 @@ def lesCours(request):
             cci[c][co]=list(io.order_by('etudiant__nom','etudiant__prenom'))
     eci=OrderedDict() ## dictionnaire enseignant -> cours -> inscriptions
     for e in enseignants:
-        ec=[c for c in cours if c.enseignant==e and c.barrette==b]
+        ec=[c for c in cours if c.enseignant==e and c.barrette==b and not c.invalide]
         eci[e]=OrderedDict()
         i=0
         for c in ec:

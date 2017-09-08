@@ -356,6 +356,7 @@ class Cours(models.Model):
     capacite   = models.IntegerField(default=18)
     ouverture  = models.ForeignKey('Ouverture')
     barrette   = models.ForeignKey('Barrette')
+    invalide   = models.BooleanField(default=False)
 
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
