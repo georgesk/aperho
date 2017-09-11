@@ -39,6 +39,7 @@ $( "#accordeon" ).accordion({
   {% for p in profsInscrits %}
   <tr>
     <td>
+      {{ forloop.counter }} 
       <div class="delButton">
 	<img src="/static/votes/img/del.png" onclick="delProf(this)" alt="Bouton de suppression" title="Supprimer"/>
       </div>

@@ -228,8 +228,8 @@ class Enseignant(models.Model):
     précise du lieu où il donnera ses cours (ça peut être une salle
     ou alors un groupe de salles, voire tout un étage de bâtiment).
     """
-    uid    = models.IntegerField()
-    username = models.CharField(max_length=100)
+    uid    = models.IntegerField(unique=True)
+    username = models.CharField(max_length=100, unique=True)
     nom   = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     salle = models.CharField(max_length=50, default="??")
