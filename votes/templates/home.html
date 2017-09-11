@@ -40,12 +40,17 @@ $( function() { // lancement après le chargement
     });
 
     // on cache les boutons pour les profs et l'admin
+    // mais aussi pour les étudiants en dehors de la période d'ouverture
     if("{{estprof}}"!="non" || "{{user.is_superuser}}"=="True"){
 	$("#inscription_boutons").empty();
 	var text="{{od}}";
 	if ("{{ouverte}}"=="True"){
 	    text="Les inscriptions pour <b>{{od.nom_session}}</b> <br/>sont en cours ! Passez de temps en temps<br/>pour voir l'évolution.";
 	}
+	$("#inscription_boutons").html(text);
+    }
+    if("{{etudiant.nom}}"){
+	text="Inscriptions à venir : <b>{{od.nom_session}}</b> <br/> du {{od.debut|date:'l j E à H:i'}}, au {{od.fin|date:'l j E à H:i'}}";
 	$("#inscription_boutons").html(text);
     }
 

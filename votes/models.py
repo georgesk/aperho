@@ -2,7 +2,7 @@
 from django.db import models
 from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
-import locale, json, urllib.parse
+import locale, json, re, urllib.parse
 
 class CoursOrientation(models.Model):
     """
@@ -284,9 +284,12 @@ class Formation(models.Model):
     def contenuWithLineBreaks(self):
         """
         décode le contenu. S'il est au format encodedURI, ça le décode
-        puis les retours à la ligne sont remplacés par des <br/>
+        puis les retours à la ligne sont remplacés par des <br/>; de plus,
+        les espaces multiples sont partiellement remplacés par des &nbsp;
         """
-        return self.contenuDecode.replace("\n","<br/>")
+        result=self.contenuDecode.replace("\n","<br/>")
+        result=re.sub(r"([ ]+) ", "".join(["&nbsp;"]*len(r"\1"))+" ", result)
+        return result
 
     def __str__(self):
         result="{} heure(s) : {} -- {}".format(self.duree, self.titre, self.contenu)
