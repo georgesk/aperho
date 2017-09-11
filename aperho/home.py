@@ -11,45 +11,75 @@ from votes.models import Cours, Inscription, Etudiant, Enseignant, \
     Orientation, Horaire, estProfesseur, barrettesPourUtilisateur, \
     Barrette, Ouverture
 
-def index(request):
-    if request.user.is_authenticated():
-        #########################################################
-        #   GESTION DE LA BARRETTE COURANTE POUR LA SESSION     #
-        #########################################################
-        initScript="" # script à insérer dans home.html
-        bpu=barrettesPourUtilisateur(request.user)
-        if len(bpu)==1:
-            request.session["barrette"]=bpu[0].nom
+def choixBarrette(request):
+    """
+    Prend une barrette de façon pertinente : s'il n'y en a qu'une ce sera
+    celle-là, sinon on propose de choisir avant toute autre chose.
+    @param request une requête
+    @return la liste de barrettes possibles, 
+    une ligne de code HTML pour le menu, et un peu de code Javascript
+    pour lancer un dialogue.
+    """
+    initScript="" # script à insérer dans home.html
+    bpu=barrettesPourUtilisateur(request.user)
+    if len(bpu)==1: # une seule barrette, on la choisit
+        request.session["barrette"]=bpu[0].nom
+        
+        actionChangeBarrette="<!-- barrette unique -->"
+    else: # plusieurs barrette, on voit si l'une d'entre elles a été demandée
         nomsBarrettes=[str(b.nom) for b in bpu]
         nouvelleBarrette=request.GET.get("nouvelleBarrette","")
         if nouvelleBarrette in nomsBarrettes:
             request.session["barrette"]=nouvelleBarrette
         barretteCourante=request.session.get("barrette","")
-        actionChangeBarrette="" # code HTML pour une ligne de menu
-        if len(bpu)>1:
-            # on donne un menu pour changer de barrette
-            actionChangeBarrette=""" <li><a href='javascript:changebarrette(%s,%s)'>Changer de barrette</a></li>"""%(json.dumps(nomsBarrettes),nomsBarrettes.index(barretteCourante) if barretteCourante in nomsBarrettes else "undef")
+        actionChangeBarrette="""<li><a href='javascript:changebarrette(%s,%s)'>Changer de barrette</a></li>"""%(json.dumps(nomsBarrettes),nomsBarrettes.index(barretteCourante) if barretteCourante in nomsBarrettes else "undef")
         if not barretteCourante:
-            if not bpu:
-                print("L'impossible est arrivé ? un utilisateur sans barrette connue")
-            else:
-                # par défaut, la première barrette est activée
-                request.session["barrette"]=bpu[0].nom
-                # mais on propose de changer de barrette s'il y en plusieurs
-                if len(bpu) > 1:
-                    initScript=""" $(function(){changebarrette(%s,%d)});""" %(json.dumps(nomsBarrettes),0)
+            # par défaut, la première barrette est activée
+            request.session["barrette"]=bpu[0].nom
+            # mais on propose de changer de barrette s'il y en plusieurs
+            initScript=""" $(function(){changebarrette(%s,%d)});""" %(json.dumps(nomsBarrettes),0)
+    return bpu, actionChangeBarrette, initScript
+
+def coursAModifier(request, cours):
+    """
+    Liste des cours qui n'ont probablement pas été mis à jour
+    et qui concernent un prof d'AP
+    """
+    if "profAP"==estProfesseur(request.user):
+        return[c for c in cours
+               if not c.invalide and
+               c.enseignant.nom == request.user.last_name and
+               ("MODIFIER" in c.formation.contenu or
+                "MODIFIER" in c.formation.titre)]
+    else:
+        return []
+
+def coursDeBarretteCourante(request):
+    """
+    @return une liste de cours de la barrette courante
+    """
+    barretteNom=request.session.get("barrette")
+    if not barretteNom:
+        return []
+    b=Barrette.objects.get(nom=barretteNom)
+    return list(Cours.objects.filter(
+        barrette=b,                     # cours dans la barrette,
+        enseignant__barrettes__id=b.pk, # et enseignant aussi.
+        invalide=False,                 # cours non invalide
+    ).order_by("formation__titre"))     # triés par orde de titres
+    
+    
+def index(request):
+    if request.user.is_authenticated():
+        #########################################################
+        #   GESTION DE LA BARRETTE COURANTE POUR LA SESSION     #
+        #########################################################
+        bpu, actionChangeBarrette,initScript = choixBarrette(request)
+        barretteCourante=request.GET.get("nouvelleBarrette","")
         #########################################################
         # GESTION DES COURS À AFFICHER, DANS LA BARRETTE        #
         #########################################################
-        try:
-            b=Barrette.objects.get(nom=barretteCourante)
-            cours=list(Cours.objects.filter(
-                barrette=b,                     # cours dans la barrette,
-                enseignant__barrettes__id=b.pk, # et enseignant aussi.
-                invalide=False,                 # cours non invalide
-            ).order_by("formation__titre"))     # triés par orde de titres
-        except:
-            cours=[]
+        cours=coursDeBarretteCourante(request)
         choix=Orientation._meta.get_field("choix")
         orientations=[{"val": c[0], "label": c[1],} for c in choix.choices]
         # orientationOuverte est un booléen ; pour le forcer à vrai
@@ -60,16 +90,7 @@ def index(request):
             cours=[c for c in cours if c.estRecent]
         else:
             cours=[c for c in cours if c.estOuvert]
-        coursAchanger=[]
-        if "profAP"==estProfesseur(request.user):
-            ## on se prépare à avertir le prof s'il reste du Lorem ipsum
-            ## dans un de ses cours, c'est à dire qu'il n'a pas modifié
-            ## les données par défaut
-            coursAchanger=[c for c in cours
-                           if not c.invalide and
-                           c.enseignant.nom == request.user.last_name and
-                           ("MODIFIER" in c.formation.contenu or
-                            "MODIFIER" in c.formation.titre)]
+        coursAchanger=coursAModifier(request, cours)
         capacite={} # tableau heure -> nombre d'élèves accueillis
         heures=[h.hm for h in Horaire.objects.all()]
         for h in heures:
@@ -147,7 +168,8 @@ def index(request):
                 "cours_suivis" : cours_suivis,
                 "orientations_demandees": orientations_demandees,
                 "orientations" : orientations,
-                "orientationOuverte" : orientationOuverte,
+                #"orientationOuverte" : orientationOuverte,
+                "orientationOuverte" : True,
                 "od": od,
                 "ouverte": ouverte,
                 "estprof": estProfesseur(request.user),

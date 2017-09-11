@@ -1,0 +1,21 @@
+<h2>
+  Choix d'orientation (au moins une !)
+  {% if etudiant == None %}
+  (vous n'êtes pas étudiant(e))
+  {% else %}
+  ({{etudiant.prenom}} {{etudiant.nom}}, {{etudiant.classe}})
+  {% endif %}
+</h2>
+<fieldset class="orientation">
+  <legend>
+    <p>Une séance au moins sera utilisée pour l'information sur l'orientation en première. Chaque présence aux séances d'information est obligatoire et remplacera <i>une</i> séance d'AP durant la période. Si on coche plusieurs cases, chaque présence en information sera obligatoire.</p>
+    <p>Vous devez cocher une case au moins.</p>
+  </legend>
+  {% for o in orientations %}
+  <input type="checkbox" name="orientation" value={{o.val}}
+	 {% if o.val in orientations_demandees %}
+	 checked="checked"
+	 {% endif %}
+	 /> {{o.label}}<br/>
+  {% endfor %}
+</fieldset>
