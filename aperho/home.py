@@ -78,7 +78,10 @@ def index(request):
         if len(bpu)==1: # une seule barrette, on la choisit
             barretteCourante=bpu[0].nom
         else:
-            barretteCourante=request.GET.get("nouvelleBarrette","")
+            barretteCourante=request.GET.get(
+                "nouvelleBarrette",
+                request.session.get("barrette", "")
+            )
         #########################################################
         # GESTION DES COURS À AFFICHER, DANS LA BARRETTE        #
         #########################################################
@@ -140,6 +143,9 @@ def index(request):
         c1=capacite[h1]
         assert len(horaires)==2
         
+        # on compte le nombre d'étudiants à inscrire
+        b=Barrette.objects.get(nom=barretteCourante)
+        netu=Etudiant.objects.filter(barrette_id=b.id).count()
         ## on sépare les cours selon les deux horaires
         tousLesCours=[
             {
@@ -177,6 +183,7 @@ def index(request):
                 "estprof": estProfesseur(request.user),
                 "username": request.user.username,
                 "coursAchanger": coursAchanger,
+                "netu": netu,
             }
         )
     else:

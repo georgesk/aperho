@@ -24,7 +24,7 @@ $( function() { // lancement après le chargement
 	}
 	$("#inscription_boutons").html(text);
     }
-    if("{{etudiant.nom}}"){
+    if("{{etudiant.nom}}" && "{{ouverte}}"=="False"){
 	text="Inscriptions à venir : <b>{{od.nom_session}}</b> <br/> du {{od.debut|date:'l j E à H:i'}}, au {{od.fin|date:'l j E à H:i'}}";
 	$("#inscription_boutons").html(text);
     }
@@ -70,7 +70,7 @@ $( function() { // lancement après le chargement
 <input type="hidden" id="etudiantUid" value="{{etudiant.uid}}"/>
 {% for coursHoraire in tousLesCours %}
 {% if coursHoraire.cours %}
-<h3>Cours commençant à {{coursHoraire.horaire}} (capacité : {{coursHoraire.capacite}} élèves)</h3>
+<h3>Cours commençant à {{coursHoraire.horaire}} (offre : {{coursHoraire.capacite}} ; demande :{{netu}})</h3>
 {% endif %}
 <table style="width: 100%">
   {% for c in coursHoraire.cours %}
