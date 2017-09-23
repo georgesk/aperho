@@ -314,7 +314,7 @@ class Horaire(models.Model):
     barrette = models.ForeignKey('Barrette')
 
     def __str__(self):
-        return str("%s %s" %(self.barrette, self.heure))
+        return str("%s (%s %s)" %(self.barrette, self.get_jour_display(), self.hm))
 
     
     def __lt__(self, other):
