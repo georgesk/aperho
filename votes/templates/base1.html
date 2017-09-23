@@ -35,6 +35,9 @@
 	      {% block mesactions %}
               <ul>
 		{% if user.is_superuser %}
+		{% block mesactions_speciales %}
+		<!-- options particulières à une page web -->
+		{% endblock %}
 		<li><a href="/votes/addBarrette">Barrettes</a></li>
 		<li><a href="/votes/addOuverture">Périodes d'AP</a></li>
 		<li><a href="/votes/addEleves">Élèves</a></li>

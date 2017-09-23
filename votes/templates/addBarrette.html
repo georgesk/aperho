@@ -1,20 +1,7 @@
 {% extends "base1.html" %}
 
-{% block mesactions %}
-<ul>
-  {% if user.is_superuser %}
+{% block mesactions_speciales %}
   <li><a id="cnb" href="#nb">Créer une nouvelle barrette</a></li>
-  <li><a href="/votes/addEleves">Élèves</a></li>
-  <li><a href="/votes/addProfs">Profs</a></li>
-  <li><a href="/votes/lesCours">Séances d'AP</a></li>
-  <li><a href="/votes/cop">Élèves -> COPs</a></li>
-  <li><hr/></li>
-  <li><a href="/admin/">Administration directe de Django</a></li>
-  {% else %}
-  {% endif %}
-  <li><hr/></li>
-  <li><a href="/logout">Déconnexion</a></li>
-</ul>
 {% endblock %}
 
 {% block localscripts %}
