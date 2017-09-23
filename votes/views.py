@@ -747,7 +747,7 @@ def enroler(request):
     b=Barrette.objects.get(nom=barrette)
     ouvertures=Ouverture.objects.all().order_by("debut")
     derniereOuverture=ouvertures.last()
-    cours=list(Cours.objects.filter(enseignant__barrettes__id=b.id, ouverture=derniereOuverture.pk).order_by("enseignant__nom", "horaire"))
+    cours=list(Cours.objects.filter(formation__barrette__id=b.id, ouverture=derniereOuverture.pk).order_by("enseignant__nom", "horaire"))
     horaires=sorted(list(set([c.horaire for c in cours])))
     for c in cours:
         # on ajout l'attribut n, remplissage du cours
@@ -755,7 +755,7 @@ def enroler(request):
     cours0=[c for c in cours if estEnPremier(c)]
     cours1=[c for c in cours if not estEnPremier(c)]
     ## calcul des non-inscrits
-    eleves=set([e for e in Etudiant.objects.all()])
+    eleves=set([e for e in Etudiant.objects.filter(barrette_id=b.id)])
     inscrits=set([i.etudiant for i in Inscription.objects.all()])
     noninscrits=list(eleves-inscrits)
     noninscrits.sort(key=lambda e: e.nom)
