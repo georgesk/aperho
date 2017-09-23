@@ -169,7 +169,9 @@ def cop (request):
 
 def inscritClasse(gid, barrette, cn=""):
     """
-    Interroge l'annuaire et inscrit les élèves d'une classe dans la BD
+    Interroge l'annuaire et inscrit les élèves d'une classe dans la BD.
+    Remarque : un élève ne peut être inscrit qu'une seule fois dans la BDD
+    à cause de la contrainte UNIQUE pour votes_etudiant.uidNumber
     @param gid l'identifiant d'une classe dans l'annuaire LDAP
     @param barrette une instance de Barrette
     @param cn un nom de classe (sans le "c" initial), qui prend
@@ -199,16 +201,28 @@ def inscritClasse(gid, barrette, cn=""):
             )
         for entry in connection.response:
             cn=nomClasse(entry['attributes']['cn'][0])
-    ## à ce stade, cn est un nom de classe dans l'annuaire LDAP.
+    ## à ce stade, cn est un nom de classe dans l'annuaire LDAP et
+    ## gid est le numéro du groupe dans la base LDAP
     ## récupération des élèves inscrits dans la classe
     base_dn = 'ou=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
+    # recherche des membres de la classe avec gidNumber==gid
     connection.search(
         search_base = base_dn,
         search_filter = filtre,
         attributes=["uidNumber", "sn", "givenName", "uid" ]
         )
     for entry in connection.response:
+        # si un élève est déjà dans la BDD, mais avec une barrette
+        # ou une classe autres, on change classe et barrette.
+        aChanger=Etudiant.objects.filter(uidNumber=entry['attributes']['uidNumber'][0])
+        for e in aChanger: # en fait il y en a zéro ou un
+            if e.classe!=cn or e.barrette!=barrette:
+                e.classe=cn
+                e.barrette=barrette
+                e.save()
+        # finalement on ramène l'élève de la base de données avec les
+        # bons attributs
         e,status=Etudiant.objects.get_or_create(
             uidNumber=entry['attributes']['uidNumber'][0],
             uid=entry['attributes']['uid'][0],
