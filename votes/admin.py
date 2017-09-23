@@ -2,11 +2,12 @@ from django.contrib import admin
 
 from .models import Enseignant, Formation, Horaire, Etudiant, Cours, \
     Inscription, Ouverture, Orientation, CoursOrientation, Cop, \
-    InscriptionOrientation
+    InscriptionOrientation, Barrette
 
 admin.site.register(Horaire)
 admin.site.register(Ouverture)
 admin.site.register(Cop)
+admin.site.register(Barrette)
 
 class InscriptionOrientationAdmin(admin.ModelAdmin):
  search_fields = [
