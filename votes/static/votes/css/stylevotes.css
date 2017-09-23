@@ -327,3 +327,22 @@ ul.errorlist li{
 .ui-datepicker {
     z-index: 1001 !important;
 }
+
+div.aideIcon {
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 0.5em;
+    padding: 0.3em;
+    margin:1em;
+    width: 200px;
+    background: #eeeedd;
+}
+
+div.aideEleves {
+    border: 5px red dotted;
+    border-radius: 1em;
+    padding: 0.5em 2em;
+    margin: 1em auto;
+    width: 80%;
+    bacground: lightyellow;
+}

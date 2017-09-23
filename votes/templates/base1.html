@@ -30,7 +30,11 @@
         </a>
         <nav class="navigation">
           <ul>
-            <li class="active" ><a href="http://www.lyceejeanbart.fr" target="jblycee">Le site du lycée</a></li>
+	    {% ifequal estprof "profAP" %}
+            <li class="active" ><a href="/static/votes/html/aide-prof.html" target="aide">Aide, mode d'emploi</a></li>
+	    {% else %}
+	    <li class="active" ><a href="/static/votes/html/aide-eleve.html" target="aide">Aide, mode d'emploi</a></li>
+	    {% endifequal %}
             <li class="sub-menu"><a href="#">Mes actions</a>
 	      {% block mesactions %}
               <ul>
