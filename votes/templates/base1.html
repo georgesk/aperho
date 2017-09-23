@@ -34,8 +34,26 @@
             <li class="sub-menu"><a href="#">Mes actions</a>
 	      {% block mesactions %}
               <ul>
-                <li><a href="/votes/profil">Mon profil</a></li>
-                <li><a href="/logout">Déconnexion</a></li>
+		{% if user.is_superuser %}
+		<li><a href="/votes/addBarrette">Barrettes</a></li>
+		<li><a href="/votes/addOuverture">Périodes d'AP</a></li>
+		<li><a href="/votes/addEleves">Élèves</a></li>
+		<li><a href="/votes/addProfs">Profs</a></li>
+		<li><a href="/votes/lesCours">Cours d'AP</a></li>
+		<li><a href="/votes/cop">Élèves -> COPs</a></li>
+		<li><hr/></li>
+		<li><a href="/admin/">Administration directe de Django</a></li>
+		{% endif %}
+		{% ifequal estprof "profAP" %}
+		<li><a href="/votes/lesCours?uid={{username}}">Mes cours d'AP</a></li>
+		<li><a href="/votes/lesCours">Tous les cours d'AP</a></li>
+		<li><a href="/votes/enroler">Enrôler des élèves</a></li>
+		{% endifequal %}
+		{{actionChangeBarrette|safe}} <!-- action de changement de barrette, éventuellement -->
+		
+		<!-- dernière option : la déconnexion -->
+		<li><hr/></li>
+		<li><a href="/logout/">Déconnexion</a></li>
               </ul>
 	      {% endblock %}
             </li>

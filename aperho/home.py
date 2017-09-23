@@ -75,7 +75,10 @@ def index(request):
         #   GESTION DE LA BARRETTE COURANTE POUR LA SESSION     #
         #########################################################
         bpu, actionChangeBarrette,initScript = choixBarrette(request)
-        barretteCourante=request.GET.get("nouvelleBarrette","")
+        if len(bpu)==1: # une seule barrette, on la choisit
+            barretteCourante=bpu[0].nom
+        else:
+            barretteCourante=request.GET.get("nouvelleBarrette","")
         #########################################################
         # GESTION DES COURS À AFFICHER, DANS LA BARRETTE        #
         #########################################################
