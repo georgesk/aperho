@@ -449,7 +449,10 @@ def barrettesPourUtilisateur(user):
         result=list(Barrette.objects.all())
     elif "profAP"==estProfesseur(user):
         prof=Enseignant.objects.filter(nom=user.last_name, prenom=user.first_name)[0]
-        result=list(Barrette.objects.filter(enseignant=prof))
+        #result=list(Barrette.objects.filter(enseignant=prof))
+        # ici, b fait référence à l'enseignant par le lien "barrettes"
+        # et non pas par le lien "indirects"
+        result=list(Barrette.objects.filter(b=prof))
     else:
         # c'est un élève ?
         try:

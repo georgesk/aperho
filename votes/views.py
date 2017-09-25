@@ -761,7 +761,12 @@ def enroler(request):
     b=Barrette.objects.get(nom=barrette)
     ouvertures=Ouverture.objects.all().order_by("debut")
     derniereOuverture=ouvertures.last()
-    cours=list(Cours.objects.filter(formation__barrette__id=b.id, ouverture=derniereOuverture.pk).order_by("enseignant__nom", "horaire"))
+    cours=list(Cours.objects.filter(
+        formation__barrette__id=b.id,
+        ouverture=derniereOuverture.pk,
+    ).exclude(
+        enseignant__indirects__id=b.id,
+    ).order_by("enseignant__nom", "horaire"))
     horaires=sorted(list(set([c.horaire for c in cours])))
     for c in cours:
         # on ajout l'attribut n, remplissage du cours
