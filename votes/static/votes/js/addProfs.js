@@ -25,10 +25,11 @@ function addProf(csrf, barrette){
 
 
 /**
- * Désinscrit un prof d'une barrette
+ * Change la salle d'un prof d'une barrette
+ * mais aussi divers autres attributs
  **/
 function changeSalle(prof, barrette, salle, nouvelleSalle,
-		     matiere, nouvelleMatiere, csrf){
+		     matiere, nouvelleMatiere, indir, csrf){
     $.post(
 	"changeSalle",
 	{
@@ -39,6 +40,7 @@ function changeSalle(prof, barrette, salle, nouvelleSalle,
 	    nouvelleSalle: nouvelleSalle,
 	    matiere: matiere,
 	    nouvelleMatiere: nouvelleMatiere,
+	    indir: indir
 	},
 	function(data){
 	    if (data.ok=="ok"){
@@ -61,6 +63,12 @@ function editProf(el){
     var salle=$(ligne).find("td:eq(2)").text().trim();
     var matiere=$(ligne).find("td:eq(3)").text().trim();
     var barrette=$("#barretteCourante").text().trim();
+    var indir=$(ligne).find(".indir");
+    if (! indir) {
+	indir="";
+    } else {
+	indir=indir.text().trim();
+    }
     var csrf=$("#csrf").text().trim();
     /*************************************
      * Il faut récupérer la nouvelle salle
@@ -86,6 +94,14 @@ function editProf(el){
                 id='newMatiere' value='"+matiere+"'/> \
 	     </td> \
 	   </tr> \
+           <tr> \
+	     <td> \
+	       Participation indirecte : \
+	     </td> \
+	     <td> \
+	       <input type='checkbox' id='indir' style='margin-left: 5em;' "+indir+"/> \
+	     </td> \
+	   </tr> \
          </table>"
     );
     $('#dialog').dialog({
@@ -100,8 +116,9 @@ function editProf(el){
             'OK': function () {
 		var nouvelleSalle = $("#newSalle").val();
 		var nouvelleMatiere =$("#newMatiere").val();
+		var indir=$("#indir").prop("checked");
 		changeSalle(prof, barrette, salle, nouvelleSalle,
-			    matiere, nouvelleMatiere, csrf);
+			    matiere, nouvelleMatiere, indir, csrf);
                 $('#dialog').dialog('close');
             },
             'Échap': function () {

@@ -390,13 +390,21 @@ def changeSalle(request):
     nouvelleSalle=request.POST.get("nouvelleSalle","")
     matiere=request.POST.get("matiere","")
     nouvelleMatiere=request.POST.get("nouvelleMatiere","")
+    indir=request.POST.get("indir","")=="true"
     b=Barrette.objects.get(nom=barrette)
     trouve=[e for e in Enseignant.objects.filter(barrettes__in=[b.pk]) if "%s %s" %(e.nom, e.prenom)==prof]
+    print("GRRRR indir, trouve, prof=", indir, trouve, prof)
     if trouve:
         try:
             ok="ok"
             trouve[0].salle=nouvelleSalle
             trouve[0].matiere=nouvelleMatiere
+            print("GRRRR indir=", indir)
+            if indir:
+                trouve[0].indirects.add(b)
+            else:
+                trouve[0].indirects.remove(b)
+            print ("GRRRR", trouve[0])
             trouve[0].save()
             message="Mis %s en salle %s (%s)" %(prof,nouvelleSalle,nouvelleMatiere)
         except Exception as e:
@@ -444,8 +452,9 @@ def addUnProf(request):
                     matiere=matiere,
                 )
                 enseignant.save()
-                
-            bb=[b.nom for b in list(Barrette.objects.filter(enseignant__in=[enseignant.pk]))]
+
+            # b__in fait référence au champ "barrettes" du prof
+            bb=[b.nom for b in list(Barrette.objects.filter(b__in=[enseignant.pk]))]
             if barrette in bb:
                 pass # pas besoin d'ajouter la barrette pour cet enseignant
             else:
@@ -495,7 +504,10 @@ def addProfs(request):
     b=Barrette.objects.filter(nom=barretteCourante)[0]
     profsInscrits=list(Enseignant.objects.filter(barrettes__in=[b.pk]).order_by('nom'))
     for p in profsInscrits:
-        p.bb=", ".join([b.nom for b in list(Barrette.objects.filter(enseignant__in=[p.pk]).order_by('nom'))])
+        # b__in fait référence à la référence de prof par "barrettes"
+        # par opposition à la référence par "indirects"
+        p.bb=", ".join([b.nom for b in list(Barrette.objects.filter(b__in=[p.pk]).order_by('nom'))])
+        p.indir= b in p.indirects.all() # vrai si le prof a une inscription indirecte 
     profs=getProfsLibres(barretteCourante)
     return render(
         request, "addProfs.html",
@@ -662,6 +674,8 @@ def lesCours(request):
             cci[c][co]=list(io.order_by('etudiant__nom','etudiant__prenom'))
     eci=OrderedDict() ## dictionnaire enseignant -> cours -> inscriptions
     for e in enseignants:
+        if b in e.indirects.all():
+            continue # rien pour les profs qui ont une participation indirecte
         ec=[c for c in cours if c.enseignant==e and c.barrette==b and not c.invalide]
         eci[e]=OrderedDict()
         i=0
@@ -777,14 +791,16 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
     """
     Enregistre un nouveau cours pour chaque enseignant de la barrette,
     en reprenant les formations connues lors de la formation précédente,
-    quitte à en créer avec des formations par défaut
+    quitte à en créer avec des formations par défaut. Attention, si la barrette
+    est dans le champ "indirects" de l'enseignant, on ne crée pas de cours.
     @param barrette le nom d'une barette
     @param ouverture la dernière ouverture en date
     @param cours si non None, on crée un seul cours sur le modèle de celui-là
     mais pas au même horaire
     @return le nombre de cours éventuellement créés
     """
-    if cours:
+    b=Barrette.objects.get(nom=barrette)
+    if cours and b not in cours.enseignant.indirects.all():
         #place le cours en premier dans l'horaire
         metEnPremier(cours)
         cours.save()
@@ -798,9 +814,10 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
         cours.save()
         return 1
     nouveaux=0
-    b=Barrette.objects.get(nom=barrette)
     enseignants=Enseignant.objects.filter(barrettes__id=b.pk)
     for e in enseignants:
+        if b in e.indirects.all():
+            continue ## pas de création de cours sir le prof est indirect ici
         cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture).order_by("horaire")
         if not cours:
             coursAnciensTrouves=False

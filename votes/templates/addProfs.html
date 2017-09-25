@@ -46,6 +46,9 @@ $( "#accordeon" ).accordion({
       <div class="editButton">
 	<img src="/static/votes/img/edit.png" onclick="editProf(this)" alt="Bouton d'édition" title="Éditer"/>
       </div>
+      {% if p.indir %}
+      <span style="background: red; color: white; border-radius: 0.5em; padding: 0 0.5em;">Participation<br/>indirecte</span><div class="indir" style="display:none;">checked</div>
+      {% endif %}
     </td>
     <td>{{p.nom}} {{p.prenom}}</td>
     <td>{{p.salle}}</td>

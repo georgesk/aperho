@@ -62,12 +62,14 @@ def coursDeBarretteCourante(request):
     if not barretteNom:
         return []
     b=Barrette.objects.get(nom=barretteNom)
-    return list(Cours.objects.filter(
+    tousLesCours=Cours.objects.filter(  # filter les cours tels que ...
         barrette=b,                     # cours dans la barrette,
         enseignant__barrettes__id=b.pk, # et enseignant aussi.
-        invalide=False,                 # cours non invalide
-    ).order_by("formation__titre"))     # triés par orde de titres
-    
+        invalide=False,                 # cours non invalide ...
+    ).exclude(                          # et pas de participation indirecte
+        enseignant__indirects__id=b.pk, # du prof...
+    ).order_by("formation__titre")       # triés par orde de titres
+    return list(tousLesCours)
     
 def index(request):
     if request.user.is_authenticated():
