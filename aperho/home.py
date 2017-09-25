@@ -100,7 +100,7 @@ def index(request):
             cours=[c for c in cours if c.estOuvert]
         coursAchanger=coursAModifier(request, cours)
         capacite={} # tableau heure -> nombre d'élèves accueillis
-        heures=[h.hm for h in Horaire.objects.all()]
+        heures=[h.hm for h in Horaire.objects.filter(barrette__nom=barretteCourante)]
         for h in heures:
             capacite[h]=0
         ## On enrichit les cours avec le remplissage actuel de chacun
