@@ -135,14 +135,11 @@ def index(request):
             h0=horaires[0].hm
             h1=horaires[1].hm
         else:
-            while len(horaires) < 2:
-                hi="remplissage_{}".format(len(horaires))
-                horaires.append(hi)
-                capacite[hi]="??"
-            h0=horaires[0]
-            h1=horaires[1]
+            h0=horaires[0].hm
+            h1="remplissage"
+            horaires.append(h1)
         c0=capacite[h0]
-        c1=capacite[h1]
+        c1=capacite.get(h1,0)
         assert len(horaires)==2
         
         # on compte le nombre d'étudiants à inscrire
