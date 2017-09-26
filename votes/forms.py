@@ -7,16 +7,29 @@ class dureeField(forms.IntegerField):
            raise forms.ValidationError("un cours dure 1 ou 2 heures.")
 
 class capaciteField(forms.IntegerField):
+    def __init__(self, *args, **kwargs):
+        forms.IntegerField.__init__(self, *args, **kwargs)
+        self.isSuperUser=False
+        return
     def validate(self, value):
        super(capaciteField, self).validate(value)
        minCap=16
        maxCap=25
+       if self.isSuperUser:
+           minCap=0
+           maxCap=500
        if value < minCap:
            raise forms.ValidationError("Trop peu d'élèves.")
        elif value > maxCap:
            raise forms.ValidationError("Trop d'élèves.")
 
 class editeCoursForm(forms.Form):
+    def __init__(self, *args, **kwargs ):
+        self.isSuperUser=kwargs.pop("isSuperUser",False)
+        forms.Form.__init__(self, *args, **kwargs)
+        if self.isSuperUser:
+            self.fields["capacite"].isSuperUser=True
+        return
     titre = forms.CharField(
         max_length=80,
         widget=forms.TextInput(attrs={

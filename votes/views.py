@@ -1180,7 +1180,7 @@ def editeCours(request):
     if "editeCours" in request.META["HTTP_REFERER"]:
         ## la page se rappelle elle-même, on a cliqué sur le bouton
         ## de validation donc on peut récupérer les valeurs de form
-        form=editeCoursForm(request.POST)
+        form=editeCoursForm(request.POST, isSuperUser=request.user.is_superuser)
         if form.is_valid():
             ok=True
             ## on vérifie, pour un cours de deux heures, s'il est à la première
