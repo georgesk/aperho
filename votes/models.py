@@ -233,12 +233,12 @@ class Enseignant(models.Model):
     nom   = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     salle = models.CharField(max_length=50, default="??")
-    barrettes= models.ManyToManyField(Barrette, related_name="b")
+    barrettes= models.ManyToManyField(Barrette, related_name="b", blank=True)
     matiere=models.CharField(max_length=50, default="??")
     # liste de barrettes où le prof intervient indirectement par un groupement
     # il a le droit de voir ce qui se passe mais il n'a pas le droit de
     # modifier.  En gros il est comme un élève qui voit plus de choses.
-    indirects=models.ManyToManyField(Barrette, related_name="i")
+    indirects=models.ManyToManyField(Barrette, related_name="i", blank=True)
 
     class Meta:
         unique_together = ('uid', 'salle',)
