@@ -37,7 +37,7 @@ class editeCoursForm(forms.Form):
         })
     )
     contenu = forms.CharField(
-        max_length=400,
+        max_length=1400,
         widget=forms.Textarea(attrs={
             "cols": 80,
             "rows": 5,
