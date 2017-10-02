@@ -878,7 +878,11 @@ def contenuMinimal(request):
     formations=Formation.objects.all()
     aModifier=[ f for f in formations if "À MODIFIER" in f.titre or "À MODIFIER" in f.contenu]
     for f in aModifier:
-        f.titre = "remédiation, soutien"
+        try:
+            matiere=f.auteur.matiere
+        except:
+            matiere="[Matière]"
+        f.titre = "%s -- remédiation, soutien" %matiere
         f.contenu = "Ce cours convient aux élèves qui connaissent une difficulté ou ne sont pas tout à fait sûrs d'eux-mêmes."
         f.save()
     return JsonResponse({
