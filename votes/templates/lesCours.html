@@ -45,6 +45,11 @@ $( function() { // lancement après le chargement
   {% endif %}
 {% else %}
 <h1 class="pagetitre">Cours d'AP pour la barrette {{barrette}}, par prof</h1>
+{% if user.is_superuser %}
+<button onclick="$.get('/votes/contenuMinimal', function(){location='/votes/lesCours';});">
+  Mettre un contenu minimal pour tous les cours restant « À MODIFIER »
+</button>
+{% endif %}
 <h2>Données dans un autre format</h2>
 <ul>
   <li>Pour un tableur, au <a href="/votes/lesCours?csv=yes">format CSV</a>.</li>  

@@ -870,6 +870,22 @@ def formationParDefaut(b,e):
         f.save()
     return f
 
+def contenuMinimal(request):
+    """
+    Met un contenu minimal dans les formations qui n'ont été 
+    renseignées par aucun professeur.
+    """
+    formations=Formation.objects.all()
+    aModifier=[ f for f in formations if "À MODIFIER" in f.titre or "À MODIFIER" in f.contenu]
+    for f in aModifier:
+        f.titre = "remédiation, soutien"
+        f.contenu = "Ce cours convient aux élèves qui connaissent une difficulté ou ne sont pas tout à fait sûrs d'eux-mêmes."
+        f.save()
+    return JsonResponse({
+        "message" : "%s intitulés ont été modifiés" %len(aModifier),
+        "ok"      : "ok",
+    })
+
 def enroleEleveCours(request):
     """
     enrole un élève dans un cours request.POST doit contenir deux variables,

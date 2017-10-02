@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^editOuverture$', views.editOuverture, name='editOuverture'),
     url(r'^editeCours$', views.editeCours, name='editeCours'),
     url(r'^delFormation$', views.delFormation, name='delFormation'),
+    url(r'^contenuMinimal$', views.contenuMinimal, name='contenuMinimal'),
 ]
