@@ -757,10 +757,27 @@ def enroler(request):
     Les profs du groupe d'AP peuvent enrôler des élèves non-inscrits
     grâce à cette page
     """
-    barrette=request.session.get("barrette","")
-    b=Barrette.objects.get(nom=barrette)
-    ouvertures=Ouverture.objects.all().order_by("debut")
-    derniereOuverture=ouvertures.last()
+    etudiant=""
+    coursConnus={}
+    if request.POST.get("uid",""): # appel de la page avec un élève et des cours
+        b=Barrette.objects.get(pk=request.POST.get("barrette"))
+        barrette=b.nom
+        derniereOuverture=Ouverture.objects.get(pk=request.POST.get("ouverture"))
+        etudiant=Etudiant.objects.get(uid=request.POST.get("uid"))
+        inscriptions=sorted([ i for i in Inscription.objects.filter(
+            etudiant=etudiant,
+            cours__barrette=b,
+            cours__ouverture=derniereOuverture,
+        ) ], key=lambda i: i.cours.horaire)
+        for i in range(len(inscriptions)):
+            coursConnus[i]=inscriptions[i].cours
+            ## on efface l'inscription
+            inscriptions[i].delete()
+    else:
+        barrette=request.session.get("barrette","")
+        b=Barrette.objects.get(nom=barrette)
+        ouvertures=Ouverture.objects.all().order_by("debut")
+        derniereOuverture=ouvertures.last()
     cours=list(Cours.objects.filter(
         formation__barrette__id=b.id,
         ouverture=derniereOuverture.pk,
@@ -789,6 +806,8 @@ def enroler(request):
                 "h0":          horaires[0],
                 "h1":          horaires[1],
                 "noninscrits": noninscrits,
+                "etudiant":    etudiant,
+                "coursConnus": coursConnus,
             }
         )
 

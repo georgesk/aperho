@@ -266,3 +266,22 @@ function interditCoursOuvert(tabou){
 	return true;
     }
 }
+
+/**
+ * désinscrit un élève et appelle la page d'enrolement
+ * en pré-positionnant l'élève et deux cours
+ * @param eleveUid l'uid (prenom.nom) d'un élève
+ * @param barrette une barrette par sa clé primaire
+ * @param ouverture une ouverture par sa clé primaire
+ * @param csrf un csrf middleware token
+ **/
+function editeInscriptions(eleveUid, barrette, ouverture, csrf){
+    var f = $("<form>",{method: 'post', action: '/votes/enroler'});
+    f.append($("<input>",{type:'hidden', name: 'uid', value: eleveUid,}));
+    f.append($("<input>",{type:'hidden', name: 'barrette', value: barrette,}));
+    f.append($("<input>",{type:'hidden', name: 'ouverture', value: ouverture,}));
+    f.append($("<input>",{type:'hidden', name: 'csrfmiddlewaretoken', value: csrf,}));
+    $("body").append(f);
+    f.submit();
+		      
+}

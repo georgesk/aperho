@@ -131,9 +131,10 @@ $( function() { // lancement après le chargement
 	</tr>
 	{% for i in inscriptions %}
 	   <tr>
-	  <td>
-	    {{forloop.counter}}
-	  </td>
+	     <td>
+	       <button onclick="editeInscriptions('{{i.etudiant.uid}}',{{i.etudiant.barrette.pk}},{{ouverture.pk}},'{{csrf_token}}')" class="editButton" title="Cliquer pour modifier l'inscription"><img src="/static/votes/img/edit.png" alt="Edit"/></button>
+	       {{forloop.counter}}
+	     </td>
 	  <td class="changeattribut" data-onload="changeattribut(el,'{{e.username}}'=='{{user.username}}' || '{{user.is_superuser}}'=='True', 'colspan', '1', '2')">
 	    {{i.etudiant.nom}}
 	  </td>

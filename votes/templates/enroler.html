@@ -68,7 +68,11 @@
     </th>
     <td>
       <div class="delButton"><img src="/static/votes/img/editclear.png" onclick="$('#eleve').val('')" alt="Bouton pour effacer"/></div>
+      {% if etudiant %}
+      <input type="text" id="eleve" name="eleve" placeholder="Commencer à taper 3 lettres ..." size="80" style="margin-right: 1em;" value="{{etudiant.nom}} {{etudiant.prenom}} {{etudiant.classe}} ({{etudiant.uid}})"/>
+      {% else %}
       <input type="text" id="eleve" name="eleve" placeholder="Commencer à taper 3 lettres ..." size="80" style="margin-right: 1em;"/>
+      {%endif %}
     </td>
   </tr>
   
@@ -79,7 +83,11 @@
     </th>
     <td>
       <div class="delButton"><img src="/static/votes/img/editclear.png" onclick="$('#cours0').val('')" alt="Bouton pour effacer"/></div>
+      {% if coursConnus.0 %}
+      <input type="text" id="cours0" name="cours0" placeholder="Commencer à taper 3 lettres ..." size="80"  style="margin-right: 1em;" value="{{coursConnus.0.enseignant.nom}} {{coursConnus.0.horaire}}, durée : {{coursConnus.0.formation.duree}}h ({{coursConnus.0.n}}/{{coursConnus.0.capacite}}) {{coursConnus.0.formation.titre}} ({{coursConnus.0.id}})"/>
+      {% else %}
       <input type="text" id="cours0" name="cours0" placeholder="Commencer à taper 3 lettres ..." size="80"  style="margin-right: 1em;"/>
+      {%endif %}
     </td>
   </tr>
   <tr>
@@ -88,7 +96,12 @@
     </th>
     <td>
       <div class="delButton"><img src="/static/votes/img/editclear.png" onclick="$('#cours1').val('')" alt="Bouton pour effacer"/></div>
+      
+      {% if coursConnus.1 %}
+      <input type="text" id="cours1" name="cours1" placeholder="Commencer à taper 3 lettres ..." size="80"  style="margin-right: 1em;" value="{{coursConnus.1.enseignant.nom}} {{coursConnus.1.horaire}}, durée : {{coursConnus.1.formation.duree}}h ({{coursConnus.1.n}}/{{coursConnus.1.capacite}}) {{coursConnus.1.formation.titre}} ({{coursConnus.1.id}})"/>
+      {% else %}
       <input type="text" id="cours1" name="cours1" placeholder="Commencer à taper 3 lettres ..." size="80"  style="margin-right: 1em;"/>
+      {%endif %}
     </td>
   </tr>
   <tr>
