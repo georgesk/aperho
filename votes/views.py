@@ -759,6 +759,12 @@ def enroler(request):
     """
     etudiant=""
     coursConnus={}
+    if request.GET.get("c0",""): # appel de la page avec des cours connus
+        c0=int(request.GET.get("c0"))
+        coursConnus[0]=Cours.objects.get(pk=c0)
+        c1=int(request.GET.get("c1"))
+        if c1>0:
+            coursConnus[1]=Cours.objects.get(pk=c1)
     if request.POST.get("uid",""): # appel de la page avec un élève et des cours
         b=Barrette.objects.get(pk=request.POST.get("barrette"))
         barrette=b.nom
@@ -785,9 +791,6 @@ def enroler(request):
         enseignant__indirects__id=b.id,
     ).order_by("enseignant__nom", "horaire"))
     horaires=sorted(list(set([c.horaire for c in cours])))
-    for c in cours:
-        # on ajout l'attribut n, remplissage du cours
-        c.n= len(Inscription.objects.filter(cours=c))
     cours0=[c for c in cours if estEnPremier(c)]
     cours1=[c for c in cours if not estEnPremier(c)]
     ## calcul des non-inscrits

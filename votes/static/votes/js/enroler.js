@@ -32,7 +32,11 @@ function enroler(){
 		  ],
 		  beforeClose: function(event, ui){
 		      $("#eleve").val("");
-		      location.reload();
+		      var uri="/votes/enroler?"+encodeURI(
+			  "c0="+id0+"&c1="+id1
+		      );
+		      console.log("GRRRR", uri);
+		      document.location=uri;
 		  },
 	      }).html(data.msg);
 	  }).fail(function(data){

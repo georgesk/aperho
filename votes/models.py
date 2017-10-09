@@ -377,6 +377,13 @@ class Cours(models.Model):
         return self.ouverture.estActive()
 
     @property
+    def n(self):
+        """
+        Renvoie le nombre d'inscriptions
+        """
+        return len(Inscription.objects.filter(cours=self))
+    
+    @property
     def estRecent(self):
         """
         Dit si la date d'inscription pour ce cours est la plus récente
