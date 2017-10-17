@@ -1,0 +1,31 @@
+{% extends 'home.html' %}
+
+{% block webTitle %}<title>Aperho : désinscriptions</title>{% endblock %}
+
+{% block localscripts %}
+{% endblock %}
+
+{% block title %}
+<h1>Désinscrire</h1>
+{% endblock %}
+
+
+{% block contents %}
+<h2>liste de {{eleves|length}} élèves ...</h2>
+{% if desinscrire %}
+{{desinscrire}}
+{% else %}
+<button onclick="document.location='/votes/desinscrire?ok=1'">OK pour les désinscrire</button>
+<ul>
+  {% for e in eleves %}
+  <li>{{e}}
+    <ol>
+      {% for i in e.ins %}
+      <li>{{i}}</li>
+      {% endfor %}
+    </ol>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

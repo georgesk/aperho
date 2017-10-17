@@ -1349,3 +1349,42 @@ def delFormation(request):
         "ok"      : ok,
     })
 
+
+def desinscrire(request):
+    """
+    permet à l'administrateur de désinscrire en masse des élèves, sauf
+    pour quelques cours "sanctuarisés". Un cours est sanctuatrisé si on le
+    dir, ou si c'est un cours à public désigné. Attention, les élèves
+    sont maintenus dans l'autre cours (non sanctuarisé) si un de leurs
+    cours est sanctuarisé
+    """
+    barrette=request.session.get("barrette")
+    b=Barrette.objects.get(nom=barrette)
+    eleves=Etudiant.objects.filter(barrette=b)
+    for e in eleves:
+        inscriptions=Inscription.objects.filter(etudiant=e)
+        e.ins=[]
+        e.desinscrire=True
+        for i in inscriptions:
+            e.ins.append(i)
+            print("GRRRR", e.nom, i.cours.pk, i.cours.formation.pk)
+            if i.cours.formation.public_designe:
+                e.desinscrire=False
+                print("GRRR",e.nom,"à désinscrire")
+    # on ne garde que les élèves à désinscrire
+    # on fait le contraire GRRRR
+    eleves=[e for e in eleves if e.desinscrire]
+    desinscrire=""
+    if request.GET.get("ok",""):
+        for e in eleves:
+            for i in e.ins:
+                i.delete()
+        desinscrire="Ces %d élèves ont été désinscrits" %len(eleves)
+    return render(
+        request, "desinscrire.html",
+        context={
+            "barrette": barrette,
+            "eleves" : eleves,
+            "desinscrire": desinscrire,
+        },
+    )
