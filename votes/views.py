@@ -270,7 +270,7 @@ def addEleves(request):
         else:
             classesDansDb[nom]=["%s %s" %(e.nom,e.prenom)]
     sortedClasses=sorted(list(classesDansDb.keys()))
-    classesDansDb=OrderedDict((key, ", ".join(sorted(classesDansDb[key]))) for key in sortedClasses)
+    classesDansDb=OrderedDict(("%s (%s)" %(key,len(classesDansDb[key])), ", ".join(sorted(classesDansDb[key]))) for key in sortedClasses)
 
     classes=[]
     for entry in connection.response:
