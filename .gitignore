@@ -70,3 +70,6 @@ doc
 
 # no backups
 *backup*
+
+# backups de bases de données
+db.sqlite3-*
