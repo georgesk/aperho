@@ -73,3 +73,4 @@ doc
 
 # backups de bases de données
 db.sqlite3-*
+db.sqlite3.bak

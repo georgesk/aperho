@@ -177,7 +177,7 @@ class SaveurDictField(models.Field):
         return parse_saveurDict(value)
 
     def get_prep_value(self, saveurDict):
-        if saveurDict==None:
+        if not saveurDict:
             saveurDict=SaveurDict(0,dict())
         if not 0 <= saveurDict.effectif <= 99:
             raise ValidationError("Effectif total incorrect : %s" % saveurDict.effectif)

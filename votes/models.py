@@ -366,7 +366,7 @@ class Cours(models.Model):
     ouverture  = models.ForeignKey('Ouverture')
     barrette   = models.ForeignKey('Barrette')
     invalide   = models.BooleanField(default=False)
-    lessaveurs = SaveurDictField()
+    lessaveurs = SaveurDictField(blank=True)
 
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
