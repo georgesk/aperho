@@ -28,7 +28,7 @@ class Ventilation:
         return (
             "votes.saveurField.Ventilation",
             [self.actif, self.nombre],
-            {}
+            dict()
         )
 
     def __str__(self):
@@ -81,7 +81,7 @@ class SaveurDict:
         return (
             "votes.saveurField.SaveurDict",
             [self.effectif, self.saveurs],
-            {}
+            dict()
         )
 
     def __str__(self):
@@ -128,7 +128,7 @@ def parse_saveurDict(saveurDictString):
     actif, et deux caractères pour le nombre.
     """
     effectif=int(saveurDictString[0:2])
-    saveurDict={}
+    saveurDict=dict()
     for i in range(5):
         nom=saveurDictString[2+8*i:7+8*i].strip()
         if nom:
@@ -154,7 +154,7 @@ class SaveurDictField(models.Field):
         if saveurDict!=None:
             self.saveurDict=saveurDict
         else:
-            self.saveurDict=SaveurDict(0,{})
+            self.saveurDict=SaveurDict(0,dict())
         super(SaveurDictField, self).__init__(*args, **kwargs)
         return
 
@@ -178,10 +178,12 @@ class SaveurDictField(models.Field):
         return parse_saveurDict(value)
 
     def get_prep_value(self, saveurDict):
+        if saveurDict==None:
+            saveurDict=SaveurDict(0,dict())
         if not 0 <= saveurDict.effectif <= 99:
             raise ValidationError("Effectif total incorrect : %s" % saveurDict.effectif)
         result="%02d" % saveurDict.effectif
-        saveurs=sorted(saveurDict.keys())
+        saveurs=sorted(saveurDict.saveurs.keys())
         savList=[]
         for i in range(5):
             sav=""
