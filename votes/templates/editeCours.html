@@ -84,13 +84,6 @@ $(document).ready(function() {
 	  </label>
 	  {{form.duree}}
 	</div>
-	<div style="display: inline-block; width: 300px; margins: auto 0;">
-	  {% if form.capacite.errors %}{{ form.capacite.errors }}<br/>{% endif %}
-	  <label for="{{form.capacite.id_for_label}}">
-	    capacité (±18 élèves) :
-	  </label>
-	  {{form.capacite}}
-	</div>
 	<div style="display: inline-block; float:right;">
 	  {% if form.public_designe.errors %}{{ form.public_designe.errors }}<br/>{% endif %}
 	  <label for="{{form.public_designe.id_for_label}}">
@@ -104,6 +97,36 @@ $(document).ready(function() {
       {{form.back}} {{form.is_superuser}} {{form.public_designe_initial}}
       </div>
       {% csrf_token %}
+    </td>
+  </tr>
+  <tr class="fieldWrapper">
+    <td colspan="2">
+      {% if form.effectif_total.errors %}{{ form.effectif_total.errors }}<br/>{% endif %}
+      <label for="{{form.duree.id_for_label}}">
+	Effectif total (±18 élèves) :
+      </label>
+      {{form.effectif_total}}
+      <label for="mix">Mixte</label>
+      <input type="checkbox" checked="1" id="mix" onclick="$('#saveurs').toggle(1000)"/>
+      <br/>
+      <table id="saveurs" style="width: 100%; display: none">
+	<tr><th>Saveurs</th></tr>
+	{% if form.nom_1 %}<tr><td>
+	    {{form.nom_1}} actif : {{form.actif_1}} {{form.ventilation_1}}
+	</td></tr>{% endif %}
+	{% if form.nom_2 %}<tr><td>
+	    {{form.nom_2}} actif : {{form.actif_2}} {{form.ventilation_2}}
+	</td></tr>{% endif %}
+	{% if form.nom_3 %}<tr><td>
+	    {{form.nom_3}} actif : {{form.actif_3}} {{form.ventilation_3}}
+	</td></tr>{% endif %}
+	{% if form.nom_4 %}<tr><td>
+	    {{form.nom_4}} actif : {{form.actif_4}} {{form.ventilation_4}}
+	</td></tr>{% endif %}
+	{% if form.nom_5 %}<tr><td>
+	    {{form.nom_5}} actif : {{form.actif_5}} {{form.ventilation_5}}
+	</td></tr>{% endif %}
+      </table>
     </td>
   </tr>
 </table>

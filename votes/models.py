@@ -142,6 +142,19 @@ class Barrette(models.Model):
     def __str__(self):
         return "Barrette : {}".format(self.nom)
 
+    def saveurs(self):
+        """
+        Détermine les saveurs possibles dans la barrette, c'est-à-dire
+        les filières comme 1es, 1l, 1s, 1stmg.
+        @return une liste en ordre alphabétique des saveurs ; exactement
+        cinq saveurs, quitte à compléter par des chaînes vides à la fin
+        """
+        saveurPattern=re.compile(r"(.*[a-zA-Z]+)[0-9]*")
+        result=set([saveurPattern.match(c).group(1) for c in json.loads(self.classesJSON)])
+        result = sorted(list(result))
+        while len(result) < 5: result.append("")
+        return result
+
     def addClasse(self, classe):
         """
         ajoute une classe (à la manière ensembliste) dans

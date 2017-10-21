@@ -3,6 +3,10 @@ $(document).ready(function() {
     var pdn=$("#id_public_designe");
     // force la boîte à cocher visible à la valeur du champ invisible
     pdn.prop("checked", pdi.val()=="True");
+    // par défaut, le cours est mixte et donc les saveurs sont cachées
+    $("#mix").prop("checked", true);
+    $("#saveurs").hide();
+    // mais il faudrait voir en fonction de cours.lessaveurs!
 
     // diminue la largeur des champs numériques
     $("#id_duree").css({width: "50px"});

@@ -27,6 +27,9 @@ class editeCoursForm(forms.Form):
     def __init__(self, *args, **kwargs ):
         self.isSuperUser=kwargs.pop("isSuperUser",False)
         forms.Form.__init__(self, *args, **kwargs)
+        for i in range(1,1+5):
+            n="nom_"+str(i)
+            setattr(self,n,kwargs["initial"][n])
         if self.isSuperUser:
             self.fields["capacite"].isSuperUser=True
         return
@@ -44,11 +47,33 @@ class editeCoursForm(forms.Form):
         })
     )
     duree = dureeField()
-    capacite=capaciteField()
     public_designe=forms.BooleanField(required=False)
     back=forms.CharField(max_length=80, widget=forms.HiddenInput())
     public_designe_initial=forms.BooleanField(required=False, widget=forms.HiddenInput())
     is_superuser=forms.BooleanField(required=False, widget=forms.HiddenInput())
+
+    effectif_total = capaciteField()
+
+    nom_1 = "nom 1"
+    actif_1 = forms.BooleanField(help_text="actif/inactif")
+    ventilation_1 = forms.IntegerField(min_value=0,max_value=99, help_text='0 à 99')
+
+    nom_2 = "nom 2"
+    actif_2 = forms.BooleanField(help_text="actif/inactif")
+    ventilation_2 = forms.IntegerField(min_value=0,max_value=99, help_text='0 à 99')
+
+    nom_3 = "nom 3"
+    actif_3 = forms.BooleanField(help_text="actif/inactif")
+    ventilation_3 = forms.IntegerField(min_value=0,max_value=99, help_text='0 à 99')
+
+    nom_4 = "nom 4"
+    actif_4 = forms.BooleanField(help_text="actif/inactif")
+    ventilation_4 = forms.IntegerField(min_value=0,max_value=99, help_text='0 à 99')
+
+    nom_5 = "nom 5"
+    actif_5 = forms.BooleanField(help_text="actif/inactif")
+    ventilation_5 = forms.IntegerField(min_value=0,max_value=99, help_text='0 à 99')
+
 
     def clean(self):
         cleaned_data = super(editeCoursForm, self).clean()

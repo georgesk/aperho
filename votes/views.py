@@ -1307,22 +1307,30 @@ def editeCours(request):
                 "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
                 "estprof": estProfesseur(request.user),
             })
-    else:
+    else: ## la page est appelée directement, on n'en est pas à la validation/vérification
         cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
         formationCourante=Formation.objects.get(pk=cours.formation_id)
         back=request.POST.get("back")
         prof=Enseignant.objects.get(pk=cours.enseignant_id)
         horaire=Horaire.objects.get(pk=cours.horaire_id)
+        b=Barrette.objects.get(nom=request.session["barrette"])
+        saveurs=b.saveurs()
+        if cours.capacite : cours.lessaveurs.effectif=cours.capacite
         form = editeCoursForm(initial={
             "titre": formationCourante.titre,
             "contenu": formationCourante.contenuDecode,
             "duree": formationCourante.duree,
-            "capacite": cours.capacite,
+            "effectif_total": cours.lessaveurs.effectif,
             "public_designe": formationCourante.public_designe,
             "public_designe_initial": formationCourante.public_designe,
             "reponse": "ok",
             "back": back,
             "is_superuser": request.user.is_superuser,
+            "nom_1": saveurs[0],
+            "nom_2": saveurs[1],
+            "nom_3": saveurs[2],
+            "nom_4": saveurs[3],
+            "nom_5": saveurs[4],
         })
         return render(
             request, "editeCours.html",  {
