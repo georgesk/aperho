@@ -4,6 +4,8 @@ from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
 import locale, json, re, urllib.parse
 
+from .saveurField import SaveurDictField
+
 class CoursOrientation(models.Model):
     """
     Définit une séance d'information par une conseillère d'orientation
@@ -364,6 +366,7 @@ class Cours(models.Model):
     ouverture  = models.ForeignKey('Ouverture')
     barrette   = models.ForeignKey('Barrette')
     invalide   = models.BooleanField(default=False)
+    lesSaveurs = SaveurDictField(default=None)
 
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)

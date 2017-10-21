@@ -19,6 +19,18 @@ class Ventilation:
         self.nombre=nombre
         return
 
+    def deconstruct(self):
+        """
+        Le déconstructeur, tel que conseillé à
+        https://docs.djangoproject.com/en/1.10/topics/migrations/#migration-serializing
+        @return un tuple (path, args, kwargs)
+        """
+        return (
+            "votes.saveurField.Ventilation",
+            [self.actif, self.nombre],
+            {}
+        )
+
     def __str__(self):
         if not self.actif: return "indéf."
         else: return str(self.nombre)
@@ -59,6 +71,18 @@ class SaveurDict:
         self.saveurs=saveurs
         self.ajusteEffectifs()
         return
+
+    def deconstruct(self):
+        """
+        Le déconstructeur, tel que conseillé à
+        https://docs.djangoproject.com/en/1.10/topics/migrations/#migration-serializing
+        @return un tuple (path, args, kwargs)
+        """
+        return (
+            "votes.saveurField.SaveurDict",
+            [self.effectif, self.saveurs],
+            {}
+        )
 
     def __str__(self):
         l=["  %s: %s\n" %(s, self.saveurs[s]) for s in sorted(self.saveurs)]
@@ -127,7 +151,10 @@ class SaveurDictField(models.Field):
         # max 5 saveurs, sur 8 caractères chacune,
         # plus 2 caractères d'effectif tital
         kwargs['max_length'] = 42
-        self.saveurDict=saveurDict
+        if saveurDict!=None:
+            self.saveurDict=saveurDict
+        else:
+            self.saveurDict=SaveurDict(0,{})
         super(SaveurDictField, self).__init__(*args, **kwargs)
         return
 
