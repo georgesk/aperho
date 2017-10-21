@@ -143,26 +143,25 @@ def parse_saveurDict(saveurDictString):
 class SaveurDictField(models.Field):
     description = "Un dictionnaire de saveurs (pas plus de cinq) pour l'AP"
 
-    def __init__(self, saveurDict=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         Le constructeur
-        @param saveurDict un objet SaveurDict (None par défaut)
         """
         # max 5 saveurs, sur 8 caractères chacune,
         # plus 2 caractères d'effectif tital
         kwargs['max_length'] = 42
-        if saveurDict!=None:
-            self.saveurDict=saveurDict
+        if 'saveurDict' in kwargs:
+            saveurDict=kwargs.pop('saveurDict')
         else:
-            self.saveurDict=SaveurDict(0,dict())
+            saveurDict=SaveurDict(0,dict())
         super(SaveurDictField, self).__init__(*args, **kwargs)
+        self.saveurDict=saveurDict
         return
 
     def deconstruct(self):
         name, path, args, kwargs = super(SaveurDictField, self).deconstruct()
         del kwargs["max_length"]
-        if self.saveurDict != None:
-            kwargs['saveurDict'] = self.saveurDict
+        kwargs['saveurDict'] = self.saveurDict
         return name, path, args, kwargs
     
     def from_db_value(self, value, expression, connection, context):
@@ -207,6 +206,9 @@ class SaveurDictField(models.Field):
         result+="".join(savList)
                     
         return result
+    
+    def get_internal_type(self):
+        return 'CharField'
     
     def value_to_string(self, obj):
         value = self.value_from_object(obj)
