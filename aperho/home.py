@@ -35,7 +35,10 @@ def choixBarrette(request):
         actionChangeBarrette="""<li><a href='javascript:changebarrette(%s,%s)'>Changer de barrette</a></li>"""%(json.dumps(nomsBarrettes),nomsBarrettes.index(barretteCourante) if barretteCourante in nomsBarrettes else "undef")
         if not barretteCourante:
             # par défaut, la première barrette est activée
-            request.session["barrette"]=bpu[0].nom
+            if len(bpu) > 0:
+                request.session["barrette"]=bpu[0].nom
+            else:
+                request.session["barrette"]=""
             # mais on propose de changer de barrette s'il y en plusieurs
             initScript=""" $(function(){changebarrette(%s,%d)});""" %(json.dumps(nomsBarrettes),0)
     return bpu, actionChangeBarrette, initScript
@@ -147,7 +150,9 @@ def index(request):
         assert len(horaires)==2
         
         # on compte le nombre d'étudiants à inscrire
-        b=Barrette.objects.get(nom=barretteCourante)
+        b=Barrette.objects.filter(nom=barretteCourante).first()
+        if b == None:
+            return HttpResponseRedirect("/votes/addBarrette")
         netu=Etudiant.objects.filter(barrette_id=b.id).count()
         ## on sépare les cours selon les deux horaires
         tousLesCours=[
