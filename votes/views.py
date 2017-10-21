@@ -1232,7 +1232,9 @@ def editeCours(request):
                     ok=False
                     form.add_error("duree","Erreur : un cours de 2 heures doit commencer en début d'horaire")
             if ok: # à ce stade le cours lui-même est valide
-                cours.capacite=form.cleaned_data["capacite"]
+                cours.capacite=form.cleaned_data["effectif_total"]
+                cours.lessaveurs.effectif=form.cleaned_data["effectif_total"]
+                ## GRRRR ici il faut encore mettre à jour cours.lessaveurs.saveurs
                 if formationCourante.titre != form.cleaned_data["titre"] or \
                    formationCourante.contenu != form.cleaned_data["contenu"]:
                     # on crée une nouvelle formation dès qu'il y a une variante
@@ -1316,6 +1318,7 @@ def editeCours(request):
         b=Barrette.objects.get(nom=request.session["barrette"])
         saveurs=b.saveurs()
         if cours.capacite : cours.lessaveurs.effectif=cours.capacite
+        print("GRRRR cours=", cours, "mixte=", cours.lessaveurs.mixte)
         form = editeCoursForm(initial={
             "titre": formationCourante.titre,
             "contenu": formationCourante.contenuDecode,
@@ -1340,6 +1343,7 @@ def editeCours(request):
                 "c_id": cours.id,
                 "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
                 "estprof": estProfesseur(request.user),
+                "mixte": cours.lessaveurs.mixte,
             })
 
 def delFormation(request):

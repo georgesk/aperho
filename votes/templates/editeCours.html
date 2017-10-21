@@ -77,14 +77,14 @@ $(document).ready(function() {
   <tr class="fieldWrapper">
     <td colspan="2">
       <div id="smallFields">
-	<div style="display: inline-block; float: left; width: 300px; margin-right: auto;">
+	<div>
 	  {% if form.duree.errors %}{{ form.duree.errors }}<br/>{% endif %}
 	  <label for="{{form.duree.id_for_label}}">
 	    Durée (1 ou 2 heures) :
 	  </label>
 	  {{form.duree}}
 	</div>
-	<div style="display: inline-block; float:right;">
+	<div>
 	  {% if form.public_designe.errors %}{{ form.public_designe.errors }}<br/>{% endif %}
 	  <label for="{{form.public_designe.id_for_label}}">
 	    Public désigné :
@@ -94,7 +94,7 @@ $(document).ready(function() {
       </div>
       <div id="hiddenFields">
       <input type="hidden" name="c_id" id="c_id" value="{{c_id}}"/>
-      {{form.back}} {{form.is_superuser}} {{form.public_designe_initial}}
+      {{form.back}} {{form.is_superuser}} 
       </div>
       {% csrf_token %}
     </td>
@@ -106,26 +106,36 @@ $(document).ready(function() {
 	Effectif total (±18 élèves) :
       </label>
       {{form.effectif_total}}
-      <label for="mix">Mixte</label>
-      <input type="checkbox" checked="1" id="mix" onclick="$('#saveurs').toggle(1000)"/>
       <br/>
-      <table id="saveurs" style="width: 100%; display: none">
-	<tr><th>Saveurs</th></tr>
-	{% if form.nom_1 %}<tr><td>
-	    {{form.nom_1}} actif : {{form.actif_1}} {{form.ventilation_1}}
-	</td></tr>{% endif %}
-	{% if form.nom_2 %}<tr><td>
-	    {{form.nom_2}} actif : {{form.actif_2}} {{form.ventilation_2}}
-	</td></tr>{% endif %}
-	{% if form.nom_3 %}<tr><td>
-	    {{form.nom_3}} actif : {{form.actif_3}} {{form.ventilation_3}}
-	</td></tr>{% endif %}
-	{% if form.nom_4 %}<tr><td>
-	    {{form.nom_4}} actif : {{form.actif_4}} {{form.ventilation_4}}
-	</td></tr>{% endif %}
-	{% if form.nom_5 %}<tr><td>
-	    {{form.nom_5}} actif : {{form.actif_5}} {{form.ventilation_5}}
-	</td></tr>{% endif %}
+      <label for="mix">
+	ouvert à toute filière : ( {{form.nom_1}} {{form.nom_2}} {{form.nom_3}} {{form.nom_4}} {{form.nom_5}} )
+      </label>
+      {{form.mix}}
+      <input type="hidden" id="mixte" value="{{mixte}}"/>
+      <br/>
+      <table id="saveurs" style="width: 100%; border: none">
+	<tr><th colspan="5">
+	    Ventilation par filières<br/>
+	    {% if form.public_designe_initial.errors %}{{ form.public_designe_initial.errors }}<br/>{% endif %}
+	    {{form.public_designe_initial}}
+	</th></tr>
+	<tr>
+	  {% if form.nom_1 %}<td>
+	    {{form.nom_1}} {{form.actif_1}} {{form.ventilation_1}}
+	  </td>{% endif %}
+	  {% if form.nom_2 %}<td>
+	    {{form.nom_2}} {{form.actif_2}} {{form.ventilation_2}}
+	  </td>{% endif %}
+	  {% if form.nom_3 %}<td>
+	    {{form.nom_3}} {{form.actif_3}} {{form.ventilation_3}}
+	  </td>{% endif %}
+	  {% if form.nom_4 %}<td>
+	    {{form.nom_4}} {{form.actif_4}} {{form.ventilation_4}}
+	  </td>{% endif %}
+	  {% if form.nom_5 %}<td>
+	    {{form.nom_5}} {{form.actif_5}} {{form.ventilation_5}}
+	  </td>{% endif %}
+	</tr>
       </table>
     </td>
   </tr>

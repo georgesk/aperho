@@ -3,15 +3,80 @@ $(document).ready(function() {
     var pdn=$("#id_public_designe");
     // force la boîte à cocher visible à la valeur du champ invisible
     pdn.prop("checked", pdi.val()=="True");
-    // par défaut, le cours est mixte et donc les saveurs sont cachées
-    $("#mix").prop("checked", true);
-    $("#saveurs").hide();
-    // mais il faudrait voir en fonction de cours.lessaveurs!
+
+    // ajuste la case "mixte" et la visibilité des saveurs
+    if ($("#mixte").val()=="True"){
+	$("#id_mix").prop("checked", true);
+	$("#saveurs").hide();
+    } else {
+	$("#id_mix").prop("checked", false);
+	$("#saveurs").show();
+	verifieSaveurs();
+    }
+    $("#id_mix").click(function(){$('#saveurs').toggle(1000); verifieSaveurs();});
+    // accroche une vérification aux cases à cocher des saveurs
+    // si on décoche la saveur, la ventilation est mise à jour.
+    for(var i=1; i<6; i++){
+	$("#id_actif_"+i).click(function(j){
+	    return function(){
+		$("#id_ventilation_"+j).val(0);
+		verifieSaveurs();
+	    }
+	}(i));
+    }
 
     // diminue la largeur des champs numériques
     $("#id_duree").css({width: "50px"});
+    $("[name^=ventilation_]").css({width: "50px"});
     $("#id_capacite").css({width: "50px"});
 });
+
+/**
+ * S'assure que le total des saveurs cochées donne bien l'effectif total
+ **/
+function verifieSaveurs(){
+    if ($("#mix").prop("checked")) return; // pas de vérification si c'est mixte
+    var effectif = parseInt($("#id_effectif_total").val())
+    var oneChecked=false; // est-ce qu'une saveur au moins est cochée ?
+    for (var i=1; i < 6; i++){
+	if ($("#id_actif_"+i).prop("checked")){
+	    oneChecked=true;
+	    break;
+	}
+    }
+    // si aucune case n'est cochée, toutes doivent l'être
+    if (! oneChecked){
+	for (var i=1; i < 6; i++){
+	    $("#id_actif_"+i).prop("checked", true);
+	}
+    }
+    var t=0;
+    for (var i=1; i < 6; i++){
+	var vent=$("#id_ventilation_"+i);
+	var v = parseInt(vent.val());
+	if(isNaN(v)) vent.val(0); else t+=v;
+    }
+    while (t < effectif){
+	for (var i=1; i < 6; i++){
+	    var vent=$("#id_ventilation_"+i);
+	    var v = parseInt(vent.val());
+	    if (t < effectif && $("#id_actif_"+i).prop("checked")){
+		vent.val(v+1);
+		t+=1;
+	    }
+	}
+    }
+    while (t > effectif){
+	for (var i=1; i < 6; i++){
+	    var vent=$("#id_ventilation_"+i);
+	    var v = parseInt(vent.val());
+	    if (v > 0 && t > effectif && $("#id_actif_"+i).prop("checked")){
+		vent.val(v-1);
+		t-=1;
+	    }
+	}
+    }
+}
 
 /**
  * écrase les données de formation à l'aide de celles qui sont cachées dans des

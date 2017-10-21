@@ -87,8 +87,9 @@ class SaveurDict:
     def __str__(self):
         l=["  %s: %s\n" %(s, self.saveurs[s]) for s in sorted(self.saveurs)]
         return "Saveurdict:\n"+"".join(l)
-    
-    def isMixte(self):
+
+    @property
+    def mixte(self):
         """
         @return vrai si seul l'effectif total compte (aucune saveur
         n'est active.
@@ -105,7 +106,7 @@ class SaveurDict:
         S'assure bien qu'on retrouve l'effectif total comme somme des
         effectifs de chaque saveur active
         """
-        if self.isMixte():
+        if self.mixte:
             return
         t=sum([self.saveurs[s].nombre for s in self.saveurs if self.saveurs[s].actif])
         while t < self.effectif:
