@@ -1232,13 +1232,17 @@ def editeCours(request):
                 cours.capacite=form.cleaned_data["effectif_total"]
                 cours.lessaveurs.effectif=form.cleaned_data["effectif_total"]
                 saveurs=dict()
-                for i in range(1,1+5):
-                    nom=form.cleaned_data.get("nom_"+str(i))
-                    actif=form.cleaned_data.get("actif_"+str(i))
-                    v=form.cleaned_data.get("ventilation_"+str(i))
-                    if not nom:  nom="_"+str(i)
-                    saveurs[nom]=Ventilation(actif,v)
-                cours.lessaveurs.saveurs=saveurs
+                if form.cleaned_data["mix"]:
+                    ## on veut tout mixer. Il suffit de saveurs par défaut
+                    cours.lessaveurs.saveurs=saveurs
+                else: ## le cours n'est pas mixte : on considère les saveurs
+                    for i in range(1,1+5):
+                        nom=form.cleaned_data.get("nom_"+str(i))
+                        actif=form.cleaned_data.get("actif_"+str(i))
+                        v=form.cleaned_data.get("ventilation_"+str(i))
+                        if not nom:  nom="_"+str(i)
+                        saveurs[nom]=Ventilation(actif,v)
+                    cours.lessaveurs.saveurs=saveurs
                 
                 if formationCourante.titre != form.cleaned_data["titre"] or \
                    formationCourante.contenu != form.cleaned_data["contenu"]:
@@ -1338,7 +1342,7 @@ def editeCours(request):
         for i in range(5):
             nom=saveurs[i]
             initial["nom_%s" %(i+1)] = nom
-            if nom.strip():
+            if nom.strip() and nom in cours.lessaveurs.saveurs:
                 vent=cours.lessaveurs.saveurs[nom]
                 initial["actif_%s" %(i+1)]=vent.actif
                 initial["ventilation_%s" %(i+1)]=vent.nombre
