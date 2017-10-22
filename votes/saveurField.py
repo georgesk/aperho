@@ -127,7 +127,10 @@ def parse_saveurDict(saveurDictString):
     Deux caractères donnent l'effectif total, puis 5 fois de suite
     on cherche 5 caractère de nom de saveur, puis un caractère 0/1
     actif, et deux caractères pour le nombre.
+    @param saveurDictString une chaîne de 42 octets
+    @return une instance de SaveurDict
     """
+    assert(len(saveurDictString)==42)
     effectif=int(saveurDictString[0:2])
     sav=dict()
     for i in range(5):
@@ -168,14 +171,14 @@ class SaveurDictField(models.Field):
     
     def from_db_value(self, value, expression, connection, context):
         if value is None:
-            return value
+            return SaveurDict(0,dict())
         return parse_saveurDict(value)
 
     def to_python(self, value):
         if isinstance(value, SaveurDict):
             return value
         if value is None:
-            return value
+            return SaveurDict(0,dict())
         return parse_saveurDict(value)
 
     def get_prep_value(self, saveurDict):
@@ -193,11 +196,11 @@ class SaveurDictField(models.Field):
                 if len(nom) > 5:
                     raise ValidationError("nom de saveur trop long : %s" % nom)
                 sav="%5s" % nom
-                if saveurDict[nom].actif:
+                if saveurDict.saveurs[nom].actif:
                     sav+="1"
                 else:
                     sav+="0"
-                nombre=saveurDict[nom].nombre
+                nombre=saveurDict.saveurs[nom].nombre
                 if not 0 <= nombre <= 99:
                     raise ValidationError("Effectif ventilé incorrect : %s" % nombre)
                 sav+="%02d" % nombre

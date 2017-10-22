@@ -7,11 +7,6 @@ class dureeField(forms.IntegerField):
            raise forms.ValidationError("un cours dure 1 ou 2 heures.")
        return
 
-class ventilationField(forms.IntegerField):
-    def validate(self, value):
-       super(dureeField, self).validate(value)
-       return
-
 class capaciteField(forms.IntegerField):
     def __init__(self, *args, **kwargs):
         forms.IntegerField.__init__(self, *args, **kwargs)
@@ -92,6 +87,4 @@ class editeCoursForm(forms.Form):
             # on profite d'un champ caché pour mettre le message
             # d'erreur à une place arbitraire
             self.add_error("public_designe_initial", msg)
-        
-        
         return cleaned_data

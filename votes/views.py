@@ -1235,13 +1235,11 @@ def editeCours(request):
                 saveurs=dict()
                 for i in range(1,1+5):
                     nom=form.cleaned_data.get("nom_"+str(i))
-                    print("GRRRR nom_"+str(i), nom)
                     actif=form.cleaned_data.get("actif_"+str(i))
                     v=form.cleaned_data.get("ventilation_"+str(i))
                     if not nom:  nom="_"+str(i)
                     saveurs[nom]=Ventilation(actif,v)
                 cours.lessaveurs.saveurs=saveurs
-                print("GRRRR on vient de récupérer cours.lessaveurs= %s" % cours.lessaveurs)
                 
                 if formationCourante.titre != form.cleaned_data["titre"] or \
                    formationCourante.contenu != form.cleaned_data["contenu"]:
@@ -1261,6 +1259,7 @@ def editeCours(request):
                     cours.formation=formationCourante
                     cours.save()
                 except Exception as e:
+                    print("GRRRRR exception dans cours.save()")
                     ok=False
                     message="Erreur : %s" %e
                     form.add_error(None, message)
@@ -1308,7 +1307,7 @@ def editeCours(request):
                     "estprof": estProfesseur(request.user),
                 })
                 
-        else:
+        else: # le formulaire n'est pas validé
             return render(request, "editeCours.html",  {
                 'form': form,
                 'prof': prof,
@@ -1325,7 +1324,6 @@ def editeCours(request):
         horaire=Horaire.objects.get(pk=cours.horaire_id)
         b=Barrette.objects.get(nom=request.session["barrette"])
         saveurs=b.saveurs()
-        print("GRRRR b.saveurs()=", saveurs)
         cours.migrateToSaveurs(nomSaveurs=saveurs)
         form = editeCoursForm(initial={
             "titre": formationCourante.titre,
