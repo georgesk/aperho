@@ -31,6 +31,7 @@ class editeCoursForm(forms.Form):
         if self.isSuperUser:
             self.fields["effectif_total"].isSuperUser=True
         return
+    
     titre = forms.CharField(
         max_length=80,
         widget=forms.TextInput(attrs={
@@ -80,11 +81,17 @@ class editeCoursForm(forms.Form):
             msg="Seul le gestionnaire du site peut modifier la critère de public désigné. Préparez une liste d'élèves et contactez-le."
             self.add_error("public_designe", msg)
         ## vérification des saveurs
-        vent=[cleaned_data["ventilation_"+str(i)] for i in range(1,1+5)]
-        if sum(vent) != cleaned_data["effectif_total"]:
-            msg="La ventilation des effectifs était fausse : %s ≠ %d ; attention, elle a été modifiée automatiquement." % \
-                 (" + ".join([str(v) for v in vent]), cleaned_data["effectif_total"])
-            # on profite d'un champ caché pour mettre le message
-            # d'erreur à une place arbitraire
-            self.add_error("public_designe_initial", msg)
+        if not cleaned_data["mix"]:
+            ## si le cours est mixte évidemment il est inutile de chercher
+            ## à vérifier la ventilation
+            vent=[cleaned_data["ventilation_"+str(i)] for i in range(1,1+5)]
+            if sum(vent) != cleaned_data["effectif_total"]:
+                msg="La ventilation des effectifs était fausse : %s ≠ %d ; attention, elle a été modifiée automatiquement." % \
+                     (" + ".join([str(v) for v in vent]), cleaned_data["effectif_total"])
+                # on profite d'un champ caché pour mettre le message
+                # d'erreur à une place arbitraire
+                self.add_error("public_designe_initial", msg)
+            if min(vent) < 0:
+                msg="On ne peut pas utiliser des nombres négatifs : %s" % \
+                     ", ".join([str(v) for v in vent])
         return cleaned_data
