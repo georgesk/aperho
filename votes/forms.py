@@ -33,10 +33,6 @@ class editeCoursForm(forms.Form):
     def __init__(self, *args, **kwargs ):
         self.isSuperUser=kwargs.pop("isSuperUser",False)
         forms.Form.__init__(self, *args, **kwargs)
-        if "initial" in kwargs:
-            for i in range(1,1+5):
-                nom="nom_"+str(i)
-                setattr(self,nom,kwargs["initial"][nom])
         if self.isSuperUser:
             self.fields["effectif_total"].isSuperUser=True
         return
@@ -62,23 +58,23 @@ class editeCoursForm(forms.Form):
     effectif_total = capaciteField()
     mix = forms.BooleanField(required=False)
 
-    nom_1 = "nom 1"
+    nom_1 = forms.CharField(max_length=5)
     actif_1 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_1 = forms.IntegerField()
 
-    nom_2 = "nom 2"
+    nom_2 = forms.CharField(max_length=5)
     actif_2 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_2 = forms.IntegerField()
 
-    nom_3 = "nom 3"
+    nom_3 = forms.CharField(max_length=5)
     actif_3 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_3 = forms.IntegerField()
 
-    nom_4 = "nom 4"
+    nom_4 = forms.CharField(max_length=5)
     actif_4 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_4 = forms.IntegerField()
 
-    nom_5 = "nom 5"
+    nom_5 = forms.CharField(max_length=5)
     actif_5 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_5 = forms.IntegerField()
 

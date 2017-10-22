@@ -4,7 +4,7 @@ from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
 import locale, json, re, urllib.parse
 
-from .saveurField import SaveurDictField
+from .saveurField import SaveurDictField, Ventilation
 
 class CoursOrientation(models.Model):
     """
@@ -383,6 +383,26 @@ class Cours(models.Model):
 
     def __str__(self):
         return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
+
+    def migrateToSaveurs(self, nomSaveurs=None):
+        """
+        Une procédure pour migrer de l'usage du champ capacité vers
+        l'usage du champ lessaveurs qui est plus détaillé. Si self.capacite
+        est non-nul et que self.lessaveurs.effectif_total est nul, on recopie
+        l'un vers l'autre. Autrement, c'est self.lessaveurs qui commande.
+        @param nomSaveurs une liste de 5 noms de saveurs, ou None
+        """
+        if self.capacite and not self.lessaveurs.effectif :
+            self.lessaveurs.effectif=self.capacite
+            if nomSaveurs!=None:
+                assert(len(nomSaveurs)==5)
+                sav=dict()
+                for s in nomSaveurs:
+                    sav[s]=Ventilation(False,0)
+                print("GRRR dans migrateToSaveurs", sav)
+                self.lessaveurs.saveurs=sav
+            self.lessaveurs.ajusteEffectifs()
+        return
 
     @property
     def estOuvert(self):

@@ -92,9 +92,10 @@ $(document).ready(function() {
 	  {{form.public_designe}}
 	</div>
       </div>
-      <div id="hiddenFields">
+      <div id="hiddenFields" style="display: none">
       <input type="hidden" name="c_id" id="c_id" value="{{c_id}}"/>
-      {{form.back}} {{form.is_superuser}} 
+      {{form.back}} {{form.is_superuser}}
+      {{form.nom_1}} {{form.nom_2}} {{form.nom_3}} {{form.nom_4}} {{form.nom_5}} 
       </div>
       {% csrf_token %}
     </td>
@@ -108,7 +109,7 @@ $(document).ready(function() {
       {{form.effectif_total}}
       <br/>
       <label for="mix">
-	ouvert à toute filière : ( {{form.nom_1}} {{form.nom_2}} {{form.nom_3}} {{form.nom_4}} {{form.nom_5}} )
+	ouvert à toute filière : ( {{form.nom_1.value|default_if_none:""}} {{form.nom_2.value|default_if_none:""}} {{form.nom_3.value|default_if_none:""}} {{form.nom_4.value|default_if_none:""}} {{form.nom_5.value|default_if_none:""}} )
       </label>
       {{form.mix}}
       <input type="hidden" id="mixte" value="{{mixte}}"/>
@@ -120,20 +121,20 @@ $(document).ready(function() {
 	    {{form.public_designe_initial}}
 	</th></tr>
 	<tr>
-	  {% if form.nom_1 %}<td>
-	    {{form.nom_1}} {{form.actif_1}} {{form.ventilation_1}}
+	  {% if form.nom_1.value %}<td>
+	    {{form.nom_1.value}} {{form.actif_1}} {{form.ventilation_1}}
 	  </td>{% endif %}
-	  {% if form.nom_2 %}<td>
-	    {{form.nom_2}} {{form.actif_2}} {{form.ventilation_2}}
+	  {% if form.nom_2.value %}<td>
+	    {{form.nom_2.value}} {{form.actif_2}} {{form.ventilation_2}}
 	  </td>{% endif %}
-	  {% if form.nom_3 %}<td>
-	    {{form.nom_3}} {{form.actif_3}} {{form.ventilation_3}}
+	  {% if form.nom_3.value %}<td>
+	    {{form.nom_3.value}} {{form.actif_3}} {{form.ventilation_3}}
 	  </td>{% endif %}
-	  {% if form.nom_4 %}<td>
-	    {{form.nom_4}} {{form.actif_4}} {{form.ventilation_4}}
+	  {% if form.nom_4.value %}<td>
+	    {{form.nom_4.value}} {{form.actif_4}} {{form.ventilation_4}}
 	  </td>{% endif %}
-	  {% if form.nom_5 %}<td>
-	    {{form.nom_5}} {{form.actif_5}} {{form.ventilation_5}}
+	  {% if form.nom_5.value %}<td>
+	    {{form.nom_5.value}} {{form.actif_5}} {{form.ventilation_5}}
 	  </td>{% endif %}
 	</tr>
       </table>

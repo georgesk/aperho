@@ -18,6 +18,7 @@ from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
 from collections import OrderedDict
+from .saveurField import Ventilation, SaveurDictField
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
@@ -393,18 +394,15 @@ def changeSalle(request):
     indir=request.POST.get("indir","")=="true"
     b=Barrette.objects.get(nom=barrette)
     trouve=[e for e in Enseignant.objects.filter(barrettes__in=[b.pk]) if "%s %s" %(e.nom, e.prenom)==prof]
-    print("GRRRR indir, trouve, prof=", indir, trouve, prof)
     if trouve:
         try:
             ok="ok"
             trouve[0].salle=nouvelleSalle
             trouve[0].matiere=nouvelleMatiere
-            print("GRRRR indir=", indir)
             if indir:
                 trouve[0].indirects.add(b)
             else:
                 trouve[0].indirects.remove(b)
-            print ("GRRRR", trouve[0])
             trouve[0].save()
             message="Mis %s en salle %s (%s)" %(prof,nouvelleSalle,nouvelleMatiere)
         except Exception as e:
@@ -1234,7 +1232,17 @@ def editeCours(request):
             if ok: # à ce stade le cours lui-même est valide
                 cours.capacite=form.cleaned_data["effectif_total"]
                 cours.lessaveurs.effectif=form.cleaned_data["effectif_total"]
-                ## GRRRR ici il faut encore mettre à jour cours.lessaveurs.saveurs
+                saveurs=dict()
+                for i in range(1,1+5):
+                    nom=form.cleaned_data.get("nom_"+str(i))
+                    print("GRRRR nom_"+str(i), nom)
+                    actif=form.cleaned_data.get("actif_"+str(i))
+                    v=form.cleaned_data.get("ventilation_"+str(i))
+                    if not nom:  nom="_"+str(i)
+                    saveurs[nom]=Ventilation(actif,v)
+                cours.lessaveurs.saveurs=saveurs
+                print("GRRRR on vient de récupérer cours.lessaveurs= %s" % cours.lessaveurs)
+                
                 if formationCourante.titre != form.cleaned_data["titre"] or \
                    formationCourante.contenu != form.cleaned_data["contenu"]:
                     # on crée une nouvelle formation dès qu'il y a une variante
@@ -1317,8 +1325,8 @@ def editeCours(request):
         horaire=Horaire.objects.get(pk=cours.horaire_id)
         b=Barrette.objects.get(nom=request.session["barrette"])
         saveurs=b.saveurs()
-        if cours.capacite : cours.lessaveurs.effectif=cours.capacite
-        print("GRRRR cours=", cours, "mixte=", cours.lessaveurs.mixte)
+        print("GRRRR b.saveurs()=", saveurs)
+        cours.migrateToSaveurs(nomSaveurs=saveurs)
         form = editeCoursForm(initial={
             "titre": formationCourante.titre,
             "contenu": formationCourante.contenuDecode,
@@ -1379,12 +1387,9 @@ def desinscrire(request):
         e.desinscrire=True
         for i in inscriptions:
             e.ins.append(i)
-            print("GRRRR", e.nom, i.cours.pk, i.cours.formation.pk)
             if i.cours.formation.public_designe:
                 e.desinscrire=False
-                print("GRRR",e.nom,"à désinscrire")
     # on ne garde que les élèves à désinscrire
-    # on fait le contraire GRRRR
     eleves=[e for e in eleves if e.desinscrire]
     desinscrire=""
     if request.GET.get("ok",""):

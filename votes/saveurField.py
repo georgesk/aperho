@@ -65,7 +65,7 @@ class SaveurDict:
         """
         Le constructeur
         @param effectif l'effectif maximal
-        @param categories un dictionnaire nom -> Ventilation
+        @param saveurs un dictionnaire nom -> Ventilation
         """
         self.effectif=effectif
         self.saveurs=saveurs
@@ -85,7 +85,7 @@ class SaveurDict:
         )
 
     def __str__(self):
-        l=["  %s: %s\n" %(s, self.saveurs[s]) for s in sorted(self.saveurs)]
+        l=["  %s: %s\n" %(s, self.saveurs[s]) for s in sorted(self.saveurs.keys())]
         return "Saveurdict:\n"+"".join(l)
 
     @property
@@ -129,15 +129,15 @@ def parse_saveurDict(saveurDictString):
     actif, et deux caractères pour le nombre.
     """
     effectif=int(saveurDictString[0:2])
-    saveurDict=dict()
+    sav=dict()
     for i in range(5):
         nom=saveurDictString[2+8*i:7+8*i].strip()
         if nom:
-            saveurDict[nom]=Ventilation(
+            sav[nom]=Ventilation(
                 "0" != saveurDictString[7+8*i:8+8*i],
                 int(saveurDictString[8+8*i:10+8*i])
             )
-    return SaveurDict(effectif,saveurDict)
+    return SaveurDict(effectif,sav)
     
     
 
@@ -146,10 +146,11 @@ class SaveurDictField(models.Field):
 
     def __init__(self, *args, **kwargs):
         """
-        Le constructeur
+        Le constructeur ;
+        accepte un argument nommé "saveurDict" de type SaveurDict
         """
         # max 5 saveurs, sur 8 caractères chacune,
-        # plus 2 caractères d'effectif tital
+        # plus 2 caractères d'effectif total
         kwargs['max_length'] = 42
         if 'saveurDict' in kwargs:
             saveurDict=kwargs.pop('saveurDict')
