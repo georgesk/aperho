@@ -171,14 +171,14 @@ class SaveurDictField(models.Field):
     
     def from_db_value(self, value, expression, connection, context):
         if value is None:
-            return SaveurDict(0,dict())
+            return None
         return parse_saveurDict(value)
 
     def to_python(self, value):
         if isinstance(value, SaveurDict):
             return value
         if value is None:
-            return SaveurDict(0,dict())
+            return None
         return parse_saveurDict(value)
 
     def get_prep_value(self, saveurDict):

@@ -1215,7 +1215,6 @@ def editeCours(request):
             coursRecents=[ c for c in coursLies if c.ouverture.estRecente()]
             ajeter= not coursRecents
         af.ajeter=ajeter # on ajoute un attribut à l'ancienne formation
-            
     horaire=Horaire.objects.get(pk=cours.horaire_id)
     if "editeCours" in request.META["HTTP_REFERER"]:
         ## la page se rappelle elle-même, on a cliqué sur le bouton
@@ -1259,7 +1258,6 @@ def editeCours(request):
                     cours.formation=formationCourante
                     cours.save()
                 except Exception as e:
-                    print("GRRRRR exception dans cours.save()")
                     ok=False
                     message="Erreur : %s" %e
                     form.add_error(None, message)
@@ -1325,7 +1323,7 @@ def editeCours(request):
         b=Barrette.objects.get(nom=request.session["barrette"])
         saveurs=b.saveurs()
         cours.migrateToSaveurs(nomSaveurs=saveurs)
-        form = editeCoursForm(initial={
+        initial={
             "titre": formationCourante.titre,
             "contenu": formationCourante.contenuDecode,
             "duree": formationCourante.duree,
@@ -1335,12 +1333,20 @@ def editeCours(request):
             "reponse": "ok",
             "back": back,
             "is_superuser": request.user.is_superuser,
-            "nom_1": saveurs[0],
-            "nom_2": saveurs[1],
-            "nom_3": saveurs[2],
-            "nom_4": saveurs[3],
-            "nom_5": saveurs[4],
-        })
+        }
+        ## réglage des champs nom_i, actif_i et ventilation_i
+        for i in range(5):
+            nom=saveurs[i]
+            initial["nom_%s" %(i+1)] = nom
+            if nom.strip():
+                vent=cours.lessaveurs.saveurs[nom]
+                initial["actif_%s" %(i+1)]=vent.actif
+                initial["ventilation_%s" %(i+1)]=vent.nombre
+            else:
+                initial["actif_%s" %(i+1)]=False
+                initial["ventilation_%s" %(i+1)]=0
+
+        form = editeCoursForm(initial=initial)
         return render(
             request, "editeCours.html",  {
                 'form': form,

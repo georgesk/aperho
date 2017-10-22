@@ -382,7 +382,7 @@ class Cours(models.Model):
     lessaveurs = SaveurDictField(blank=True)
 
     def __str__(self):
-        return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
+        return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.lessaveurs.effectif)
 
     def migrateToSaveurs(self, nomSaveurs=None):
         """
@@ -399,7 +399,6 @@ class Cours(models.Model):
                 sav=dict()
                 for s in nomSaveurs:
                     sav[s]=Ventilation(False,0)
-                print("GRRR dans migrateToSaveurs", sav)
                 self.lessaveurs.saveurs=sav
             self.lessaveurs.ajusteEffectifs()
         return
