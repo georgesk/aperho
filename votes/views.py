@@ -683,10 +683,12 @@ def lesCours(request):
             i+=len(eci[e][c])
         e.nbEtudiants=i
     if csv:
-        response=csvResponse(Inscription.objects.all(), noninscrits)
+        inscriptions=Inscription.objects.filter(cours__barrette=b, cours_ouverture=od)
+        response=csvResponse(inscriptions, noninscrits)
         return response
     elif ods:
-        response=odsResponse(Inscription.objects.all(), noninscrits)
+        inscriptions=Inscription.objects.filter(cours__barrette=b, cours__ouverture=od)
+        response=odsResponse(inscriptions, noninscrits)
         return response
     elif odt:
         response=odtResponse(eci, horaires, noninscrits, cci)
