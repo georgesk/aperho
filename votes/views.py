@@ -614,6 +614,31 @@ def addInscription(request):
         "ok"      : ok,
     })
    
+def profil(request):
+    barrette=request.session.get("barrette","")
+    b=Barrette.objects.get(nom=barrette)
+    e=Enseignant.objects.filter(username=request.user.username, barrettes=b)[0]
+    salle=request.POST.get("salle","")
+    matiere=request.POST.get("matiere","")
+    modifEnregistree=False
+    if salle and matiere:
+        e.salle=salle
+        e.matiere=matiere
+        e.save()
+        modifEnregistree=True
+    return render(
+        request,
+        "profil.html",
+        {
+            "modifEnregistree": modifEnregistree,
+            "estprof": estProfesseur(request.user),
+            "barrette": barrette,
+            "username": request.user.username,
+            "prof": e
+        }
+    )
+        
+    
 def lesCours(request):
     """
     affiche les cours des profs pour la barrettes courante
@@ -646,6 +671,7 @@ def lesCours(request):
             ### on ne garde que les cours du seul prof qui demande
             nom=request.user.last_name
             prenom=request.user.first_name
+            enseignant=Enseignant.objects.get(nom=nom, prenom=prenom)
             cours=cours.filter(enseignant__nom=nom, enseignant__prenom=prenom)
     else:
         ## calcul des non-inscrits
@@ -715,6 +741,7 @@ def lesCours(request):
                 "noninscrits": noninscrits,
                 "barrette": barrette,
                 "ouverture" : od,
+                "prof": enseignant,
             }
         )
 

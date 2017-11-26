@@ -42,6 +42,10 @@ $( function() { // lancement après le chargement
   <h1 class="pagetitre">Cours d'AP de {{pourqui}} pour la barrette {{barrette}}</h1>
   {% else %}
   <h1 class="pagetitre">Mes cours d'AP pour la barrette {{barrette}}</h1>
+  <h2>{{prof.matiere}} -- Salle : {{prof.salle}}</h2>
+  <div style="float: right; font-size: 71%">
+    <a href="/votes/profil">Modifier mon profil ?</a>
+  </div>
   {% endif %}
 {% else %}
 <h1 class="pagetitre">Cours d'AP pour la barrette {{barrette}}, par prof</h1>
