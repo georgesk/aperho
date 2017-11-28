@@ -23,9 +23,9 @@
 {% endblock %}
 
 {% block localscripts %}
-<script type"text/javascript" src="/static/votes/js/editeCours.js">
+<script type="text/javascript" src="/static/votes/js/editeCours.js">
 </script>
-<script type"text/javascript">
+<script type="text/javascript">
 $(document).ready(function() {
     if("{{avertissement}}".length > 0){
 	$( "#message" ).empty();
@@ -52,7 +52,7 @@ $(document).ready(function() {
 {% endblock %}
 
 {% block contents %}
-<form method="post">
+<form method="post" id="theform">
 <table border="1" class="joli">
   <tr class="fieldWrapper">
     <td>
@@ -95,7 +95,9 @@ $(document).ready(function() {
       <div id="hiddenFields" style="display: none">
       <input type="hidden" name="c_id" id="c_id" value="{{c_id}}"/>
       {{form.back}} {{form.is_superuser}}
-      {{form.nom_1}} {{form.nom_2}} {{form.nom_3}} {{form.nom_4}} {{form.nom_5}} 
+      {{form.nom_1}} {{form.nom_2}} {{form.nom_3}}
+      {{form.nom_4}} {{form.nom_5}}
+      <input type="hidden" name="v" id="v" value="1"/> <!-- 1: modif ce cours, 2: modif deux cours -->
       </div>
       {% csrf_token %}
     </td>
@@ -141,9 +143,9 @@ $(document).ready(function() {
     </td>
   </tr>
 </table>
-<input type="submit" name="v1" value="Valider les modifications pour ce cours" style="margin: 1em;"/>
+<input type="button" name="v1" value="Valider les modifications pour ce cours" style="margin: 1em;" onclick="submission(1)"/>
 ou ...
-<input type="submit" name="v2" value="Valider les modifications pour tous les cours" style="margin: 1em;"/>
+<input type="button" name="v2" value="Valider les modifications pour tous les cours" style="margin: 1em;" onclick="submission(2)"/>
 {{ form.non_field_errors }}
 </form>
 {% if anciennesFormations %}

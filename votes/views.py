@@ -652,6 +652,7 @@ def lesCours(request):
     # filtrage des cours : barrette courante et dernière session d'ouverture
     barrette=request.session.get("barrette","")
     b=Barrette.objects.get(nom=barrette)
+    enseignant=None
     od=Ouverture.derniere()
     if not od:
         ## il faut définir au moins une première période d'ouverture d'aperho
@@ -1268,7 +1269,7 @@ def editeCours(request):
                     for i in range(1,1+5):
                         nom=form.cleaned_data.get("nom_"+str(i))
                         actif=form.cleaned_data.get("actif_"+str(i))
-                        v=form.cleaned_data.get("ventilation_"+str(i))
+                        v=form.cleaned_data.get("ventilation_"+str(i)) or 0
                         if not nom:  nom="_"+str(i)
                         saveurs[nom]=Ventilation(actif,v)
                     cours.lessaveurs.saveurs=saveurs
@@ -1306,7 +1307,7 @@ def editeCours(request):
                             f=Formation.objects.get(pk=dc.formation_id)
                             total+=f.duree
                         assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
-                        if "v2" in request.POST:
+                        if request.POST.get("v","1")=="2":
                             # on a validé "Enregistrer pour tous les cours"
                             for dc in deuxCours:
                                 if dc != cours:

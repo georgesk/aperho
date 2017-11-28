@@ -136,3 +136,12 @@ function avertissement(msg){
 	]
     });
 }
+
+/**
+ * fonction de rappel quand on clique sur un des boutons de validation
+ * @param i (entier) si 1, validation pour 1 h, si 2, validation pour 2 h
+ **/
+function submission(i){
+    $('#v').val(i);
+    $('#theform').submit()
+}

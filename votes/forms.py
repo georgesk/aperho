@@ -54,25 +54,25 @@ class editeCoursForm(forms.Form):
     effectif_total = capaciteField()
     mix = forms.BooleanField(required=False)
 
-    nom_1 = forms.CharField(max_length=5)
+    nom_1 = forms.CharField(max_length=5, required=False)
     actif_1 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_1 = forms.IntegerField()
+    ventilation_1 = forms.IntegerField(required=False)
 
-    nom_2 = forms.CharField(max_length=5)
+    nom_2 = forms.CharField(max_length=5, required=False)
     actif_2 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_2 = forms.IntegerField()
+    ventilation_2 = forms.IntegerField(required=False)
 
-    nom_3 = forms.CharField(max_length=5)
+    nom_3 = forms.CharField(max_length=5, required=False)
     actif_3 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_3 = forms.IntegerField()
+    ventilation_3 = forms.IntegerField(required=False)
 
-    nom_4 = forms.CharField(max_length=5)
+    nom_4 = forms.CharField(max_length=5, required=False)
     actif_4 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_4 = forms.IntegerField()
+    ventilation_4 = forms.IntegerField(required=False)
 
-    nom_5 = forms.CharField(max_length=5)
+    nom_5 = forms.CharField(max_length=5, required=False)
     actif_5 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_5 = forms.IntegerField()
+    ventilation_5 = forms.IntegerField(required=False)
 
 
     def clean(self):
@@ -84,7 +84,7 @@ class editeCoursForm(forms.Form):
         if not cleaned_data["mix"]:
             ## si le cours est mixte évidemment il est inutile de chercher
             ## à vérifier la ventilation
-            vent=[cleaned_data["ventilation_"+str(i)] for i in range(1,1+5)]
+            vent=[cleaned_data["ventilation_"+str(i)] or 0 for i in range(1,1+5)]
             if sum(vent) != cleaned_data["effectif_total"]:
                 msg="La ventilation des effectifs était fausse : %s ≠ %d ; attention, elle a été modifiée automatiquement." % \
                      (" + ".join([str(v) for v in vent]), cleaned_data["effectif_total"])
