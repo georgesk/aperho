@@ -21,7 +21,12 @@ $(document).ready(function() {
 {% block contents %}
 {% if user.is_superuser %}
 {% if classesDansDb %}
-<h3 style="text-align: center;">Classes dans la barrette (voir plus bas pour en ajouter)</h3>
+<h3 style="text-align: center; cursor:pointer;" onclick="majKwartz('{{barretteCourante}}')" title="cliquer pour une mise à jour"">
+  Remise à jour (depuis l'annuaire Kwartz)
+</h3>
+<h3 style="text-align: center;">
+  Classes dans la barrette (voir plus bas pour en ajouter)
+</h3>
 <table border="1" class="joli" style="width: 100%">
   <tr style="background: lightcyan;">
     <th colspan="2">Classe</th>

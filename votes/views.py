@@ -8,12 +8,13 @@ from django.db.models import Q
 from urllib.parse import urlencode
 from django.core.exceptions import ObjectDoesNotExist
 
-import json
+import json, re
 
 from aperho.settings import connection
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, \
-    InscriptionOrientation, CoursOrientation, Cop, Horaire, Barrette
+    InscriptionOrientation, CoursOrientation, Cop, Horaire, Barrette, \
+    classeCourante, etudiantsDeClasse
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
@@ -246,8 +247,8 @@ def addEleves(request):
     # affichage des élèves ajoutés
     ######################################
     if wantedClasses:
-        b=Barrette.objects.get(nom=barrette)
         for gid in wantedClasses:
+            b=Barrette.objects.get(nom=barrette)
             nouveaux=inscritClasse(gid,b)
             if nouveaux:
                 eleves+=nouveaux
@@ -262,7 +263,8 @@ def addEleves(request):
     )
     ### Liste des classes déjà connues dans la base de données
     barrette=request.session.get("barrette")
-    etudiants=list(Etudiant.objects.filter(barrette__nom=barrette))
+    b=Barrette.objects.get(nom=barrette)
+    etudiants=list(Etudiant.objects.filter(barrette=b))
     classesDansDb=OrderedDict()
     for e in etudiants:
         nom=nomClasse(e.classe)
@@ -678,7 +680,7 @@ def lesCours(request):
         ## calcul des non-inscrits
         eleves=set([e for e in Etudiant.objects.all()
                     if e.classe in json.loads(b.classesJSON)])
-        inscrits=set([i.etudiant for i in Inscription.objects.all()])
+        inscrits=set([i.etudiant for i in Inscription.objects.filter(cours__ouverture=od)])
         noninscrits=sorted(list(eleves-inscrits), key=lambda e: e.classe+e.nom)
     if pourqui:
         cours=list(cours.order_by("horaire"))
@@ -1014,8 +1016,20 @@ def listClasse(request):
         "eleves": "<br/>".join(eleves),
     })
 
+def classeFromString(s):
+    """
+    transforme des chaînes comme "2d01 (36)" en "2d01"
+    @param s chaîne d'entrée
+    @return le nom d'un groupe classe
+    """
+    m=re.match(r"(\S+) .*",s)
+    if m:
+        return m.group(1)
+    else:
+        return s
+    
 def delClasse(request):
-    c=request.GET.get("classe")
+    c=classeFromString(request.GET.get("classe"))
     etudiants=Etudiant.objects.filter(classe=c)
     if etudiants:
         # on enleve la classe de la barrette
@@ -1443,3 +1457,79 @@ def desinscrire(request):
             "desinscrire": desinscrire,
         },
     )
+
+def majElevesKwartz(request):
+    """
+    prend en compte le paramètre barrette, puis trouve toutes les classes
+    associées à cette barrette ; retire les élèves de la barrette si ceux-ci
+    ne sont plus associés à une classe de la barrette, puis reprend les élèves
+    de la barrette, corrige leur classe, enfin inscrit ceux des élèves qui
+    n'étaient pas encore dans la barrette.
+    """
+    barrette=request.GET.get("barrette","")
+    if barrette:
+        b=Barrette.objects.get(nom=barrette)
+        eleves=Etudiant.objects.filter(barrette=b)
+        classes={}
+        for e in eleves:
+            if e.classe in classes:
+                classes[e.classe] += 1
+            else:
+                classes[e.classe]=1
+        # on ne conserve que les classes de plus de 5 élèves, au cas où il
+        # y aurait eu des changements de groupe de certains élèves qui les
+        # sortent du champ de la barrette
+        classes={ c : classes[c] for c in classes if classes[c]>5}
+        # on reprend les listes de classes plus récentes selon Kwartz
+        classesKwartz={}
+        for c in classes:
+            classesKwartz[c]=etudiantsDeClasse(c)
+        # on supprime les élèves qui seraient sortis du Kwartz
+        for e in eleves:
+            found=False
+            for c in classesKwartz:
+                if e.uid in classesKwartz[c]:
+                    found=True
+            if not found:
+                e.delete()
+        # on inscrit les nouveaux élèves et on rectifie les anciens
+        for c in classes:
+            inscritClasse(None, b, c)
+        return JsonResponse({
+            "message" : "mise à jour OK",
+            "ok"      : "ok",
+        })
+    else:
+        return JsonResponse({
+            "message" : "mise à jour impossible",
+            "ok"      : "nok",
+        })
+        
+        
+def reinscription(request):
+    """
+    réinscrit un groupe d'élèves comme dans la période précédente
+    ce qui est utile pour les formations à public désigné
+    request.POST contient les arguments cours_id et ouverture_id
+    """
+    cours_id=int(request.POST.get("cours_id"))
+    cours=Cours.objects.get(pk=cours_id)
+    ouverture_id=int(request.POST.get("ouverture_id"))
+    derniere=Ouverture.objects.get(pk=ouverture_id)
+    avantDerniere=Ouverture.justeAvant(derniere)
+    coursAvant=Cours.objects.filter(formation=cours.formation, ouverture=avantDerniere)
+    print("GRRRR", list(coursAvant))
+    if not coursAvant:
+        return JsonResponse({
+            "message" : "Pas de cours identique lors de la session précédente",
+            "ok"      : "nok",
+        })
+    # récupération des élèves inscrits précédemment
+    inscriptions=Inscription.objects.filter(cours=coursAvant[0])
+    for i in inscriptions:
+        i.cours=cours
+        i.save()
+    return JsonResponse({
+        "message" : "Réinscription terminée ({} élèves)".format(len(inscriptions)),
+        "ok"      : "ok",
+    })

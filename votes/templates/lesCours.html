@@ -53,7 +53,7 @@ $( function() { // lancement après le chargement
 <button onclick="$.get('/votes/contenuMinimal', function(){location='/votes/lesCours';});">
   Mettre un contenu minimal pour tous les cours restant « À MODIFIER »
 </button>
-{% endif %}
+{% endif %} <!-- pourqui -->
 <h2>Données dans un autre format</h2>
 <ul>
   <li>Pour un tableur, au <a href="/votes/lesCours?csv=yes">format CSV</a>.</li>  
@@ -68,9 +68,25 @@ $( function() { // lancement après le chargement
     <div>
       {% for c,inscriptions in ci.items %}
       {% if pourqui %}
-      <h2>{{c.horaire.heure}} -- liste de {{inscriptions|length}} élèves -- {{ouverture}}</h2>
+      <h2>
+	{{c.horaire.heure}} --
+	liste de {{inscriptions|length}} élèves --
+	{{ouverture}}
+      </h2>
       {% else %}
-      <h2 style="text-align: left;">{{c.formation.titre}} {{c.horaire.heure}} ({{inscriptions|length}} élèves) -- {{e.prenom}} {{e.nom}} -- {{ouverture}}</h2>
+      <h2 style="text-align: left;">
+	{{c.formation.titre}} {{c.horaire.heure}}
+	({{inscriptions|length}} élèves) --
+	{{e.prenom}} {{e.nom}} --
+	{{ouverture}}
+	{% if user.is_superuser %}
+	{% if inscriptions %}
+	<!-- pas de bouton de réinscription -->
+	{% else %}
+	<button onclick="reinscription({{c.pk}},{{ouverture.pk}},'{{csrf_token}}')">Réinscrire les précédents</button>
+	{% endif %}
+	{% endif %}
+      </h2>
       {% endif %}
       <table class="joli">
 	<tr>

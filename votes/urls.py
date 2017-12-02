@@ -29,4 +29,6 @@ urlpatterns = [
     url(r'^contenuMinimal$', views.contenuMinimal, name='contenuMinimal'),
     url(r'^desinscrire$', views.desinscrire, name='desinscrire'),
     url(r'^profil$', views.profil, name='profil'),
+    url(r'^majElevesKwartz$', views.majElevesKwartz, name='majElevesKwartz'),
+    url(r'^reinscription$', views.reinscription, name='reinscription'),
 ]

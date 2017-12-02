@@ -285,3 +285,31 @@ function editeInscriptions(eleveUid, barrette, ouverture, csrf){
     f.submit();
 		      
 }
+
+/**
+ * réinscrit un groupe d'élèves comme dans la période précédente
+ * ce qui est utile pour les formations à public désigné
+ * @param coursId identifiant d'un cours
+ * @param ouvertureId identifiant d'une ouverture des votes pour l'AP
+ **/
+function reinscription(coursId, ouvertureId, csrf){
+    $.post("/votes/reinscription",
+	   {
+	       csrfmiddlewaretoken: csrf,
+	       cours_id: coursId,
+	       ouverture_id: ouvertureId,
+	   },
+	   function(data){
+	       if (data.ok=="ok"){
+		   alert(data.message);
+		   location.assign("/votes/lesCours");
+	       } else{
+		   alert(data.message);
+	       }
+	   }
+	  ).fail(
+	      function(){
+		  alert("Échec : problème de communication");
+	      }
+	  );
+}

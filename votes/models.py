@@ -234,6 +234,18 @@ class Ouverture(models.Model):
             return ouvertures.last()
         return None
     
+    @staticmethod
+    def justeAvant(derniere):
+        """
+        renvoie l'avant-dernière ouverture en date si elle existe
+        @param derniere une ouverture considérée comme la dernière
+        @return une instance d'Ouverture sinon None
+        """
+        ouvertures=Ouverture.objects.filter(debut__lt=derniere.debut).order_by("debut")
+        if ouvertures:
+            return ouvertures.last()
+        return None
+    
 class Enseignant(models.Model):
     """
     Désigne un professeur ou un autre membre de l'équipe éducative.
@@ -437,7 +449,7 @@ class Cours(models.Model):
 
 class Inscription(models.Model):
     """
-    La relation binaire entre un utudiant et un cours, qui résulte de
+    La relation binaire entre un étudiant et un cours, qui résulte de
     son vote.
     """
     etudiant   = models.ForeignKey('Etudiant')
@@ -445,6 +457,68 @@ class Inscription(models.Model):
 
     def __str__(self):
         return "{} {}".format(self.etudiant, self.cours)
+
+def etudiantsDeClasse(classeName):
+    """
+    renvoie une liste d'étudiants dont le groupe primaire correspond à
+    une classe, par leur login
+    @param classeName un nom de classe sans le 'c' initial
+    @return une liste de logins
+    """
+    cn='c'+classeName
+    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzGroup)(cn={0}))'.format(cn)
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes=["gidNumber"]
+        )
+    if len(connection.response) > 0: # le groupe est connu.
+        gidNumber=connection.response[0]["attributes"]['gidNumber'][0]
+        base_dn = 'ou=Users,dc=lycee,dc=jb'
+        filtre  = '(&(objectClass=kwartzAccount)(gidNumber={0}))'.format(gidNumber)
+        connection.search(
+            search_base = base_dn,
+            search_filter = filtre,
+            attributes=["cn"]
+            )
+        result=[]
+        for r in connection.response:
+            result.append(r["attributes"]['cn'][0])
+        return result
+    else: # le groupe est inconnu.
+        return []
+    
+def classeCourante(etudiant):
+    """
+    renvoie la classe d'un étudiant, selon Kwartz
+    @param etudiant : un objet Etudiant
+    """
+    uid=etudiant.uidNumber
+    base_dn = 'ou=Users,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzAccount)(uidNumber={0}))'.format(uid)
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes=["gidNumber"]
+        )
+    if len(connection.response) > 0: # l'élève est connu.
+        gidNumber=connection.response[0]["attributes"]['gidNumber'][0]
+        base_dn = 'ou=Groups,dc=lycee,dc=jb'
+        filtre  = '(&(objectClass=kwartzGroup)(gidNumber={0}))'.format(gidNumber)
+        connection.search(
+            search_base = base_dn,
+            search_filter = filtre,
+            attributes=["cn"]
+            )
+        if len(connection.response) > 0: # le groupe est connu.
+            return connection.response[0]["attributes"]["cn"][0]
+        else: # le groupe est inconnu.
+            return None
+    else: # l'élève est inconnu.
+        return None
+    
+    
 
 def estProfesseur(user):
     """
