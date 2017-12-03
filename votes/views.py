@@ -11,6 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import json, re
 
 from aperho.settings import connection
+from aperho.home import dicoBarrette
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, \
     InscriptionOrientation, CoursOrientation, Cop, Horaire, Barrette, \
@@ -160,14 +161,13 @@ def cop (request):
         for e in affectations[s]:
             io=InscriptionOrientation(etudiant=e, cours=s)
             io.save()
-    return render(
-        request, "cop.html",
-        context={
-            "orientations": orientations,
-            "seances":      seances,
-            "affectations": affectations,
-        }
-    )
+    context={
+        "orientations": orientations,
+        "seances":      seances,
+        "affectations": affectations,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "cop.html", context)
 
 def inscritClasse(gid, barrette, cn=""):
     """
@@ -287,15 +287,13 @@ def addEleves(request):
             'classe': nom,
         })
     classes=sorted(classes, key=lambda d: d["classe"])
-    return render(
-        request, "addEleves.html",
-        context={
-            "classes": classes,
-            "eleves":  eleves,
-            "classesDansDb" : classesDansDb,
-            "barretteCourante": request.session.get("barrette","undef.")
-        }
-    )
+    context={
+        "classes": classes,
+        "eleves":  eleves,
+        "classesDansDb" : classesDansDb,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "addEleves.html", context)
 
 def getProfsLibres(barrette):
     """
@@ -509,14 +507,12 @@ def addProfs(request):
         p.bb=", ".join([b.nom for b in list(Barrette.objects.filter(b__in=[p.pk]).order_by('nom'))])
         p.indir= b in p.indirects.all() # vrai si le prof a une inscription indirecte 
     profs=getProfsLibres(barretteCourante)
-    return render(
-        request, "addProfs.html",
-        context={
-            "profs":  profs,
-            "profsInscrits": profsInscrits,
-            "barretteCourante": barretteCourante,
-        }
-    )
+    context={
+        "profs":  profs,
+        "profsInscrits": profsInscrits,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "addProfs.html", context)
 
 def chargeProf(request):
     """
@@ -628,17 +624,15 @@ def profil(request):
         e.matiere=matiere
         e.save()
         modifEnregistree=True
-    return render(
-        request,
-        "profil.html",
-        {
-            "modifEnregistree": modifEnregistree,
-            "estprof": estProfesseur(request.user),
-            "barrette": barrette,
-            "username": request.user.username,
-            "prof": e
-        }
-    )
+    context={
+        "modifEnregistree": modifEnregistree,
+        "estprof": estProfesseur(request.user),
+        "barrette": barrette,
+        "username": request.user.username,
+        "prof": e
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "profil.html", context)
         
     
 def lesCours(request):
@@ -729,24 +723,23 @@ def lesCours(request):
         orientationOuverte=len([o for o in Orientation.objects.all() if o.ouverture.estActive()]) > 0
         ## on autorise à utiler cette page les profs d'AP et l'admin.
         autorise = prof=="profAP" or request.user.is_superuser
-        return render(
-            request, "lesCours.html",
-            context={
-                "autorise":  autorise,
-                "eci":   eci,
-                "cops": cops,
-                "orientationOuverte": orientationOuverte,
-                "cci" : cci,
-                "pourqui": pourqui,
-                "horaires": horaires,
-                "estprof": estProfesseur(request.user),
-                "username": request.user.username,
-                "noninscrits": noninscrits,
-                "barrette": barrette,
-                "ouverture" : od,
-                "prof": enseignant,
-            }
-        )
+        context={
+            "autorise":  autorise,
+            "eci":   eci,
+            "cops": cops,
+            "orientationOuverte": orientationOuverte,
+            "cci" : cci,
+            "pourqui": pourqui,
+            "horaires": horaires,
+            "estprof": estProfesseur(request.user),
+            "username": request.user.username,
+            "noninscrits": noninscrits,
+            "barrette": barrette,
+            "ouverture" : od,
+            "prof": enseignant,
+        }
+        context.update(dicoBarrette(request))
+        return render(request, "lesCours.html", context)
 
 def estEnPremier (c):
     """
@@ -828,21 +821,20 @@ def enroler(request):
     inscrits=set([i.etudiant for i in Inscription.objects.all()])
     noninscrits=list(eleves-inscrits)
     noninscrits.sort(key=lambda e: e.nom)
-    return render(
-            request, "enroler.html",
-            context={
-                "autorise":    estProfesseur(request.user)=="profAP" or request.user.is_superuser,
-                "estprof":    estProfesseur(request.user),
-                "username":    request.user.username,
-                "cours0":      cours0,
-                "cours1":      cours1,
-                "h0":          horaires[0],
-                "h1":          horaires[1],
-                "noninscrits": noninscrits,
-                "etudiant":    etudiant,
-                "coursConnus": coursConnus,
-            }
-        )
+    context={
+        "autorise":    estProfesseur(request.user)=="profAP" or request.user.is_superuser,
+        "estprof":    estProfesseur(request.user),
+        "username":    request.user.username,
+        "cours0":      cours0,
+        "cours1":      cours1,
+        "h0":          horaires[0],
+        "h1":          horaires[1],
+        "noninscrits": noninscrits,
+        "etudiant":    etudiant,
+        "coursConnus": coursConnus,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "enroler.html", context)
 
 def creeCoursParDefaut(barrette, ouverture, cours=None):
     """
@@ -1097,14 +1089,13 @@ def addBarrette(request):
     for b in barrettes:
         b.l=sorted(json.loads(b.classesJSON))
     classes=sorted(list(set(lesClasses())-classesPrises(barrettes)))
-    return render(
-        request, "addBarrette.html",
-        {
-            "lesBarrettes": barrettes,
-            "classes" : classes,
-            "avertissement" : avertissement,
-        }
-    )
+    context={
+        "lesBarrettes": barrettes,
+        "classes" : classes,
+        "avertissement" : avertissement,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "addBarrette.html", context)
 
 def delBarrette(request):
     """
@@ -1176,14 +1167,13 @@ def addOuverture(request):
     # cette partie vaut pour tout le monde
     barrette=request.session.get("barrette")
     ouvertures=list(Ouverture.objects.all().order_by("debut"))
-    return render(
-        request, "addOuverture.html",
-        {
-            "ouvertures": ouvertures,
-            "barrette" : barrette,
-            "avertissement" : avertissement,
-        }
-    )
+    context={
+        "ouvertures": ouvertures,
+        "barrette" : barrette,
+        "avertissement" : avertissement,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "addOuverture.html", context)
 
 def delOuverture(request):
     nom=request.POST.get("nom")
@@ -1344,24 +1334,28 @@ def editeCours(request):
             if ok:
                 return HttpResponseRedirect(form.cleaned_data["back"])
             else:
-                return render(request, "editeCours.html",  {
+                context={
                     'form': form,
                     'prof': prof,
                     'horaire': horaire,
                     "c_id": cours.id,
                     "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
                     "estprof": estProfesseur(request.user),
-                })
+                }
+                context.update(dicoBarrette(request))
+                return render(request, "editeCours.html", context)
                 
         else: # le formulaire n'est pas validé
-            return render(request, "editeCours.html",  {
+            context={
                 'form': form,
                 'prof': prof,
                 'horaire': horaire,
                 "c_id": cours.id,
                 "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
                 "estprof": estProfesseur(request.user),
-            })
+            }
+            context.update(dicoBarrette(request))
+            return render(request, "editeCours.html", context)
     else: ## la page est appelée directement, on n'en est pas à la validation/vérification
         cours=Cours.objects.get(pk=int(request.POST.get("c_id")))
         formationCourante=Formation.objects.get(pk=cours.formation_id)
@@ -1395,16 +1389,17 @@ def editeCours(request):
                 initial["ventilation_%s" %(i+1)]=0
 
         form = editeCoursForm(initial=initial)
-        return render(
-            request, "editeCours.html",  {
-                'form': form,
-                'prof': prof,
-                'horaire': horaire,
-                "c_id": cours.id,
-                "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
-                "estprof": estProfesseur(request.user),
-                "mixte": cours.lessaveurs.mixte,
-            })
+        context={
+            'form': form,
+            'prof': prof,
+            'horaire': horaire,
+            "c_id": cours.id,
+            "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
+            "estprof": estProfesseur(request.user),
+            "mixte": cours.lessaveurs.mixte,
+        }
+        context.update(dicoBarrette(request))
+        return render(request, "editeCours.html", context)
 
 def delFormation(request):
     formation_id=int(request.POST.get("formation_id"))
@@ -1449,14 +1444,13 @@ def desinscrire(request):
             for i in e.ins:
                 i.delete()
         desinscrire="Ces %d élèves ont été désinscrits" %len(eleves)
-    return render(
-        request, "desinscrire.html",
-        context={
-            "barrette": barrette,
-            "eleves" : eleves,
-            "desinscrire": desinscrire,
-        },
-    )
+    context={
+        "barrette": barrette,
+        "eleves" : eleves,
+        "desinscrire": desinscrire,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "desinscrire.html", context)
 
 def majElevesKwartz(request):
     """
