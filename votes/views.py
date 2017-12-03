@@ -1540,9 +1540,44 @@ def reinscription(request):
         })
     # récupération des élèves inscrits précédemment
     inscriptions=Inscription.objects.filter(cours=coursAvant[0])
+    eleves=[]
     for i in inscriptions:
+        eleves.append(i.etudiant)
+        i.pk=None # pour dupliquer l'inscription
         i.cours=cours
         i.save()
+    if cours.formation.duree < 2:
+        for e in eleves:
+            # on s'assure que l'élève e est bien inscrit pour deux heures.
+            try:
+                exInscription=Inscription.objects.get(
+                    ~Q(cours=coursAvant),
+                    etudiant=e,
+                    cours__ouverture=avantDerniere
+                )
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    "message" : "une des inscriptions est ratée",
+                    "ok"      : "nok",
+                })
+            autreCours=Cours.objects.filter(
+                ~Q(horaire=cours.horaire), # pas à la même heure que le cours
+                formation=exInscription.cours.formation, # même formation
+                ouverture=derniere,                      # maintenant
+            )
+            if not autreCours:
+                # ça ne marche pas avec exactement la même formation
+                # on essaie avec le même prof
+                autreCours=Cours.objects.filter(
+                    ~Q(horaire=cours.horaire), # pas à la même heure
+                    enseignant=exInscription.cours.enseignant, # même enseignant
+                    ouverture=derniere,                      # maintenant
+                )
+                
+            autreCours=autreCours[0]
+            exInscription.pk=None # pour une duplication
+            exInscription.cours=autreCours
+            exInscription.save()
     return JsonResponse({
         "message" : "Réinscription terminée ({} élèves)".format(len(inscriptions)),
         "ok"      : "ok",
