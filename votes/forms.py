@@ -54,23 +54,23 @@ class editeCoursForm(forms.Form):
     effectif_total = capaciteField()
     mix = forms.BooleanField(required=False)
 
-    nom_1 = forms.CharField(max_length=5, required=False)
+    nom_1 = forms.CharField(max_length=8, required=False)
     actif_1 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_1 = forms.IntegerField(required=False)
 
-    nom_2 = forms.CharField(max_length=5, required=False)
+    nom_2 = forms.CharField(max_length=8, required=False)
     actif_2 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_2 = forms.IntegerField(required=False)
 
-    nom_3 = forms.CharField(max_length=5, required=False)
+    nom_3 = forms.CharField(max_length=8, required=False)
     actif_3 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_3 = forms.IntegerField(required=False)
 
-    nom_4 = forms.CharField(max_length=5, required=False)
+    nom_4 = forms.CharField(max_length=8, required=False)
     actif_4 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_4 = forms.IntegerField(required=False)
 
-    nom_5 = forms.CharField(max_length=5, required=False)
+    nom_5 = forms.CharField(max_length=8, required=False)
     actif_5 = forms.BooleanField(required=False, help_text="actif/inactif")
     ventilation_5 = forms.IntegerField(required=False)
 

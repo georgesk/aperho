@@ -1512,7 +1512,6 @@ def reinscription(request):
     derniere=Ouverture.objects.get(pk=ouverture_id)
     avantDerniere=Ouverture.justeAvant(derniere)
     coursAvant=Cours.objects.filter(formation=cours.formation, ouverture=avantDerniere)
-    print("GRRRR", list(coursAvant))
     if not coursAvant:
         return JsonResponse({
             "message" : "Pas de cours identique lors de la session précédente",
