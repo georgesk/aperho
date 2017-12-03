@@ -818,7 +818,7 @@ def enroler(request):
     cours1=[c for c in cours if not estEnPremier(c)]
     ## calcul des non-inscrits
     eleves=set([e for e in Etudiant.objects.filter(barrette_id=b.id)])
-    inscrits=set([i.etudiant for i in Inscription.objects.all()])
+    inscrits=set([i.etudiant for i in Inscription.objects.filter(cours__ouverture=derniereOuverture)])
     noninscrits=list(eleves-inscrits)
     noninscrits.sort(key=lambda e: e.nom)
     context={
@@ -981,7 +981,7 @@ def enroleEleveCours(request):
             else:
                 eleve=eleve[0]
                 ## vérifie que l'élève n'est pas déjà inscrit
-                inscr=len(Inscription.objects.filter(etudiant=eleve))
+                inscr=len(Inscription.objects.filter(etudiant=eleve, cours__ouverture=Ouverture.derniere()))
                 if inscr:
                     msg="ERREUR : {} {} {} est déjà inscrit.". format(eleve.nom, eleve.prenom, eleve.classe)
                 else:

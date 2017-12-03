@@ -3,12 +3,12 @@
  **/
 
 function enroler(){
-    var wait=$("<div class='wait'><center><img alt='wait' src='/static/votes/img/Songbird_Icon_Spinner1.gif'style='position: fixed; top:40%;'/></center></div>")
-    $("body").append(wait);
     var eleve=$("#eleve").val();
     var cours0val=$("#cours0").val();
     var cours1val=$("#cours1").val();
-    console.log(cours0)
+    if (eleve=="" || cours0val=="" || cours1val=="") return;
+    var wait=$("<div class='wait'><center><img alt='wait' src='/static/votes/img/Songbird_Icon_Spinner1.gif'style='position: fixed; top:40%;'/></center></div>")
+    $("body").append(wait);
     var re = /^.*\((\S*)\)$/;
     var uid=eleve.match(re)[1];
     var id0=cours0val.match(re)[1];
