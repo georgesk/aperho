@@ -11,14 +11,14 @@ from votes.models import Cours, Inscription, Etudiant, Enseignant, \
     Orientation, Horaire, estProfesseur, barrettesPourUtilisateur, \
     Barrette, Ouverture
 
-def choixBarrette(request):
+def dicoBarrette(request):
     """
     Prend une barrette de façon pertinente : s'il n'y en a qu'une ce sera
     celle-là, sinon on propose de choisir avant toute autre chose.
     @param request une requête
-    @return la liste de barrettes possibles, 
-    une ligne de code HTML pour le menu, et un peu de code Javascript
-    pour lancer un dialogue.
+    @return un dictionnaire, "barrette" => la barrette courante, 
+    "actionChangeBarrette" => une ligne de code HTML pour le menu,
+    "initScript" => un peu de code Javascript pour lancer un dialogue.
     """
     initScript="" # script à insérer dans home.html
     bpu=barrettesPourUtilisateur(request.user)
@@ -39,9 +39,15 @@ def choixBarrette(request):
                 request.session["barrette"]=bpu[0].nom
             else:
                 request.session["barrette"]=""
+            barretteCourante=request.session["barrette"]
             # mais on propose de changer de barrette s'il y en plusieurs
             initScript=""" $(function(){changebarrette(%s,%d)});""" %(json.dumps(nomsBarrettes),0)
-    return bpu, actionChangeBarrette, initScript
+    dico={
+        "barrette": barretteCourante,
+        "actionChangeBarrette": actionChangeBarrette,
+        "initScript": initScript,
+    }
+    return dico
 
 def coursAModifier(request, cours):
     """
@@ -79,14 +85,8 @@ def index(request):
         #########################################################
         #   GESTION DE LA BARRETTE COURANTE POUR LA SESSION     #
         #########################################################
-        bpu, actionChangeBarrette,initScript = choixBarrette(request)
-        if len(bpu)==1: # une seule barrette, on la choisit
-            barretteCourante=bpu[0].nom
-        else:
-            barretteCourante=request.GET.get(
-                "nouvelleBarrette",
-                request.session.get("barrette", "")
-            )
+        dico=dicoBarrette(request)
+        barretteCourante=dico["barrette"]
         #########################################################
         # GESTION DES COURS À AFFICHER, DANS LA BARRETTE        #
         #########################################################
@@ -172,28 +172,23 @@ def index(request):
             ouverte=od.estActive()
         else:
             ouverte=False
-        return render(
-            request,
-            "home.html",
-            {
-                "initScript": initScript,
-                "barrette": barretteCourante,
-                "actionChangeBarrette": actionChangeBarrette,
-                "tousLesCours": tousLesCours,
-                "horaires" : horaires,
-                "etudiant" : etudiant,
-                "cours_suivis" : cours_suivis,
-                "orientations_demandees": orientations_demandees,
-                "orientations" : orientations,
-                "orientationOuverte" : orientationOuverte,
-                "od": od,
-                "ouverte": ouverte,
-                "estprof": estProfesseur(request.user),
-                "username": request.user.username,
-                "coursAchanger": coursAchanger,
-                "netu": netu,
-            }
-        )
+        context={
+            "tousLesCours": tousLesCours,
+            "horaires" : horaires,
+            "etudiant" : etudiant,
+            "cours_suivis" : cours_suivis,
+            "orientations_demandees": orientations_demandees,
+            "orientations" : orientations,
+            "orientationOuverte" : orientationOuverte,
+            "od": od,
+            "ouverte": ouverte,
+            "estprof": estProfesseur(request.user),
+            "username": request.user.username,
+            "coursAchanger": coursAchanger,
+            "netu": netu,
+        }
+        context.update(dico)
+        return render(request, "home.html", context)
     else:
         return HttpResponseRedirect("/login/")
 
