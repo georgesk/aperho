@@ -1459,8 +1459,30 @@ def majElevesKwartz(request):
     ne sont plus associés à une classe de la barrette, puis reprend les élèves
     de la barrette, corrige leur classe, enfin inscrit ceux des élèves qui
     n'étaient pas encore dans la barrette.
+    Si ce paramètre vaut "all", toutes les barrettes seront mises à jour
+    @param request, qui fournit request.GET.get("barrette")
     """
-    barrette=request.GET.get("barrette","")
+    if request.GET.get("barrette","")=="all":
+        barrettes=Barrette.objects.all()
+        nomsBarrettes=[]
+        for b in barrettes:
+            nomsBarrettes.append(b.nom)
+            majElevesKwartz1(b.nom)
+        return JsonResponse({
+            "message" : "mise à jour tentée pour les barrettes %s" %
+              ",".join(nomsBarrettes),
+            "ok"      : "ok",
+        })
+    else:
+        b=request.GET.get("barrette","")
+        return majElevesKwartz1(b)
+        
+def majElevesKwartz1(barrette):
+    """
+    sous-programme de la fonction majElevesKwartz
+    @param barrette un nom de barrette
+    @return une réponse JSON
+    """
     if barrette:
         b=Barrette.objects.get(nom=barrette)
         eleves=Etudiant.objects.filter(barrette=b)
@@ -1498,8 +1520,7 @@ def majElevesKwartz(request):
             "message" : "mise à jour impossible",
             "ok"      : "nok",
         })
-        
-        
+    
 def reinscription(request):
     """
     réinscrit un groupe d'élèves comme dans la période précédente

@@ -35,7 +35,6 @@ $( function() { // lancement après le chargement
 
 
 {% block contents %}
-<div id="dialog" style="display: none;"></div>
 {% if autorise %} <!-- accessible seulement aux profs d'AP et à l'admin -->
 {% if pourqui %}
   {% if user.is_superuser %}

@@ -46,3 +46,38 @@ function changebarrette(possibilites, active){
     });
 
 }
+
+/**
+ * met à jour l'annuaire au complet
+ **/
+function majAllAnnuaire(){
+    // vide le dialogue
+    $("#dialog").empty();
+    var p=$("<p>");
+    $("#dialog").append(p);
+    var wait=$("<div class='wait'><center><img alt='wait' src='/static/votes/img/Songbird_Icon_Spinner1.gif'style='position: fixed; top:40%;'/></center></div>")
+    $("body").append(wait);
+    $.get(
+	"/votes/majElevesKwartz?barrette=all",
+	function(data){
+	    $('#dialog').dialog({
+		"create": function( event, ui ) {p.text(data.message)},
+		autoOpen: true,
+		width: 550,
+		modal:true,
+		//height: 150,
+		closeOnEscape: true,
+		draggable: true,
+		title: "Mise à jour de l'annuaire",
+		buttons: {
+		    'OK': function () {
+			$('#dialog').dialog('close');
+		    }
+
+		}
+	    });
+	}
+    ).always(
+	function(){$(".wait").remove();}
+    );
+}

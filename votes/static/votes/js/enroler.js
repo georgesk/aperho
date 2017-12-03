@@ -3,6 +3,8 @@
  **/
 
 function enroler(){
+    var wait=$("<div class='wait'><center><img alt='wait' src='/static/votes/img/Songbird_Icon_Spinner1.gif'style='position: fixed; top:40%;'/></center></div>")
+    $("body").append(wait);
     var eleve=$("#eleve").val();
     var cours0val=$("#cours0").val();
     var cours1val=$("#cours1").val();
@@ -17,8 +19,8 @@ function enroler(){
     var url="/votes/enroleEleveCours"
     $.post(url,
 	   { cours: id0, cours2: id1, uid: uid, csrfmiddlewaretoken: csrf}
-	 ).done(function(data){
-	     console.log(data, data.msg);
+	  ).done(function(data){
+	      console.log(data, data.msg);
 	      $("#dialog").dialog({
 		  title: "Résultat",
 		  width: 400,
@@ -38,7 +40,11 @@ function enroler(){
 		      document.location=uri;
 		  },
 	      }).html(data.msg);
-	  }).fail(function(data){
-	      alert("Erreur : "+data.status+" "+data.statusText+" "+url);
-	  });
+	  }
+		).fail(function(data){
+		    alert("Erreur : "+data.status+" "+data.statusText+" "+url);
+		}
+		      ).always(
+			  function(){$(".wait").remove();}
+		      );
 }
