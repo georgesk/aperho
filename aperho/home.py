@@ -24,7 +24,7 @@ def dicoBarrette(request):
     bpu=barrettesPourUtilisateur(request.user)
     if len(bpu)==1: # une seule barrette, on la choisit
         request.session["barrette"]=bpu[0].nom
-        
+        barretteCourante=bpu[0].nom
         actionChangeBarrette="<!-- barrette unique -->"
     else: # plusieurs barrette, on voit si l'une d'entre elles a été demandée
         nomsBarrettes=[str(b.nom) for b in bpu]
