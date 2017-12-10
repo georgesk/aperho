@@ -172,8 +172,12 @@ def index(request):
             ouverte=od.estActive()
         else:
             ouverte=False
+        nbInscrits = sum(
+            [len(c.inscriptions) for c in cours if c.horaire==horaires[0]]
+        )
         context={
             "tousLesCours": tousLesCours,
+            "nbInscrits": nbInscrits,
             "horaires" : horaires,
             "etudiant" : etudiant,
             "cours_suivis" : cours_suivis,
