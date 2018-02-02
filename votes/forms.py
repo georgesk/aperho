@@ -28,6 +28,8 @@ class editeCoursForm(forms.Form):
     def __init__(self, *args, **kwargs ):
         self.isSuperUser=kwargs.pop("isSuperUser",False)
         forms.Form.__init__(self, *args, **kwargs)
+        if self.isSuperUser:
+            self.fields["capacite"].isSuperUser=self.isSuperUser
         return
     
     titre = forms.CharField(
@@ -48,7 +50,6 @@ class editeCoursForm(forms.Form):
     back=forms.CharField(max_length=80, widget=forms.HiddenInput())
     public_designe_initial=forms.BooleanField(required=False, widget=forms.HiddenInput())
     is_superuser=forms.BooleanField(required=False, widget=forms.HiddenInput())
-
     capacite = capaciteField()
 
 
