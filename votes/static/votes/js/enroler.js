@@ -6,7 +6,11 @@ function enroler(){
     var eleve=$("#eleve").val();
     var cours0val=$("#cours0").val();
     var cours1val=$("#cours1").val();
-    if (eleve=="" || cours0val=="" || cours1val=="") return;
+    var re=/.*(\d)h .*/;
+    var duree=0;
+    var match=re.exec(cours0val); if (match) duree+=parseInt(match[1]);
+     match=re.exec(cours1val); if (match) duree+=parseInt(match[1]);
+    if (eleve=="" || duree !=2) return;
     var wait=$("<div class='wait'><center><img alt='wait' src='/static/votes/img/Songbird_Icon_Spinner1.gif'style='position: fixed; top:40%;'/></center></div>")
     $("body").append(wait);
     var re = /^.*\((\S*)\)$/;
