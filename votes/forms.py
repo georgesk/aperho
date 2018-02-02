@@ -28,8 +28,6 @@ class editeCoursForm(forms.Form):
     def __init__(self, *args, **kwargs ):
         self.isSuperUser=kwargs.pop("isSuperUser",False)
         forms.Form.__init__(self, *args, **kwargs)
-        if self.isSuperUser:
-            self.fields["effectif_total"].isSuperUser=True
         return
     
     titre = forms.CharField(
@@ -51,28 +49,7 @@ class editeCoursForm(forms.Form):
     public_designe_initial=forms.BooleanField(required=False, widget=forms.HiddenInput())
     is_superuser=forms.BooleanField(required=False, widget=forms.HiddenInput())
 
-    effectif_total = capaciteField()
-    mix = forms.BooleanField(required=False)
-
-    nom_1 = forms.CharField(max_length=8, required=False)
-    actif_1 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_1 = forms.IntegerField(required=False)
-
-    nom_2 = forms.CharField(max_length=8, required=False)
-    actif_2 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_2 = forms.IntegerField(required=False)
-
-    nom_3 = forms.CharField(max_length=8, required=False)
-    actif_3 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_3 = forms.IntegerField(required=False)
-
-    nom_4 = forms.CharField(max_length=8, required=False)
-    actif_4 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_4 = forms.IntegerField(required=False)
-
-    nom_5 = forms.CharField(max_length=8, required=False)
-    actif_5 = forms.BooleanField(required=False, help_text="actif/inactif")
-    ventilation_5 = forms.IntegerField(required=False)
+    capacite = capaciteField()
 
 
     def clean(self):
@@ -80,18 +57,4 @@ class editeCoursForm(forms.Form):
         if cleaned_data["public_designe"] !=  cleaned_data["public_designe_initial"] and not cleaned_data["is_superuser"]:
             msg="Seul le gestionnaire du site peut modifier la critère de public désigné. Préparez une liste d'élèves et contactez-le."
             self.add_error("public_designe", msg)
-        ## vérification des saveurs
-        if not cleaned_data["mix"]:
-            ## si le cours est mixte évidemment il est inutile de chercher
-            ## à vérifier la ventilation
-            vent=[cleaned_data["ventilation_"+str(i)] or 0 for i in range(1,1+5)]
-            if sum(vent) != cleaned_data["effectif_total"]:
-                msg="La ventilation des effectifs était fausse : %s ≠ %d ; attention, elle a été modifiée automatiquement." % \
-                     (" + ".join([str(v) for v in vent]), cleaned_data["effectif_total"])
-                # on profite d'un champ caché pour mettre le message
-                # d'erreur à une place arbitraire
-                self.add_error("public_designe_initial", msg)
-            if min(vent) < 0:
-                msg="On ne peut pas utiliser des nombres négatifs : %s" % \
-                     ", ".join([str(v) for v in vent])
         return cleaned_data

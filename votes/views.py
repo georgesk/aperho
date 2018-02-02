@@ -20,7 +20,6 @@ from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
 from collections import OrderedDict
-from .saveurField import Ventilation, SaveurDictField
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
@@ -1263,20 +1262,7 @@ def editeCours(request):
                     ok=False
                     form.add_error("duree","Erreur : un cours de 2 heures doit commencer en début d'horaire")
             if ok: # à ce stade le cours lui-même est valide
-                cours.capacite=form.cleaned_data["effectif_total"]
-                cours.lessaveurs.effectif=form.cleaned_data["effectif_total"]
-                saveurs=dict()
-                if form.cleaned_data["mix"]:
-                    ## on veut tout mixer. Il suffit de saveurs par défaut
-                    cours.lessaveurs.saveurs=saveurs
-                else: ## le cours n'est pas mixte : on considère les saveurs
-                    for i in range(1,1+5):
-                        nom=form.cleaned_data.get("nom_"+str(i))
-                        actif=form.cleaned_data.get("actif_"+str(i))
-                        v=form.cleaned_data.get("ventilation_"+str(i)) or 0
-                        if not nom:  nom="_"+str(i)
-                        saveurs[nom]=Ventilation(actif,v)
-                    cours.lessaveurs.saveurs=saveurs
+                cours.capacite=form.cleaned_data["capacite"]
                 
                 if formationCourante.titre != form.cleaned_data["titre"] or \
                    formationCourante.contenu != form.cleaned_data["contenu"]:
@@ -1311,14 +1297,14 @@ def editeCours(request):
                             f=Formation.objects.get(pk=dc.formation_id)
                             total+=f.duree
                         assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
-                        if request.POST.get("v","1")=="2":
+                        if "v1" in request.POST:
                             # on a validé "Enregistrer pour tous les cours"
                             for dc in deuxCours:
                                 if dc != cours:
                                     dc.formation=formationCourante
                                     dc.save()
                         if total<2: # un seul cours, il faut un deuxième
-                            creeCoursParDefaut(cours.barrette, cours.ouverture, cours=cours)
+                            creeCoursParDefaut(cours.barrette.nom, cours.ouverture, cours=cours)
                     else:
                         # duree ==2 supprimer le deuxième cours éventuellement
                         deuxCours=list(Cours.objects.filter(enseignant=cours.enseignant, barrette=cours.barrette, ouverture=cours.ouverture))
@@ -1363,30 +1349,17 @@ def editeCours(request):
         prof=Enseignant.objects.get(pk=cours.enseignant_id)
         horaire=Horaire.objects.get(pk=cours.horaire_id)
         b=Barrette.objects.get(nom=request.session["barrette"])
-        saveurs=b.saveurs()
-        cours.migrateToSaveurs(nomSaveurs=saveurs)
         initial={
             "titre": formationCourante.titre,
             "contenu": formationCourante.contenuDecode,
             "duree": formationCourante.duree,
-            "effectif_total": cours.lessaveurs.effectif,
+            "capacite": cours.capacite,
             "public_designe": formationCourante.public_designe,
             "public_designe_initial": formationCourante.public_designe,
             "reponse": "ok",
             "back": back,
             "is_superuser": request.user.is_superuser,
         }
-        ## réglage des champs nom_i, actif_i et ventilation_i
-        for i in range(5):
-            nom=saveurs[i]
-            initial["nom_%s" %(i+1)] = nom
-            if nom.strip() and nom in cours.lessaveurs.saveurs:
-                vent=cours.lessaveurs.saveurs[nom]
-                initial["actif_%s" %(i+1)]=vent.actif
-                initial["ventilation_%s" %(i+1)]=vent.nombre
-            else:
-                initial["actif_%s" %(i+1)]=False
-                initial["ventilation_%s" %(i+1)]=0
 
         form = editeCoursForm(initial=initial)
         context={
@@ -1396,7 +1369,6 @@ def editeCours(request):
             "c_id": cours.id,
             "anciennesFormations": sorted(list(anciennesFormations), key = lambda f: f.titre),
             "estprof": estProfesseur(request.user),
-            "mixte": cours.lessaveurs.mixte,
         }
         context.update(dicoBarrette(request))
         return render(request, "editeCours.html", context)

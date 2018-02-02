@@ -4,8 +4,6 @@ from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
 import locale, json, re, urllib.parse
 
-from .saveurField import SaveurDictField, Ventilation
-
 class CoursOrientation(models.Model):
     """
     Définit une séance d'information par une conseillère d'orientation
@@ -141,19 +139,6 @@ class Barrette(models.Model):
 
     def __str__(self):
         return "Barrette : {}".format(self.nom)
-
-    def saveurs(self):
-        """
-        Détermine les saveurs possibles dans la barrette, c'est-à-dire
-        les filières comme 1es, 1l, 1s, 1stmg.
-        @return une liste en ordre alphabétique des saveurs ; exactement
-        cinq saveurs, quitte à compléter par des chaînes vides à la fin
-        """
-        saveurPattern=re.compile(r"(.*[a-zA-Z]+)[0-9]*")
-        result=set([saveurPattern.match(c).group(1) for c in json.loads(self.classesJSON)])
-        result = sorted(list(result))
-        while len(result) < 5: result.append("")
-        return result
 
     def addClasse(self, classe):
         """
@@ -391,29 +376,9 @@ class Cours(models.Model):
     ouverture  = models.ForeignKey('Ouverture')
     barrette   = models.ForeignKey('Barrette')
     invalide   = models.BooleanField(default=False)
-    lessaveurs = SaveurDictField(blank=True)
 
     def __str__(self):
-        return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.lessaveurs.effectif)
-
-    def migrateToSaveurs(self, nomSaveurs=None):
-        """
-        Une procédure pour migrer de l'usage du champ capacité vers
-        l'usage du champ lessaveurs qui est plus détaillé. Si self.capacite
-        est non-nul et que self.lessaveurs.effectif_total est nul, on recopie
-        l'un vers l'autre. Autrement, c'est self.lessaveurs qui commande.
-        @param nomSaveurs une liste de 5 noms de saveurs, ou None
-        """
-        if self.capacite and not self.lessaveurs.effectif :
-            self.lessaveurs.effectif=self.capacite
-            if nomSaveurs!=None:
-                assert(len(nomSaveurs)==5)
-                sav=dict()
-                for s in nomSaveurs:
-                    sav[s]=Ventilation(False,0)
-                self.lessaveurs.saveurs=sav
-            self.lessaveurs.ajusteEffectifs()
-        return
+        return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
 
     @property
     def estOuvert(self):

@@ -84,7 +84,14 @@ $(document).ready(function() {
 	  </label>
 	  {{form.duree}}
 	</div>
-	<div>
+	<div style="display: inline-block; width: 300px; margins: auto 0;">
+	  {% if form.capacite.errors %}{{ form.capacite.errors }}<br/>{% endif %}
+	  <label for="{{form.capacite.id_for_label}}">
+	    capacité (±18 élèves) :
+	  </label>
+	  {{form.capacite}}
+	</div>
+	<div style="display: inline-block; float:right;">
 	  {% if form.public_designe.errors %}{{ form.public_designe.errors }}<br/>{% endif %}
 	  <label for="{{form.public_designe.id_for_label}}">
 	    Public désigné :
@@ -94,58 +101,15 @@ $(document).ready(function() {
       </div>
       <div id="hiddenFields" style="display: none">
       <input type="hidden" name="c_id" id="c_id" value="{{c_id}}"/>
-      {{form.back}} {{form.is_superuser}}
-      {{form.nom_1}} {{form.nom_2}} {{form.nom_3}}
-      {{form.nom_4}} {{form.nom_5}}
-      <input type="hidden" name="v" id="v" value="1"/> <!-- 1: modif ce cours, 2: modif deux cours -->
+      {{form.back}} {{form.is_superuser}} {{form.public_designe_initial}}
       </div>
       {% csrf_token %}
     </td>
   </tr>
-  <tr class="fieldWrapper">
-    <td colspan="2">
-      {% if form.effectif_total.errors %}{{ form.effectif_total.errors }}<br/>{% endif %}
-      <label for="{{form.duree.id_for_label}}">
-	Effectif total (±18 élèves) :
-      </label>
-      {{form.effectif_total}}
-      <br/>
-      <label for="mix">
-	ouvert à toute filière : ( {{form.nom_1.value|default_if_none:""}} {{form.nom_2.value|default_if_none:""}} {{form.nom_3.value|default_if_none:""}} {{form.nom_4.value|default_if_none:""}} {{form.nom_5.value|default_if_none:""}} )
-      </label>
-      {{form.mix}}
-      <input type="hidden" id="mixte" value="{{mixte}}"/>
-      <br/>
-      <table id="saveurs" style="width: 100%; border: none">
-	<tr><th colspan="5">
-	    Ce cours limite le nombre d'élèves par filière : ci-dessous, la ventilation par filières<br/>
-	    {% if form.public_designe_initial.errors %}{{ form.public_designe_initial.errors }}<br/>{% endif %}
-	    {{form.public_designe_initial}}
-	</th></tr>
-	<tr>
-	  {% if form.nom_1.value %}<td>
-	    {{form.nom_1.value}} {{form.actif_1}} {{form.ventilation_1}}
-	  </td>{% endif %}
-	  {% if form.nom_2.value %}<td>
-	    {{form.nom_2.value}} {{form.actif_2}} {{form.ventilation_2}}
-	  </td>{% endif %}
-	  {% if form.nom_3.value %}<td>
-	    {{form.nom_3.value}} {{form.actif_3}} {{form.ventilation_3}}
-	  </td>{% endif %}
-	  {% if form.nom_4.value %}<td>
-	    {{form.nom_4.value}} {{form.actif_4}} {{form.ventilation_4}}
-	  </td>{% endif %}
-	  {% if form.nom_5.value %}<td>
-	    {{form.nom_5.value}} {{form.actif_5}} {{form.ventilation_5}}
-	  </td>{% endif %}
-	</tr>
-      </table>
-    </td>
-  </tr>
 </table>
-<input type="button" name="v1" value="Valider les modifications pour ce cours" style="margin: 1em;" onclick="submission(1)"/>
+<input type="submit" name="v1" value="Valider les modifications pour ce cours" style="margin: 1em;"/>
 ou ...
-<input type="button" name="v2" value="Valider les modifications pour tous les cours" style="margin: 1em;" onclick="submission(2)"/>
+<input type="submit" name="v2" value="Valider les modifications pour tous les cours" style="margin: 1em;"/>
 {{ form.non_field_errors }}
 </form>
 {% if anciennesFormations %}
