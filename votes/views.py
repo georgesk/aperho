@@ -1297,7 +1297,7 @@ def editeCours(request):
                             f=Formation.objects.get(pk=dc.formation_id)
                             total+=f.duree
                         assert total<=2, "Un enseignant doit faire un cours de 2 heures ou deux cours d'une heure"
-                        if "v1" in request.POST:
+                        if "v2" in request.POST:
                             # on a validé "Enregistrer pour tous les cours"
                             for dc in deuxCours:
                                 if dc != cours:
