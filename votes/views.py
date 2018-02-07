@@ -507,6 +507,7 @@ def addProfs(request):
         p.indir= b in p.indirects.all() # vrai si le prof a une inscription indirecte 
     profs=getProfsLibres(barretteCourante)
     context={
+        "barretteCourante": b.nom,
         "profs":  profs,
         "profsInscrits": profsInscrits,
     }
