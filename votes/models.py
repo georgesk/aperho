@@ -431,7 +431,7 @@ def etudiantsDeClasse(classeName):
     @return une liste de logins
     """
     cn='c'+classeName
-    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    base_dn = 'cn=Groups,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzGroup)(cn={0}))'.format(cn)
     connection.search(
         search_base = base_dn,
@@ -440,7 +440,7 @@ def etudiantsDeClasse(classeName):
         )
     if len(connection.response) > 0: # le groupe est connu.
         gidNumber=connection.response[0]["attributes"]['gidNumber'][0]
-        base_dn = 'ou=Users,dc=lycee,dc=jb'
+        base_dn = 'cn=Users,dc=lycee,dc=jb'
         filtre  = '(&(objectClass=kwartzAccount)(gidNumber={0}))'.format(gidNumber)
         connection.search(
             search_base = base_dn,
@@ -460,7 +460,7 @@ def classeCourante(etudiant):
     @param etudiant : un objet Etudiant
     """
     uid=etudiant.uidNumber
-    base_dn = 'ou=Users,dc=lycee,dc=jb'
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzAccount)(uidNumber={0}))'.format(uid)
     connection.search(
         search_base = base_dn,
@@ -469,7 +469,7 @@ def classeCourante(etudiant):
         )
     if len(connection.response) > 0: # l'élève est connu.
         gidNumber=connection.response[0]["attributes"]['gidNumber'][0]
-        base_dn = 'ou=Groups,dc=lycee,dc=jb'
+        base_dn = 'cn=Groups,dc=lycee,dc=jb'
         filtre  = '(&(objectClass=kwartzGroup)(gidNumber={0}))'.format(gidNumber)
         connection.search(
             search_base = base_dn,
@@ -498,24 +498,16 @@ def estProfesseur(user):
     nom=user.last_name
     prenom=user.first_name
     login=user.username
-    #### récupération du numéro du groupe des profs
-    base_dn = 'ou=Groups,dc=lycee,dc=jb'
-    filtre  = '(cn=profs)'
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["gidNumber" ]
-        )
-    gid=connection.response[0]['attributes']["gidNumber" ][0]
     #### d'abord, user est-il prof ?
-    base_dn = 'ou=Users,dc=lycee,dc=jb'
-    filtre  = '(&(objectClass=kwartzAccount)(gidNumber={0})(uid={1}))'.format(gid, login)
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzAccount)(cn={}))'.format(login)
     connection.search(
         search_base = base_dn,
         search_filter = filtre,
-        attributes=["uidNumber", "sn", "givenName" ]
+        attributes=["uidNumber", "sn", "givenName", "memberOf",]
         )
-    if len(connection.response) > 0: # on a affaire à un prof.
+    if "CN=profs,CN=Users,DC=lycee,DC=jb" in \
+       connection.response[0]["attributes"]["memberOf"]: # c'est un prof.
         if len(Enseignant.objects.filter(nom=nom, prenom=prenom))==0:
             result="prof"
         else:

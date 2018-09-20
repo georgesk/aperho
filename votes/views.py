@@ -40,7 +40,7 @@ def lesClasses():
     Renvoie les classes connues par l'annuaire LDAP
     @return une liste de noms de classes, sans le préfixe "c"
     """
-    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    base_dn = 'cn=Groups,dc=lycee,dc=jb'
     filtre  = '(cn=c*)'
     connection.search(
         search_base = base_dn,
@@ -182,7 +182,7 @@ def inscritClasse(gid, barrette, cn=""):
     eleves=[]
     if cn:
         ### récupération du groupe de la classe
-        base_dn = 'ou=Groups,dc=lycee,dc=jb'
+        base_dn = 'cn=Groups,dc=lycee,dc=jb'
         filtre  = '(cn=c{})'.format(cn)
         connection.search(
             search_base = base_dn,
@@ -193,7 +193,7 @@ def inscritClasse(gid, barrette, cn=""):
             gid=nomClasse(entry['attributes']['gidNumber'][0])
     else:
         ### récupération du nom de la classe
-        base_dn = 'ou=Groups,dc=lycee,dc=jb'
+        base_dn = 'cn=Groups,dc=lycee,dc=jb'
         filtre  = '(gidNumber={})'.format(gid)
         connection.search(
             search_base = base_dn,
@@ -205,7 +205,7 @@ def inscritClasse(gid, barrette, cn=""):
     ## à ce stade, cn est un nom de classe dans l'annuaire LDAP et
     ## gid est le numéro du groupe dans la base LDAP
     ## récupération des élèves inscrits dans la classe
-    base_dn = 'ou=Users,dc=lycee,dc=jb'
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
     # recherche des membres de la classe avec gidNumber==gid
     connection.search(
@@ -253,7 +253,7 @@ def addEleves(request):
                 eleves+=nouveaux
                 b.addClasse(nouveaux[0].classe)
         eleves.sort(key=lambda e: "{classe} {nom} {prenom}".format(classe=e.classe, nom=e.nom, prenom=e.prenom))
-    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    base_dn = 'cn=Groups,dc=lycee,dc=jb'
     filtre = '(&(cn=c*)(!(cn=*smbadm))(objectclass=kwartzGroup))'
     connection.search(
         search_base = base_dn,
@@ -300,7 +300,7 @@ def getProfsLibres(barrette):
     barrette
     @param barrette un nom de barrette
     """
-    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    base_dn = 'cn=Groups,dc=lycee,dc=jb'
     filtre  = '(cn=profs)'
     connection.search(
         search_base = base_dn,
@@ -309,7 +309,7 @@ def getProfsLibres(barrette):
         )
     gid=connection.response[0]['attributes']["gidNumber" ][0]
     profs=[]
-    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    base_dn = 'cn=Groups,dc=lycee,dc=jb'
     filtre  = '(gidNumber={})'.format(gid)
     connection.search(
         search_base = base_dn,
@@ -319,7 +319,7 @@ def getProfsLibres(barrette):
     for entry in connection.response:
         cn=nomClasse(entry['attributes']['cn'][0])
     ### récupération des profs
-    base_dn = 'ou=Users,dc=lycee,dc=jb'
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
     connection.search(
         search_base = base_dn,
@@ -350,7 +350,7 @@ def getProfs(uids):
     """
     récupère une liste de profs étant donné la liste de leurs uids
     """
-    base_dn = 'ou=Groups,dc=lycee,dc=jb'
+    base_dn = 'cn=Groups,dc=lycee,dc=jb'
     filtre  = '(cn=profs)'
     connection.search(
         search_base = base_dn,
@@ -359,7 +359,7 @@ def getProfs(uids):
         )
     gid=connection.response[0]['attributes']["gidNumber" ][0]
     profs=[]
-    base_dn = 'ou=Users,dc=lycee,dc=jb'
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzAccount)(gidNumber={gid})(|{uids}))'.format(
         gid=gid,
         uids=" ".join(["(uidNumber={})".format(uid) for uid in uids]),
