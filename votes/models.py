@@ -506,8 +506,9 @@ def estProfesseur(user):
         search_filter = filtre,
         attributes=["uidNumber", "sn", "givenName", "memberOf",]
         )
-    if "CN=profs,CN=Users,DC=lycee,DC=jb" in \
-       connection.response[0]["attributes"]["memberOf"]: # c'est un prof.
+    if len(connection.response) > 0 and \
+          "CN=profs,CN=Users,DC=lycee,DC=jb" in \
+          connection.response[0]["attributes"]["memberOf"]: # c'est un prof.
         if len(Enseignant.objects.filter(nom=nom, prenom=prenom))==0:
             result="prof"
         else:
