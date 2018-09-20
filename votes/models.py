@@ -512,6 +512,7 @@ def estProfesseur(user):
             result="prof"
         else:
             result="profAP"
+    #### par défaut : ce n'est pas un prof
     return result
 
 def barrettesPourUtilisateur(user):
