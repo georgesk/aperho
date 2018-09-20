@@ -40,8 +40,8 @@ def lesClasses():
     Renvoie les classes connues par l'annuaire LDAP
     @return une liste de noms de classes, sans le préfixe "c"
     """
-    base_dn = 'cn=Groups,dc=lycee,dc=jb'
-    filtre  = '(cn=c*)'
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzGroup)(cn=c*))'
     connection.search(
         search_base = base_dn,
         search_filter = filtre,
