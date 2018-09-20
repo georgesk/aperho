@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 from ldap3 import Server, Connection
 import django_python3_ldap.utils
+import configparser
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -135,9 +136,18 @@ STATIC_URL = '/static/'
 # LDAP connection
 server=None
 connexion=None
+config = configparser.ConfigParser()
+config.read("aperho/credentials")
+
 try:
     server = Server('localhost', port=1389)
-    connection = Connection(server)
+    connection = Connection(
+        server,
+        user=config["DEFAULT"]["user"],
+        password=config["DEFAULT"]["password"],
+        check_names=True,
+        raise_exceptions=True
+    )
     connection.bind()
 except Exception as e:
     print("Service LDAP indisponible sur le port 1389 !!!")
@@ -148,7 +158,7 @@ except Exception as e:
 LDAP_AUTH_URL = "ldap://localhost:1389"
 
 # The LDAP search base for looking up users.
-LDAP_AUTH_SEARCH_BASE = "ou=Users,dc=lycee,dc=jb"
+LDAP_AUTH_SEARCH_BASE = "cn=Users,dc=lycee,dc=jb"
 
 # The LDAP class that represents a user.
 LDAP_AUTH_OBJECT_CLASS = "kwartzAccount"
@@ -156,7 +166,7 @@ LDAP_AUTH_OBJECT_CLASS = "kwartzAccount"
 # User model fields mapped to the LDAP
 # attributes that represent them.
 LDAP_AUTH_USER_FIELDS = {
-    "username": "uid",
+    "username": "cn",
     "first_name": "givenName",
     "last_name": "sn",
     "email": "mail",
