@@ -1,8 +1,6 @@
 ## Fonctions qui interacissent avec l'annuaire LDAP de Kwartz
 
 from collections import OrderedDict
-from django.shortcuts import render
-from django.http import JsonResponse
 
 from aperho.settings import connection
 
@@ -145,12 +143,12 @@ def inscritClasse(gid, barrette, cn=""):
         eleves.append(e)
     return eleves
     
-def addEleves(request):
+def addElevesLdap(request):
     """
-    Une page pour ajouter des élèves à une barrette d'AP
+    renvoie un contexte pour afficher la page addEleves
+    @return un contexte pour la fonction render
     """
     from .models import Barrette, Etudiant
-    from aperho.home import dicoBarrette
 
     eleves=[]
     wantedClasses = request.POST.getlist("classes")
@@ -202,13 +200,11 @@ def addEleves(request):
             'classe': nom,
         })
     classes=sorted(classes, key=lambda d: d["classe"])
-    context={
+    return {
         "classes": classes,
         "eleves":  eleves,
         "classesDansDb" : classesDansDb,
     }
-    context.update(dicoBarrette(request))
-    return render(request, "addEleves.html", context)
 
 def getProfsLibres(barrette):
     """
@@ -247,9 +243,10 @@ def getProfsLibres(barrette):
     profs.sort(key=lambda e: "{nom} {prenom}".format(**e))
     return profs
 
-def addUnProf(request):
+def addUnProfLdap(request):
     """
-    fonction de rappel pour inscrire un prof
+    fonction de rappel pour inscrire un prof, avec le LDAP Kwartz
+    @return un tuple message, ok
     """
     from .models import Enseignant, Barrette
     
@@ -298,8 +295,5 @@ def addUnProf(request):
     else:
         message="Le professeur n'a pas été trouvé"
         ok="ko"
-    return JsonResponse({
-        "message" : message,
-        "ok"      : ok,
-    })
+    return message, ok
 

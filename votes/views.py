@@ -19,8 +19,8 @@ from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
-from .kwartzLdap import lesClasses, inscritClasse, addEleves, getProfsLibres,\
-    addUnProf
+from .kwartzLdap import lesClasses, inscritClasse, addElevesLdap, \
+    getProfsLibres, addUnProfLdap
 
 from collections import OrderedDict
 
@@ -1287,3 +1287,24 @@ def reinscription(request):
         "message" : "Réinscription terminée ({} élèves)".format(len(inscriptions)),
         "ok"      : "ok",
     })
+
+def addUnProf(request):
+    """
+    fonction de rappel pour inscrire un prof
+    @return une réponse JSON
+    """
+
+    message, ok = addUnProfLdap(request)
+    return JsonResponse({
+        "message" : message,
+        "ok"      : ok,
+    })
+
+def addEleves(request):
+    """
+    Une page pour ajouter des élèves à une barrette d'AP
+    """
+    context=addElevesLdap(request)
+    context.update(dicoBarrette(request))
+    return render(request, "addEleves.html", context)
+    
