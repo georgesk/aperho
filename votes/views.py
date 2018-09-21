@@ -19,50 +19,13 @@ from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
+from .kwartzLdap import lesClasses
+
 from collections import OrderedDict
 
 def index(request):
     return HttpResponse("Hello, voici l'index des votes.")
 
-
-def nomClasse(s):
-	"""
-	Correction des noms des classes ;
-	dans notre annuaire, toutes les classes sont préfixées par "c"
-	"""
-	if s[0]=="c":
-		return s[1:]
-	else:
-		return s
-
-def lesClasses():
-    """
-    Renvoie les classes connues par l'annuaire LDAP
-    @return une liste de noms de classes, sans le préfixe "c"
-    """
-    base_dn = 'cn=Users,dc=lycee,dc=jb'
-    filtre  = '(&(objectClass=kwartzGroup)(cn=c*))'
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["cn" ]
-    )
-    classes=[entry['attributes']['cn'] for entry in connection.response]
-    print("GRRRR", classes)
-    classes=[nomClasse(c) for c in classes if classeValide(c)]
-    return classes
-
-def classeValide(c):
-    """
-    décide si un nom de classe peut effectivement servir à des élèves
-    @param c nom de classe
-    @return un booléen
-    """
-    notclasses=[ 'cdtower', 'cuisine',  'college', 'cdi' ]
-    return c not in notclasses and \
-        "c"+c not in notclasses and \
-        'smbadm' not in c and \
-        'test' not in c
 
 def cop (request):
     """

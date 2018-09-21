@@ -4,6 +4,8 @@ from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
 import locale, json, re, urllib.parse
 
+from .kwartzLdap import estProfesseur
+
 class CoursOrientation(models.Model):
     """
     Définit une séance d'information par une conseillère d'orientation
@@ -484,37 +486,6 @@ def classeCourante(etudiant):
         return None
     
     
-
-def estProfesseur(user):
-    """
-    Vérifie si un utilisateur (au sens ldap) est un professeur
-    de la table Enseignant
-    @param user un objet django de type User
-    @return un statut: "non", "prof" ou "profAP", selon que c'est un
-    non-enseignant, un enseignant extérieur à l'AP, ou un prof de la table
-    Enseignant.
-    """
-    result="non"
-    nom=user.last_name
-    prenom=user.first_name
-    login=user.username
-    #### d'abord, user est-il prof ?
-    base_dn = 'cn=Users,dc=lycee,dc=jb'
-    filtre  = '(&(objectClass=kwartzAccount)(cn={}))'.format(login)
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["uidNumber", "sn", "givenName", "memberOf",]
-        )
-    if len(connection.response) > 0 and \
-          "CN=profs,CN=Users,DC=lycee,DC=jb" in \
-          connection.response[0]["attributes"]["memberOf"]: # c'est un prof.
-        if len(Enseignant.objects.filter(nom=nom, prenom=prenom))==0:
-            result="prof"
-        else:
-            result="profAP"
-    #### par défaut : ce n'est pas un prof
-    return result
 
 def barrettesPourUtilisateur(user):
     """
