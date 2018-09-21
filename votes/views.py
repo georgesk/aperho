@@ -10,7 +10,6 @@ from django.core.exceptions import ObjectDoesNotExist
 
 import json, re
 
-from aperho.settings import connection
 from aperho.home import dicoBarrette
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, \
@@ -131,40 +130,6 @@ def cop (request):
     }
     context.update(dicoBarrette(request))
     return render(request, "cop.html", context)
-
-def getProfs(uids):
-    """
-    récupère une liste de profs étant donné la liste de leurs uids
-    """
-    base_dn = 'cn=Groups,dc=lycee,dc=jb'
-    filtre  = '(cn=profs)'
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["gidNumber" ]
-        )
-    gid=connection.response[0]['attributes']["gidNumber" ][0]
-    profs=[]
-    base_dn = 'cn=Users,dc=lycee,dc=jb'
-    filtre  = '(&(objectClass=kwartzAccount)(gidNumber={gid})(|{uids}))'.format(
-        gid=gid,
-        uids=" ".join(["(uidNumber={})".format(uid) for uid in uids]),
-    )
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["uidNumber", "sn", "givenName" ]
-    )
-    for entry in connection.response:
-        profs.append(
-            {
-                "uid":entry['attributes']['uidNumber'][0],
-                "nom":entry['attributes']['sn'][0],
-                "prenom":entry['attributes']['givenName'][0],
-            }
-        )
-    profs.sort(key=lambda e: "{nom} {prenom}".format(**e))
-    return profs
 
 def changeSalle(request):
     """
