@@ -328,4 +328,3 @@ def etudiantsDeClasse(classeName):
         return result
     else: # le groupe est inconnu.
         return []
-    

@@ -425,37 +425,6 @@ class Inscription(models.Model):
     def __str__(self):
         return "{} {}".format(self.etudiant, self.cours)
 
-def classeCourante(etudiant):
-    """
-    renvoie la classe d'un étudiant, selon Kwartz
-    @param etudiant : un objet Etudiant
-    """
-    uid=etudiant.uidNumber
-    base_dn = 'cn=Users,dc=lycee,dc=jb'
-    filtre  = '(&(objectClass=kwartzAccount)(uidNumber={0}))'.format(uid)
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["gidNumber"]
-        )
-    if len(connection.response) > 0: # l'élève est connu.
-        gidNumber=connection.response[0]["attributes"]['gidNumber'][0]
-        base_dn = 'cn=Groups,dc=lycee,dc=jb'
-        filtre  = '(&(objectClass=kwartzGroup)(gidNumber={0}))'.format(gidNumber)
-        connection.search(
-            search_base = base_dn,
-            search_filter = filtre,
-            attributes=["cn"]
-            )
-        if len(connection.response) > 0: # le groupe est connu.
-            return connection.response[0]["attributes"]["cn"][0]
-        else: # le groupe est inconnu.
-            return None
-    else: # l'élève est inconnu.
-        return None
-    
-    
-
 def barrettesPourUtilisateur(user):
     """
     Trouve la liste des barrettes qui correspondent à un utilisateur donné
