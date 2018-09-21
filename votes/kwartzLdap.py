@@ -1,5 +1,8 @@
 ## Fonctions qui interacissent avec l'annuaire LDAP de Kwartz
 
+from collections import OrderedDict
+from django.shortcuts import render
+
 from aperho.settings import connection
 
 def estProfesseur(user):
@@ -70,4 +73,139 @@ def nomClasse(s):
 		return s[1:]
 	else:
 		return s
+
+def inscritClasse(gid, barrette, cn=""):
+    """
+    Interroge l'annuaire et inscrit les élèves d'une classe dans la BD.
+    Remarque : un élève ne peut être inscrit qu'une seule fois dans la BDD
+    à cause de la contrainte UNIQUE pour votes_etudiant.uidNumber
+    @param gid l'identifiant d'une classe dans l'annuaire LDAP
+    @param barrette une instance de Barrette
+    @param cn un nom de classe (sans le "c" initial), qui prend
+    la précédence sur gid quand il est donné
+    @return une liste d'instance d'Etudiant
+    """
+    from .models import Etudiant
+    
+    eleves=[]
+    if cn:
+        ### récupération du groupe de la classe
+        base_dn = 'cn=Users,dc=lycee,dc=jb'
+        filtre  = '(&(cn=c{})(objectClass=kwartzGroup))'.format(cn)
+        connection.search(
+            search_base = base_dn,
+            search_filter = filtre,
+            attributes=["gidNumber" ]
+            )
+        for entry in connection.response:
+            gid=nomClasse(entry['attributes']['gidNumber'])
+    else:
+        ### récupération du nom de la classe
+        base_dn = 'cn=Users,dc=lycee,dc=jb'
+        filtre  = '(&(gidNumber={})(objectClass=kwartzGroup))'.format(gid)
+        connection.search(
+            search_base = base_dn,
+            search_filter = filtre,
+            attributes=["cn" ]
+            )
+        for entry in connection.response:
+            cn=nomClasse(entry['attributes']['cn'])
+    ## à ce stade, cn est un nom de classe dans l'annuaire LDAP et
+    ## gid est le numéro du groupe dans la base LDAP
+    ## récupération des élèves inscrits dans la classe
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
+    # recherche des membres de la classe avec gidNumber==gid, avec leurs
+    # noms et prénoms, et identifiants
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes=["uidNumber", "sn", "givenName", "cn" ]
+        )
+    for entry in connection.response:
+        # si un élève est déjà dans la BDD, mais avec une barrette
+        # ou une classe autres, on change classe et barrette.
+        aChanger=Etudiant.objects.filter(uidNumber=entry['attributes']['uidNumber'])
+        for e in aChanger: # en fait il y en a zéro ou un
+            if e.classe!=cn or e.barrette!=barrette:
+                e.classe=cn
+                e.barrette=barrette
+                e.save()
+        # finalement on ramène l'élève de la base de données avec les
+        # bons attributs
+        e,status=Etudiant.objects.get_or_create(
+            uidNumber=entry['attributes']['uidNumber'],
+            uid=entry['attributes']['cn'],
+            nom=entry['attributes']['sn'],
+            prenom=entry['attributes']['givenName'],
+            classe=cn,
+            barrette=barrette,
+        )
+        eleves.append(e)
+    return eleves
+    
+def addEleves(request):
+    """
+    Une page pour ajouter des élèves à une barrette d'AP
+    """
+    from .models import Barrette, Etudiant
+    from aperho.home import dicoBarrette
+
+    eleves=[]
+    wantedClasses = request.POST.getlist("classes")
+    barrette = request.POST.get("barrette")
+    if not barrette:
+        barrette=request.session.get("barrette")
+    ######################################
+    # affichage des élèves ajoutés
+    ######################################
+    if wantedClasses:
+        for gid in wantedClasses:
+            b=Barrette.objects.get(nom=barrette)
+            nouveaux=inscritClasse(gid,b)
+            if nouveaux:
+                eleves+=nouveaux
+                b.addClasse(nouveaux[0].classe)
+        eleves.sort(key=lambda e: "{classe} {nom} {prenom}".format(classe=e.classe, nom=e.nom, prenom=e.prenom))
+    #### le cas où wantedClasses est non-nul est traité.
+    ### Liste des classes déjà connues dans la base de données
+    barrette=request.session.get("barrette")
+    b=Barrette.objects.get(nom=barrette)
+    etudiants=list(Etudiant.objects.filter(barrette=b))
+    classesDansDb=OrderedDict()
+    for e in etudiants:
+        nom=nomClasse(e.classe)
+        if nom in classesDansDb:
+            classesDansDb[nom].append("%s %s" %(e.nom,e.prenom))
+        else:
+            classesDansDb[nom]=["%s %s" %(e.nom,e.prenom)]
+    sortedClasses=sorted(list(classesDansDb.keys()))
+    classesDansDb=OrderedDict(("%s (%s)" %(key,len(classesDansDb[key])), ", ".join(sorted(classesDansDb[key]))) for key in sortedClasses)
+
+    classes=[]
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
+    filtre = '(&(cn=c*)(!(cn=*smbadm))(objectclass=kwartzGroup))'
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes = ['cn', 'gidNumber'],
+    )
+    for entry in connection.response:
+        nom=nomClasse(entry['attributes']['cn'])
+        if nom in classesDansDb.keys() or not classeValide(nom):
+            # ne pas mettre les classes déjà présentes dans la barrette
+            # ni les noms contenant "test", "cuisine", etc.
+            continue
+        classes.append({
+            'gid':entry['attributes']['gidNumber'],
+            'classe': nom,
+        })
+    classes=sorted(classes, key=lambda d: d["classe"])
+    context={
+        "classes": classes,
+        "eleves":  eleves,
+        "classesDansDb" : classesDansDb,
+    }
+    context.update(dicoBarrette(request))
+    return render(request, "addEleves.html", context)
 
