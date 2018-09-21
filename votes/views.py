@@ -1270,5 +1270,6 @@ def addEleves(request):
     """
     context=addElevesLdap(request)
     context.update(dicoBarrette(request))
+    context["barretteCourante"]=request.session.get("barrette")
     return render(request, "addEleves.html", context)
     
