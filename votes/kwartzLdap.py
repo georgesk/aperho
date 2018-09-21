@@ -238,7 +238,7 @@ def getProfsLibres(barrette):
                         "uid": entry['attributes']['cn'],
                         "nom": entry['attributes']['sn'],
                         "prenom": entry['attributes']['givenName'],
-                        "username": entry['attributes']['uid'],
+                        "username": entry['attributes']['cn'],
                     }
                 )
             except:
