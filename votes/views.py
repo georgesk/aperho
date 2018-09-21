@@ -19,7 +19,8 @@ from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
-from .kwartzLdap import lesClasses, inscritClasse, addEleves, getProfsLibres
+from .kwartzLdap import lesClasses, inscritClasse, addEleves, getProfsLibres,\
+    addUnProf
 
 from collections import OrderedDict
 
@@ -200,60 +201,6 @@ def changeSalle(request):
         "ok"      : ok,
     })
             
-def addUnProf(request):
-    """
-    fonction de rappel pour inscrire un prof
-    """
-    ok="ok"
-    prof=request.POST.get("prof")
-    salle=request.POST.get("salle")
-    matiere=request.POST.get("matiere")
-    barrette=request.POST.get("barrette")
-    libres=getProfsLibres(barrette)
-    trouve=[p for p in libres if "{nom} {prenom}".format(**p) == prof]
-    if trouve:
-        prof=trouve[0]
-        try:
-            enseignant=Enseignant.objects.filter(
-                nom=prof["nom"],
-                prenom=prof["prenom"],
-                username=prof["username"],
-            ).first()
-            if enseignant:
-                if enseignant.salle!=salle or enseignant.matiere!=matiere:
-                    enseignant.salle=salle
-                    enseignant.matiere=matiere
-                    enseignant.save()
-            else:
-                enseignant=Enseignant(
-                    uid=prof["uid"],
-                    nom=prof["nom"],
-                    prenom=prof["prenom"],
-                    username=prof["username"],
-                    salle=salle,
-                    matiere=matiere,
-                )
-                enseignant.save()
-
-            # b__in fait référence au champ "barrettes" du prof
-            bb=[b.nom for b in list(Barrette.objects.filter(b__in=[enseignant.pk]))]
-            if barrette in bb:
-                pass # pas besoin d'ajouter la barrette pour cet enseignant
-            else:
-                b=Barrette.objects.get(nom=barrette)
-                enseignant.barrettes.add(b)
-            message="%s est enregistré(e)" %prof
-        except Exception as e:
-            message="Erreur %s" %e
-            ok="ko"
-    else:
-        message="Le professeur n'a pas été trouvé"
-        ok="ko"
-    return JsonResponse({
-        "message" : message,
-        "ok"      : ok,
-    })
-
 def delProfBarrette(request):
     """
     Détache un prof d'une barrette
