@@ -47,8 +47,8 @@ def lesClasses():
         search_filter = filtre,
         attributes=["cn" ]
     )
-    classes=[entry['attributes']['cn'][0] for entry in connection.response]
-    notclasses=[ 'cdtower', 'cuisine',  'college' ]
+    classes=[entry['attributes']['cn'] for entry in connection.response]
+    print("GRRRR", classes)
     classes=[nomClasse(c) for c in classes if classeValide(c)]
     return classes
 
@@ -58,7 +58,7 @@ def classeValide(c):
     @param c nom de classe
     @return un booléen
     """
-    notclasses=[ 'cdtower', 'cuisine',  'college' ]
+    notclasses=[ 'cdtower', 'cuisine',  'college', 'cdi' ]
     return c not in notclasses and \
         "c"+c not in notclasses and \
         'smbadm' not in c and \
