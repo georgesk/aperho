@@ -1,4 +1,4 @@
-## Fonctions qui interacissent avec l'annuaire LDAP de Kwartz
+## Fonctions qui interagissent avec l'annuaire LDAP de Kwartz
 
 from collections import OrderedDict
 
