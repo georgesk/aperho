@@ -100,7 +100,7 @@ def index(request):
         if request.user.is_superuser or "profAP"==estProfesseur(request.user):
             cours=[c for c in cours if c.estRecent]
         else:
-            cours=[c for c in cours if c.estOuvert]
+            cours=[c for c in cours if c.estVisibleAuxEleves]
         coursAchanger=coursAModifier(request, cours)
         capacite={} # tableau heure -> nombre d'élèves accueillis
         heures=[h.hm for h in Horaire.objects.filter(barrette__nom=barretteCourante)]

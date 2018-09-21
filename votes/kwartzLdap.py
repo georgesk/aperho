@@ -13,6 +13,8 @@ def estProfesseur(user):
     non-enseignant, un enseignant extérieur à l'AP, ou un prof de la table
     Enseignant.
     """
+    from .models import Enseignant
+    
     result="non"
     nom=user.last_name
     prenom=user.first_name

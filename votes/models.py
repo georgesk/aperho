@@ -2,6 +2,7 @@
 from django.db import models
 from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
+from datetime import timedelta
 import locale, json, re, urllib.parse
 
 from .kwartzLdap import estProfesseur, etudiantsDeClasse
@@ -180,11 +181,22 @@ class Ouverture(models.Model):
     nom_session = models.CharField(max_length=50, default="Toussaint", unique="True")
     
     def __str__(self):
-        return "INSCRIPTIONS « {} » : {} ↦ {}".format(
-            self.nom_session,
-            self.debut.strftime("%d/%m"),
-            self.fin.strftime("%d/%m"),
-        )
+        return """\
+INSCRIPTIONS « {0} » : {1} ↦ {2}<br/>Visible par les élèves dès le : {3}""".format(
+    self.nom_session,
+    self.debut.strftime("%d/%m"),
+    self.fin.strftime("%d/%m"),
+    self.visibleDesLe.strftime("%d/%m")
+)
+
+    @property
+    def anticipation(self):
+        """
+        Définit combien de temps à l'avance les élèves peuvent voir les
+        cours avant de "voter".
+        @return un objet datetime.timedelta
+        """
+        return timedelta(weeks=1) # les élèves voient une semaine avant
     
     @property
     def abrege(self):
@@ -200,6 +212,22 @@ class Ouverture(models.Model):
         """
         now = timezone.now()
         return self.debut <= now <= self.fin
+    
+    def estVisibleAuxEleves(self):
+        """
+        décide si un objet "ouverture" doit être visible par les élèves
+        lors de de l'invocation de la méthode.
+        @return vrai ou faux
+        """
+        now = timezone.now()
+        return self.visibleDesLe <= now <= self.fin
+
+    @property
+    def visibleDesLe(self):
+        """
+        Renvoie la date « visible dès le ... » pour les élèves
+        """
+        return self.debut-self.anticipation
     
     def estRecente(self):
         """
@@ -389,6 +417,15 @@ class Cours(models.Model):
         @return vrai ou faux
         """
         return self.ouverture.estActive()
+
+    @property
+    def estVisibleAuxEleves(self):
+        """
+        Dit si l'inscription au cours est visible par les élèves
+        @return vrai ou faux
+        """
+        print("GRRRR", self, self.ouverture.estVisibleAuxEleves())
+        return self.ouverture.estVisibleAuxEleves()
 
     @property
     def n(self):
