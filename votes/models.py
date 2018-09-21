@@ -4,7 +4,7 @@ from aperho.settings import connection, LANGUAGE_CODE
 from django.utils import timezone
 import locale, json, re, urllib.parse
 
-from .kwartzLdap import estProfesseur
+from .kwartzLdap import estProfesseur, etudiantsDeClasse
 
 class CoursOrientation(models.Model):
     """
@@ -425,37 +425,6 @@ class Inscription(models.Model):
     def __str__(self):
         return "{} {}".format(self.etudiant, self.cours)
 
-def etudiantsDeClasse(classeName):
-    """
-    renvoie une liste d'étudiants dont le groupe primaire correspond à
-    une classe, par leur login
-    @param classeName un nom de classe sans le 'c' initial
-    @return une liste de logins
-    """
-    cn='c'+classeName
-    base_dn = 'cn=Groups,dc=lycee,dc=jb'
-    filtre  = '(&(objectClass=kwartzGroup)(cn={0}))'.format(cn)
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["gidNumber"]
-        )
-    if len(connection.response) > 0: # le groupe est connu.
-        gidNumber=connection.response[0]["attributes"]['gidNumber'][0]
-        base_dn = 'cn=Users,dc=lycee,dc=jb'
-        filtre  = '(&(objectClass=kwartzAccount)(gidNumber={0}))'.format(gidNumber)
-        connection.search(
-            search_base = base_dn,
-            search_filter = filtre,
-            attributes=["cn"]
-            )
-        result=[]
-        for r in connection.response:
-            result.append(r["attributes"]['cn'][0])
-        return result
-    else: # le groupe est inconnu.
-        return []
-    
 def classeCourante(etudiant):
     """
     renvoie la classe d'un étudiant, selon Kwartz

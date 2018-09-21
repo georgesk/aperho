@@ -85,7 +85,8 @@ def inscritClasse(gid, barrette, cn=""):
     @return une liste d'instance d'Etudiant
     """
     from .models import Etudiant
-    
+
+    print("GRRRR entrée dans inscritClasse ; gid, barrette, cn=", gid, barrette, cn)
     eleves=[]
     if cn:
         ### récupération du groupe de la classe
@@ -97,7 +98,7 @@ def inscritClasse(gid, barrette, cn=""):
             attributes=["gidNumber" ]
             )
         for entry in connection.response:
-            gid=nomClasse(entry['attributes']['gidNumber'])
+            gid=entry['attributes']['gidNumber']
     else:
         ### récupération du nom de la classe
         base_dn = 'cn=Users,dc=lycee,dc=jb'
@@ -297,3 +298,34 @@ def addUnProfLdap(request):
         ok="ko"
     return message, ok
 
+def etudiantsDeClasse(classeName):
+    """
+    renvoie une liste d'étudiants dont le groupe primaire correspond à
+    une classe, par leur login
+    @param classeName un nom de classe sans le 'c' initial
+    @return une liste de logins
+    """
+    cn='c'+classeName
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzGroup)(cn={0}))'.format(cn)
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes=["gidNumber"]
+        )
+    if len(connection.response) > 0: # le groupe est connu.
+        gidNumber=connection.response[0]["attributes"]['gidNumber']
+        base_dn = 'cn=Users,dc=lycee,dc=jb'
+        filtre  = '(&(objectClass=kwartzAccount)(gidNumber={0}))'.format(gidNumber)
+        connection.search(
+            search_base = base_dn,
+            search_filter = filtre,
+            attributes=["cn"]
+            )
+        result=[]
+        for r in connection.response:
+            result.append(r["attributes"]['cn'])
+        return result
+    else: # le groupe est inconnu.
+        return []
+    

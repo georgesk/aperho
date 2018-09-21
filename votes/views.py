@@ -14,12 +14,12 @@ from aperho.home import dicoBarrette
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, \
     InscriptionOrientation, CoursOrientation, Cop, Horaire, Barrette, \
-    classeCourante, etudiantsDeClasse
+    classeCourante
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
 from .kwartzLdap import lesClasses, inscritClasse, addElevesLdap, \
-    getProfsLibres, addUnProfLdap
+    getProfsLibres, addUnProfLdap, etudiantsDeClasse
 
 from collections import OrderedDict
 
