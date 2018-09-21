@@ -19,7 +19,7 @@ from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
-from .kwartzLdap import lesClasses, inscritClasse, addEleves
+from .kwartzLdap import lesClasses, inscritClasse, addEleves, getProfsLibres
 
 from collections import OrderedDict
 
@@ -130,58 +130,6 @@ def cop (request):
     }
     context.update(dicoBarrette(request))
     return render(request, "cop.html", context)
-
-def getProfsLibres(barrette):
-    """
-    fait la liste de tous les profs de l'annuaire et absents de la
-    barrette
-    @param barrette un nom de barrette
-    """
-    base_dn = 'cn=Groups,dc=lycee,dc=jb'
-    filtre  = '(cn=profs)'
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["gidNumber" ]
-        )
-    gid=connection.response[0]['attributes']["gidNumber" ][0]
-    profs=[]
-    base_dn = 'cn=Groups,dc=lycee,dc=jb'
-    filtre  = '(gidNumber={})'.format(gid)
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["cn" ]
-        )
-    for entry in connection.response:
-        cn=nomClasse(entry['attributes']['cn'][0])
-    ### récupération des profs
-    base_dn = 'cn=Users,dc=lycee,dc=jb'
-    filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
-    connection.search(
-        search_base = base_dn,
-        search_filter = filtre,
-        attributes=["uidNumber", "sn", "givenName", "uid" ]
-        )
-    ## liste des uids de profs déjà dans la barrette
-    b=Barrette.objects.filter(nom=barrette)[0]
-    uids=[p.uid for p in Enseignant.objects.filter(barrettes__in=[b.pk])]
-    for entry in connection.response:
-        if int(entry['attributes']['uidNumber'][0]) not in uids:
-            ## on n'ajoute le prof que s'il n'est pas encore dans la barrette
-            try:
-                profs.append(
-                    {
-                        "uid": entry['attributes']['uidNumber'][0],
-                        "nom": entry['attributes']['sn'][0],
-                        "prenom": entry['attributes']['givenName'][0],
-                        "username": entry['attributes']['uid'][0],
-                    }
-                )
-            except:
-                pass # par exemple s'il n'y a pas d'attribut givenName
-    profs.sort(key=lambda e: "{nom} {prenom}".format(**e))
-    return profs
 
 def getProfs(uids):
     """

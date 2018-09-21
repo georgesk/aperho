@@ -209,3 +209,40 @@ def addEleves(request):
     context.update(dicoBarrette(request))
     return render(request, "addEleves.html", context)
 
+def getProfsLibres(barrette):
+    """
+    fait la liste de tous les profs de l'annuaire et absents de la
+    barrette
+    @param barrette un nom de barrette
+    """
+    from .models import Barrette, Enseignant
+    
+    profs=[]
+    ### récupération des profs
+    base_dn = 'cn=Users,dc=lycee,dc=jb'
+    filtre  = '(&(objectClass=kwartzAccount)(memberOf=CN=profs,CN=Users,DC=lycee,DC=jb))'
+    connection.search(
+        search_base = base_dn,
+        search_filter = filtre,
+        attributes=["uidNumber", "sn", "givenName", "cn" ]
+        )
+    ## liste des uids de profs déjà dans la barrette
+    b=Barrette.objects.filter(nom=barrette)[0]
+    uids=[p.uid for p in Enseignant.objects.filter(barrettes__in=[b.pk])]
+    for entry in connection.response:
+        if int(entry['attributes']['uidNumber']) not in uids:
+            ## on n'ajoute le prof que s'il n'est pas encore dans la barrette
+            try:
+                profs.append(
+                    {
+                        "uid": entry['attributes']['cn'],
+                        "nom": entry['attributes']['sn'],
+                        "prenom": entry['attributes']['givenName'],
+                        "username": entry['attributes']['uid'],
+                    }
+                )
+            except:
+                pass # par exemple s'il n'y a pas d'attribut givenName
+    profs.sort(key=lambda e: "{nom} {prenom}".format(**e))
+    return profs
+
