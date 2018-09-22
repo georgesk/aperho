@@ -137,7 +137,7 @@ STATIC_URL = '/static/'
 server=None
 connexion=None
 config = configparser.ConfigParser()
-config.read("aperho/credentials")
+config.read(os.path.join(BASE_DIR, "aperho", "credentials"))
 
 try:
     server = Server('localhost', port=1389)

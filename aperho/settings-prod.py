@@ -135,6 +135,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
     
 # LDAP connection
+config = configparser.ConfigParser()
+config.read(os.path.join(BASE_DIR, "aperho", "credentials"))
 server = Server('localhost', port=1389)
 connection = Connection(
     server,
