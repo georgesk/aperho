@@ -134,23 +134,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
     
 # LDAP connection
-server=None
-connexion=None
 config = configparser.ConfigParser()
 config.read(os.path.join(BASE_DIR, "aperho", "credentials"))
-
-try:
-    server = Server('localhost', port=1389)
-    connection = Connection(
-        server,
-        user=config["DEFAULT"]["user"],
-        password=config["DEFAULT"]["password"],
-        check_names=True,
-        raise_exceptions=True
-    )
-    connection.bind()
-except Exception as e:
-    print("Service LDAP indisponible sur le port 1389 !!!")
 
 
 ############# for the LDAP AUTH BACKEND ########################

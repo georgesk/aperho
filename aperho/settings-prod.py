@@ -137,16 +137,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 # LDAP connection
 config = configparser.ConfigParser()
 config.read(os.path.join(BASE_DIR, "aperho", "credentials"))
-server = Server('localhost', port=1389)
-connection = Connection(
-    server,
-    user=config["DEFAULT"]["user"],
-    password=config["DEFAULT"]["password"],
-    check_names=True,
-    raise_exceptions=True
-)
-connection.bind()
-
 
 ############# for the LDAP AUTH BACKEND ########################
 # The URL of the LDAP server.

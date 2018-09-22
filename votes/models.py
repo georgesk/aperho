@@ -1,6 +1,6 @@
 # -*- mode: python-mode; python-indent-offset: 4 -*-
 from django.db import models
-from aperho.settings import connection, LANGUAGE_CODE
+from aperho.settings import LANGUAGE_CODE
 from django.utils import timezone
 from datetime import timedelta
 import locale, json, re, urllib.parse

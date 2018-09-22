@@ -2,7 +2,23 @@
 
 from collections import OrderedDict
 
-from aperho.settings import connection
+from ldap3 import Server, Connection
+from aperho.settings import config
+
+def connexion():
+    try:
+        conn=Connection(
+            Server('localhost', port=1389),
+            user=config["DEFAULT"]["user"],
+            password=config["DEFAULT"]["password"],
+            check_names=True,
+            raise_exceptions=True
+        )
+        conn.bind()
+        return conn
+    except:
+        print("Connexion failed, try later")
+
 
 def estProfesseur(user):
     """
@@ -15,6 +31,7 @@ def estProfesseur(user):
     """
     from .models import Enseignant
     
+    conn=connexion()
     result="non"
     nom=user.last_name
     prenom=user.first_name
@@ -22,14 +39,14 @@ def estProfesseur(user):
     #### d'abord, user est-il prof ?
     base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzAccount)(cn={}))'.format(login)
-    connection.search(
+    conn.search(
         search_base = base_dn,
         search_filter = filtre,
         attributes=["uidNumber", "sn", "givenName", "memberOf",]
         )
-    if len(connection.response) > 0 and \
+    if len(conn.response) > 0 and \
           "CN=profs,CN=Users,DC=lycee,DC=jb" in \
-          connection.response[0]["attributes"]["memberOf"]: # c'est un prof.
+          conn.response[0]["attributes"]["memberOf"]: # c'est un prof.
         if len(Enseignant.objects.filter(nom=nom, prenom=prenom))==0:
             result="prof"
         else:
@@ -42,14 +59,15 @@ def lesClasses():
     Renvoie les classes connues par l'annuaire LDAP
     @return une liste de noms de classes, sans le préfixe "c"
     """
+    conn=connexion()
     base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzGroup)(cn=c*))'
-    connection.search(
+    conn.search(
         search_base = base_dn,
         search_filter = filtre,
         attributes=["cn" ]
     )
-    classes=[entry['attributes']['cn'] for entry in connection.response]
+    classes=[entry['attributes']['cn'] for entry in conn.response]
     classes=[nomClasse(c) for c in classes if classeValide(c)]
     return classes
 
@@ -88,29 +106,29 @@ def inscritClasse(gid, barrette, cn=""):
     """
     from .models import Etudiant
 
-    print("GRRRR entrée dans inscritClasse ; gid, barrette, cn=", gid, barrette, cn)
+    conn=connexion()
     eleves=[]
     if cn:
         ### récupération du groupe de la classe
         base_dn = 'cn=Users,dc=lycee,dc=jb'
         filtre  = '(&(cn=c{})(objectClass=kwartzGroup))'.format(cn)
-        connection.search(
+        conn.search(
             search_base = base_dn,
             search_filter = filtre,
             attributes=["gidNumber" ]
             )
-        for entry in connection.response:
+        for entry in conn.response:
             gid=entry['attributes']['gidNumber']
     else:
         ### récupération du nom de la classe
         base_dn = 'cn=Users,dc=lycee,dc=jb'
         filtre  = '(&(gidNumber={})(objectClass=kwartzGroup))'.format(gid)
-        connection.search(
+        conn.search(
             search_base = base_dn,
             search_filter = filtre,
             attributes=["cn" ]
             )
-        for entry in connection.response:
+        for entry in conn.response:
             cn=nomClasse(entry['attributes']['cn'])
     ## à ce stade, cn est un nom de classe dans l'annuaire LDAP et
     ## gid est le numéro du groupe dans la base LDAP
@@ -119,12 +137,12 @@ def inscritClasse(gid, barrette, cn=""):
     filtre  = '(&(objectClass=kwartzAccount)(gidNumber={}))'.format(gid)
     # recherche des membres de la classe avec gidNumber==gid, avec leurs
     # noms et prénoms, et identifiants
-    connection.search(
+    conn.search(
         search_base = base_dn,
         search_filter = filtre,
         attributes=["uidNumber", "sn", "givenName", "cn" ]
         )
-    for entry in connection.response:
+    for entry in conn.response:
         # si un élève est déjà dans la BDD, mais avec une barrette
         # ou une classe autres, on change classe et barrette.
         aChanger=Etudiant.objects.filter(uidNumber=entry['attributes']['uidNumber'])
@@ -153,6 +171,7 @@ def addElevesLdap(request):
     """
     from .models import Barrette, Etudiant
 
+    conn=connexion()
     eleves=[]
     wantedClasses = request.POST.getlist("classes")
     barrette = request.POST.get("barrette")
@@ -187,12 +206,12 @@ def addElevesLdap(request):
     classes=[]
     base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre = '(&(cn=c*)(!(cn=*smbadm))(objectclass=kwartzGroup))'
-    connection.search(
+    conn.search(
         search_base = base_dn,
         search_filter = filtre,
         attributes = ['cn', 'gidNumber'],
     )
-    for entry in connection.response:
+    for entry in conn.response:
         nom=nomClasse(entry['attributes']['cn'])
         if nom in classesDansDb.keys() or not classeValide(nom):
             # ne pas mettre les classes déjà présentes dans la barrette
@@ -217,11 +236,12 @@ def getProfsLibres(barrette):
     """
     from .models import Barrette, Enseignant
     
+    conn=connexion()
     profs=[]
     ### récupération des profs
     base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzAccount)(memberOf=CN=profs,CN=Users,DC=lycee,DC=jb))'
-    connection.search(
+    conn.search(
         search_base = base_dn,
         search_filter = filtre,
         attributes=["uidNumber", "sn", "givenName", "cn" ]
@@ -229,7 +249,7 @@ def getProfsLibres(barrette):
     ## liste des uids de profs déjà dans la barrette
     b=Barrette.objects.filter(nom=barrette)[0]
     uids=[p.uid for p in Enseignant.objects.filter(barrettes__in=[b.pk])]
-    for entry in connection.response:
+    for entry in conn.response:
         if int(entry['attributes']['uidNumber']) not in uids:
             ## on n'ajoute le prof que s'il n'est pas encore dans la barrette
             try:
@@ -307,25 +327,26 @@ def etudiantsDeClasse(classeName):
     @param classeName un nom de classe sans le 'c' initial
     @return une liste de logins
     """
+    conn=connexion()
     cn='c'+classeName
     base_dn = 'cn=Users,dc=lycee,dc=jb'
     filtre  = '(&(objectClass=kwartzGroup)(cn={0}))'.format(cn)
-    connection.search(
+    conn.search(
         search_base = base_dn,
         search_filter = filtre,
         attributes=["gidNumber"]
         )
-    if len(connection.response) > 0: # le groupe est connu.
-        gidNumber=connection.response[0]["attributes"]['gidNumber']
+    if len(conn.response) > 0: # le groupe est connu.
+        gidNumber=conn.response[0]["attributes"]['gidNumber']
         base_dn = 'cn=Users,dc=lycee,dc=jb'
         filtre  = '(&(objectClass=kwartzAccount)(gidNumber={0}))'.format(gidNumber)
-        connection.search(
+        conn.search(
             search_base = base_dn,
             search_filter = filtre,
             attributes=["cn"]
             )
         result=[]
-        for r in connection.response:
+        for r in conn.response:
             result.append(r["attributes"]['cn'])
         return result
     else: # le groupe est inconnu.
