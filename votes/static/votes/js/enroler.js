@@ -19,10 +19,11 @@ function enroler(){
     var m1=cours1val.match(re);
     if (m1) id1=m1[1]; else id1=-1;
     var csrf=$("#csrf").val();
+    var barrette=$("#barrette").val();
     console.log("inscrire dans le cours :", id0, id1, uid);
     var url="/votes/enroleEleveCours"
     $.post(url,
-	   { cours: id0, cours2: id1, uid: uid, csrfmiddlewaretoken: csrf}
+	   { cours: id0, cours2: id1, uid: uid, csrfmiddlewaretoken: csrf, barrette: barrette}
 	  ).done(function(data){
 	      console.log(data, data.msg);
 	      $("#dialog").dialog({

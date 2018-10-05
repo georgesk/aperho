@@ -528,8 +528,9 @@ def enroler(request):
         "noninscrits": noninscrits,
         "etudiant":    etudiant,
         "coursConnus": coursConnus,
+        "barrette": b.pk,
     }
-    context.update(dicoBarrette(request))
+    #context.update(dicoBarrette(request))
     return render(request, "enroler.html", context)
 
 def creeCoursParDefaut(barrette, ouverture, cours=None):
@@ -638,6 +639,8 @@ def enroleEleveCours(request):
     uid=request.POST.get("uid","")
     cours=request.POST.get("cours","")
     cours2=request.POST.get("cours2","")
+    barretteId=int(request.POST.get("barrette","0"))
+    barrette=Barrette.objects.get(pk=barretteId)
     possible="je ne peux pas enrôler"
     if "profAP" == estProfesseur(request.user):
         possible="je peux enrôler"
@@ -677,7 +680,7 @@ def enroleEleveCours(request):
             else:
                 eleve=eleve[0]
                 ## vérifie que l'élève n'est pas déjà inscrit
-                inscr=len(Inscription.objects.filter(etudiant=eleve, cours__ouverture=Ouverture.derniere()))
+                inscr=len(Inscription.objects.filter(etudiant=eleve, cours__ouverture=Ouverture.derniere(barrette)))
                 if inscr:
                     msg="ERREUR : {} {} {} est déjà inscrit.". format(eleve.nom, eleve.prenom, eleve.classe)
                 else:
