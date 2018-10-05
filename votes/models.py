@@ -176,9 +176,12 @@ class Ouverture(models.Model):
     de fin. Entre les deux, le vote ne leur sera pas proposé (mais
     pourrait éventuellement leur être montré)
     """
+    visible = models.DateTimeField(null=True,blank=True)
     debut = models.DateTimeField()
     fin   = models.DateTimeField()
     nom_session = models.CharField(max_length=50, default="Toussaint", unique="True")
+    barrettes= models.ManyToManyField(Barrette, related_name="bb", blank=True)
+
     
     def __str__(self):
         return """\
