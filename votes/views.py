@@ -942,7 +942,7 @@ def editeCours(request):
         if not coursLies:
             ajeter=True # formation orpheline
         else:
-            coursRecents=[ c for c in coursLies if c.ouverture.estRecente()]
+            coursRecents=[ c for c in coursLies if c.estRecent]
             ajeter= not coursRecents
         af.ajeter=ajeter # on ajoute un attribut à l'ancienne formation
     horaire=Horaire.objects.get(pk=cours.horaire_id)
