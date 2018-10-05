@@ -167,9 +167,9 @@ def index(request):
                 "capacite" : c1,
             },
         ]
-        od=Ouverture.derniere()
+        od=Ouverture.derniere(barrette=b)
         if od:
-            ouverte=od.estActive()
+            ouverte=od.estActive(barrette=b)
         else:
             ouverte=False
         nbInscrits = sum(

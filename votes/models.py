@@ -176,8 +176,12 @@ class Ouverture(models.Model):
     de fin. Entre les deux, le vote ne leur sera pas proposé (mais
     pourrait éventuellement leur être montré)
     """
+    # si visible n'est pas null, c'est le moment à partir duquel
+    # les élèves peuvent voir le programme
     visible = models.DateTimeField(null=True,blank=True)
+    # debut des inscriptions
     debut = models.DateTimeField()
+    # fin des inscriptions
     fin   = models.DateTimeField()
     nom_session = models.CharField(max_length=50, default="Toussaint", unique="True")
     barrettes= models.ManyToManyField(Barrette, related_name="bb", blank=True)
@@ -196,7 +200,8 @@ INSCRIPTIONS « {0} » : {1} ↦ {2}<br/>Visible par les élèves dès le : 
     def anticipation(self):
         """
         Définit combien de temps à l'avance les élèves peuvent voir les
-        cours avant de "voter".
+        cours avant de "voter" (fonctionnement par défaut, si le champ
+        'visible' n'est pas défini)
         @return un objet datetime.timedelta
         """
         return timedelta(weeks=1) # les élèves voient une semaine avant
@@ -207,21 +212,25 @@ INSCRIPTIONS « {0} » : {1} ↦ {2}<br/>Visible par les élèves dès le : 
                                      self.debut.strftime("%d/%m/%Y"),
                                      self.fin.strftime("%d/%m/%Y"))
 
-    def estActive(self):
+    def estActive(self, barrette):
         """
         décide si un objet "ouverture" est actif au moment précis
-        de l'invocation de la méthode.
+        de l'invocation de la méthode, pour une barrette donnée
+        @param barrette un objet Barrette
         @return vrai ou faux
         """
+        if not barrette or barrette not in self.barrettes.all(): return False
         now = timezone.now()
         return self.debut <= now <= self.fin
     
-    def estVisibleAuxEleves(self):
+    def estVisibleAuxEleves(self, barrette):
         """
         décide si un objet "ouverture" doit être visible par les élèves
-        lors de de l'invocation de la méthode.
+        lors de de l'invocation de la méthode, pour une barrette donnée.
+        @param barrette un objet Barrette
         @return vrai ou faux
         """
+        if not barrette or barrette not in self.barrettes.all(): return False
         now = timezone.now()
         return self.visibleDesLe <= now <= self.fin
 
@@ -230,36 +239,45 @@ INSCRIPTIONS « {0} » : {1} ↦ {2}<br/>Visible par les élèves dès le : 
         """
         Renvoie la date « visible dès le ... » pour les élèves
         """
+        if self.visible:
+            return self.visible
+        # par défaut, date de début moins une semaine.
         return self.debut-self.anticipation
     
-    def estRecente(self):
+    def estRecente(self, barrette):
         """
         décide si un objet "ouverture" le plus récent des objets
         similaires
+        @param barrette un objet Barrette
         @return vrai ou faux
         """
-        recente=Ouverture.objects.all().order_by('-debut')[0]
+        if not barrette or barrette not in self.barrettes.all(): return False
+        recente=Ouverture.objects.filter(barrettes__in=[barrette]).order_by('-debut')[0]
         return recente.debut==self.debut
 
     @staticmethod
-    def derniere():
+    def derniere(barrette):
         """
         renvoie la dernière ouverture en date si elle existe
+        @param barrette un objet Barrette
         @return une instance d'Ouverture sinon None
         """
-        ouvertures=Ouverture.objects.all().order_by("debut")
+        if not barrette: return None
+        ouvertures=Ouverture.objects.filter(barrettes__in=[barrette]).order_by("debut")
         if ouvertures:
             return ouvertures.last()
         return None
     
     @staticmethod
-    def justeAvant(derniere):
+    def justeAvant(derniere, barrette):
         """
         renvoie l'avant-dernière ouverture en date si elle existe
         @param derniere une ouverture considérée comme la dernière
+        @param barrette un objet Barrette
         @return une instance d'Ouverture sinon None
         """
-        ouvertures=Ouverture.objects.filter(debut__lt=derniere.debut).order_by("debut")
+        if not barrette: return None
+        ouvertures=Ouverture.objects.filter(debut__lt=derniere.debut, barrettes__in=[barrette]).order_by("debut")
         if ouvertures:
             return ouvertures.last()
         return None
@@ -419,7 +437,7 @@ class Cours(models.Model):
         Dit si l'inscription au cours est ouverte
         @return vrai ou faux
         """
-        return self.ouverture.estActive()
+        return self.ouverture.estActive(barrette=self.barrette)
 
     @property
     def estVisibleAuxEleves(self):
@@ -427,8 +445,7 @@ class Cours(models.Model):
         Dit si l'inscription au cours est visible par les élèves
         @return vrai ou faux
         """
-        print("GRRRR", self, self.ouverture.estVisibleAuxEleves())
-        return self.ouverture.estVisibleAuxEleves()
+        return self.ouverture.estVisibleAuxEleves(barrette=self.barrette)
 
     @property
     def n(self):
@@ -443,7 +460,7 @@ class Cours(models.Model):
         Dit si la date d'inscription pour ce cours est la plus récente
         des dates d'inscriptions
         """
-        return self.ouverture.estRecente()
+        return self.ouverture.estRecente(barrette=self.barrette)
 
     @property
     def complet(self):

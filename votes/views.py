@@ -345,7 +345,7 @@ def lesCours(request):
     barrette=request.session.get("barrette","")
     b=Barrette.objects.get(nom=barrette)
     enseignant=None
-    od=Ouverture.derniere()
+    od=Ouverture.derniere(barrette=b)
     if not od:
         ## il faut définir au moins une première période d'ouverture d'aperho
         return HttpResponseRedirect('addOuverture')
