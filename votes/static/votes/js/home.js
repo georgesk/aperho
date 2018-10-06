@@ -84,8 +84,9 @@ function message(msg, reload){
 /**
  * validation des cours qui sont cochés
  * @param orientationOuverte booléen vrai s'il y a des cases pour l'orientation
+ * @param barretteId, l'identifiant de la barrette courante
  **/
-function valideCours(orientationOuverte){
+function valideCours(orientationOuverte, barretteId){
     var inscriptions=$("fieldset.orientation input:checked");
     if (orientationOuverte != 'False' && inscriptions.length < 1){
 	message("Aucune séance d'information sur l'orientation en première n'a été choisie. Cochez au moins une des cases en haut de cette page.");
@@ -107,6 +108,7 @@ function valideCours(orientationOuverte){
 		    map(function() {
 			return this.value;
 		    }).get().join(":"),
+		barretteId: barretteId,
 	    };
 	    var successFunction=function(data){
 		if (data.ok){

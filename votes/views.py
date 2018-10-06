@@ -234,10 +234,13 @@ def addInscription(request):
     ajoute une inscription à un cours
     renvoie un en-tête json, et des données de feedback
     """
+    print("GRRRRR GET=", request.GET)
     message=""
     ok=True
     uid=request.GET.get("uid")
     clData=request.GET.get("classes")
+    barretteId=int(request.GET.get("barretteId"))
+    barrette=Barrette.objects.get(pk=barretteId)
     if clData:
         classes=[int(c) for c in clData.split(":")]
     else:
@@ -263,7 +266,7 @@ def addInscription(request):
         ###############################################################
         ## on met à jour les orientations
         ## ça ne fait rien du tout en l'absence de champ d'orientations.
-        ouverture=[o for o in Ouverture.objects.all() if o.estActive()]
+        ouverture=[o for o in Ouverture.objects.filter(barrettes__in=[barrette]) if o.estActive(barrette)]
         # ouverture[0] est l'ouverture active si la liste n'est pas vide
         if ouverture and orientations:
             choices=Orientation._meta.get_field("choix").choices

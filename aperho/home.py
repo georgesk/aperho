@@ -190,6 +190,7 @@ def index(request):
             "username": request.user.username,
             "coursAchanger": coursAchanger,
             "netu": netu,
+            "barretteId": b.pk,
         }
         context.update(dico)
         return render(request, "home.html", context)
