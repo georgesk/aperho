@@ -16,9 +16,11 @@ function enroler(){
     $("body").append(wait);
     var re = /^.*\((\S*)\)$/;
     var uid=eleve.match(re)[1];
-    var id0=cours0val.match(re)[1];
+    var id0=-1, id1=-1; // ids de cours, invalides par défaut
+    var m0=cours0val.match(re);
+    if (m0) id0=m0[1];
     var m1=cours1val.match(re);
-    if (m1) id1=m1[1]; else id1=-1;
+    if (m1) id1=m1[1];
     var csrf=$("#csrf").val();
     var barrette=$("#barrette").val();
     console.log("inscrire dans le cours :", id0, id1, uid);

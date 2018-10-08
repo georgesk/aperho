@@ -482,10 +482,9 @@ def enroler(request):
     coursConnus={}
     if request.GET.get("c0",""): # appel de la page avec des cours connus
         c0=int(request.GET.get("c0"))
-        coursConnus[0]=Cours.objects.get(pk=c0)
         c1=int(request.GET.get("c1"))
-        if c1>0:
-            coursConnus[1]=Cours.objects.get(pk=c1)
+        coursConnus[0]=Cours.objects.get(pk=c0) if c0 > 0 else None
+        coursConnus[1]=Cours.objects.get(pk=c1) if c1 > 0 else None
     if request.POST.get("uid",""): # appel de la page avec un élève et des cours
         b=Barrette.objects.get(pk=request.POST.get("barrette"))
         barrette=b.nom
