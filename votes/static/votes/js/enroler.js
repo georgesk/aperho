@@ -9,8 +9,9 @@ function enroler(){
     var re=/.*(\d)h .*/;
     var duree=0;
     var match=re.exec(cours0val); if (match) duree+=parseInt(match[1]);
-     match=re.exec(cours1val); if (match) duree+=parseInt(match[1]);
-    if (eleve=="" || duree !=2) return;
+    match=re.exec(cours1val); if (match) duree+=parseInt(match[1]);
+    var superuser = $("#super").val();
+    if (eleve=="" || (duree !=2 && superuser !="True")) return;
     var wait=$("<div class='wait'><center><img alt='wait' src='/static/votes/img/Songbird_Icon_Spinner1.gif'style='position: fixed; top:40%;'/></center></div>")
     $("body").append(wait);
     var re = /^.*\((\S*)\)$/;
@@ -23,7 +24,14 @@ function enroler(){
     console.log("inscrire dans le cours :", id0, id1, uid);
     var url="/votes/enroleEleveCours"
     $.post(url,
-	   { cours: id0, cours2: id1, uid: uid, csrfmiddlewaretoken: csrf, barrette: barrette}
+	   {
+	       cours: id0,
+	       cours2: id1,
+	       uid: uid,
+	       csrfmiddlewaretoken: csrf,
+	       barrette: barrette,
+	       superuser: superuser,
+	   }
 	  ).done(function(data){
 	      console.log(data, data.msg);
 	      $("#dialog").dialog({

@@ -234,7 +234,6 @@ def addInscription(request):
     ajoute une inscription à un cours
     renvoie un en-tête json, et des données de feedback
     """
-    print("GRRRRR GET=", request.GET)
     message=""
     ok=True
     uid=request.GET.get("uid")
@@ -642,6 +641,7 @@ def enroleEleveCours(request):
     uid=request.POST.get("uid","")
     cours=request.POST.get("cours","")
     cours2=request.POST.get("cours2","")
+    superuser=request.POST.get("superuser","")=="True"
     barretteId=int(request.POST.get("barrette","0"))
     barrette=Barrette.objects.get(pk=barretteId)
     possible="je ne peux pas enrôler"
@@ -657,7 +657,7 @@ def enroleEleveCours(request):
         duree=0
         for c in c1+c2:
             duree+=c.formation.duree
-        if duree != 2:
+        if duree != 2 and not superuser:
             msg="ERREUR : la durée totale des cours choisis est {} heures, il faut 2 heures exactement.".format(duree)
             ok=False
         ## test d'exclusion

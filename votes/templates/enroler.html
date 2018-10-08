@@ -109,6 +109,7 @@
       <button type="button" onclick="enroler()">Enrôler</button>
       <input type="hidden" id="csrf" value="{{csrf_token}}"/>
       <input type="hidden" id="barrette" value="{{barrette}}"/>
+      <input type="hidden" id="super" value="{{request.user.is_superuser}}"/>
     </th>
   </tr>
 </table>
