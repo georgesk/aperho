@@ -504,7 +504,7 @@ def enroler(request):
     else:
         barrette=request.session.get("barrette","")
         b=Barrette.objects.get(nom=barrette)
-        ouvertures=Ouverture.objects.all().order_by("debut")
+        ouvertures=Ouverture.objects.filter(barrettes__in=[b]).order_by("debut")
         derniereOuverture=ouvertures.last()
     cours=list(Cours.objects.filter(
         formation__barrette__id=b.id,
