@@ -60,6 +60,10 @@
 {%block contents %}
 {% if autorise %}
 
+{% if warning %}
+<div class="avertissement">{{warning}}</div>
+{% endif %}
+
 <table border="1" class="joli">
   <tr><th colspan="2">Choisir un élève, puis un ou deux cours</th></tr>
   <tr>

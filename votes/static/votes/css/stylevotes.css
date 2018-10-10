@@ -357,3 +357,13 @@ div.wait {
     width: 100%;
     height: 100%;
 }
+
+div.avertissement{
+    border: 2px red solid;
+    padding: 0.5ex;
+    border-radius: 0.5ex;
+    background: #fff8f8;
+    color: black;
+    width: 30em;
+    margin: 10px 0px;
+}

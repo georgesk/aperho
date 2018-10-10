@@ -479,6 +479,7 @@ def enroler(request):
     grâce à cette page
     """
     etudiant=""
+    warning=""
     coursConnus={}
     if request.GET.get("c0",""): # appel de la page avec des cours connus
         c0=int(request.GET.get("c0"))
@@ -495,10 +496,13 @@ def enroler(request):
             cours__barrette=b,
             cours__ouverture=derniereOuverture,
         ) ], key=lambda i: i.cours.horaire)
+        warning="Par effet collatéral, {} {} est en ce moment désinscrit des cours".format(etudiant.prenom, etudiant.nom)
         for i in range(len(inscriptions)):
             coursConnus[i]=inscriptions[i].cours
             ## on efface l'inscription
+            warning+=" -- {}...".format(str(inscriptions[i].cours.formation.titre))
             inscriptions[i].delete()
+        warning+=" Ne pas oublier de valider la réinscription (si c'est ce qu'on veut)."
     else:
         barrette=request.session.get("barrette","")
         b=Barrette.objects.get(nom=barrette)
@@ -530,6 +534,7 @@ def enroler(request):
         "etudiant":    etudiant,
         "coursConnus": coursConnus,
         "barrette": b.pk,
+        "warning": warning,
     }
     #context.update(dicoBarrette(request))
     return render(request, "enroler.html", context)
