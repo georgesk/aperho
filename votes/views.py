@@ -13,7 +13,8 @@ import json, re
 from aperho.home import dicoBarrette
 from .models import Etudiant, Enseignant, Formation, Inscription, Cours,\
     estProfesseur, Ouverture, Orientation, \
-    InscriptionOrientation, CoursOrientation, Cop, Horaire, Barrette
+    InscriptionOrientation, CoursOrientation, Cop, Horaire, Barrette, \
+    PreInscription
 from .csvResult import csvResponse
 from .odfResult import odsResponse, odtResponse
 from .forms import editeCoursForm
@@ -1283,3 +1284,44 @@ def addEleves(request):
     context["barretteCourante"]=request.session.get("barrette")
     return render(request, "addEleves.html", context)
     
+def pre(request):
+    """
+    Une page pour gérer les pré-inscriptions
+    """
+    barretteCourante=request.session.get("barrette")
+    b=Barrette.objects.filter(nom=barretteCourante)[0]
+    ## gestion des commandes du super-utilisateur
+    print("GRRRRR", request.POST)
+    classe=request.POST.get("classe", "")
+    if classe=="0": classe=""
+    eleve=request.POST.get("eleve", "")
+    cours=request.POST.get("cours", "")
+    delPre=request.POST.get("delPre", "")
+    if classe and cours:
+        """on pré-inscrit une classe"""
+        eleves=Etudiant.objects.filter(classe=classe)
+        leCours=[c for c in Cours.objects.filter(barrette=b) if str(c)==cours][0]
+        for e in eleves:
+            # on s'assure de ne pas mettre plus d'une pré-inscription
+            # automatique par élève.
+            pre=PreInscription.objects.get_or_create(etudiant=e)
+            pre.cours=leCours
+            pre.save()
+    elif delPre:
+        """ on supprime une pré-inscription """
+        print("GRRRR suppression de" , delPre)
+        PreInscription.objects.get(pk=int(delPre)).delete()
+    ## fabrication de la page
+    preinscrits=PreInscription.objects.all().order_by('etudiant__classe','etudiant__nom', 'etudiant__prenom')
+    classes=json.loads(b.classesJSON)
+    cours=json.dumps([str(c) for c in Cours.objects.filter(barrette=b)])
+    eleves=json.dumps(["{} {} {}".format(e.nom, e.prenom, e.classe) for e in Etudiant.objects.filter(barrette=b).order_by('nom', 'prenom', 'classe')])
+    return render(
+        request,
+        "pre.html",
+        {
+            "preinscrits" : preinscrits,
+            "classes"     : classes,
+            "cours"       : cours,
+            "eleves"      : eleves,
+        })

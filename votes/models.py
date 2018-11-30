@@ -470,7 +470,19 @@ class Cours(models.Model):
         jauge=Inscription.objects.filter(cours=self).count()
         return jauge >= self.capacite
         
+class PreInscription(models.Model):
+    """
+    Préinscription d'un élève dans un cours, qui prendra effet dès
+    que l'élève se connectera en modifiant les cases à cliquer, et
+    disparaîtra quand l'élève sera inscrit définitivement
+    """
+    etudiant   = models.ForeignKey('Etudiant')
+    cours      = models.ForeignKey('Cours')
 
+    def __str__(self):
+        return "{} {} {} {}".format(self.etudiant.classe, self.etudiant.nom, self.etudiant.prenom, str(self.cours)[:60]+" ...")
+
+    
 class Inscription(models.Model):
     """
     La relation binaire entre un étudiant et un cours, qui résulte de

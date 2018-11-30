@@ -31,4 +31,5 @@ urlpatterns = [
     url(r'^profil$', views.profil, name='profil'),
     url(r'^majElevesKwartz$', views.majElevesKwartz, name='majElevesKwartz'),
     url(r'^reinscription$', views.reinscription, name='reinscription'),
+    url(r'^pre$', views.pre, name='pre'),
 ]

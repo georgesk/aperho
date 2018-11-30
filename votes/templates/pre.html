@@ -1,0 +1,73 @@
+{% extends "base1.html" %}
+
+{% block localscripts %}
+  <script>
+    $( function() {
+    $(".cours").autocomplete({
+    source: {{cours|safe|escape}},
+    minLength: 3,
+    });
+    $("#eleve").autocomplete({
+    source: {{eleves|safe|escape}},
+    minLength: 3,
+    });
+    });
+  </script>
+  <script src="/static/votes/js/pre.js"></script>
+{% endblock %}
+
+{% block title %}
+<h1>Gestion des pré-inscriptions</h1>
+{% endblock %}
+
+{% block contents %}
+{% if user.is_superuser %}
+<form method="post" style="margin: 1em;">
+  <fieldset>
+    <legend>Pré-inscription par classe </legend>
+    {% csrf_token %}
+    <p>
+      <label> Classes</label>
+      <select name="classe">
+	<option value="0">-- Choisir --</option>
+	{% for c in classes %}
+	<option value="{{c}}">{{c}}</option>
+	{% endfor %}
+      </select>
+    </p>
+    <p>
+      <label>Cours</label>
+      <input class="cours" type="text" name="cours" placeholder="Taper au moins 3 caractères" style="width: 80em;"/>
+    </p>
+    <input type="submit" value="Inscrire la classe"/>
+  </fieldset>
+</form>
+<form method="post" style="margin: 1em;">
+  <fieldset>
+    <legend>Pré-inscription par élève</legend>
+    {% csrf_token %}
+    <p>
+      <label>Élève</label>
+      <input id="eleve" type="text" name="eleve" placeholder="Taper au moins 3 caractères" style="width: 80em;"/>
+    </p>
+    <p>
+      <label>Cours</label>
+      <input class="cours" type="text" name="cours" placeholder="Taper au moins 3 caractères" style="width: 80em;"/>
+    </p>
+    <input type="submit" value="Inscrire l'élève"/>
+  </fieldset>
+</form>
+{% if preinscrits %}
+<h2>Pré-inscriptions déjà définies</h2>
+<ol>
+  {% for p in preinscrits %}
+  <li>
+    <button onclick="delPreInscription({{p.pk}})"><img src="/static/votes/img/del.png"/></button>
+    {{p}}
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}
+{% endif %}
+<div id="message"></div>
+{% endblock %}
