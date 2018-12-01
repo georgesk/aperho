@@ -1283,7 +1283,25 @@ def addEleves(request):
     context.update(dicoBarrette(request))
     context["barretteCourante"]=request.session.get("barrette")
     return render(request, "addEleves.html", context)
-    
+
+def preInscrire(e,leCours):
+    """
+    Crée une préinscription, tout en limitant à une préinscription
+    par étudiant.
+    @param e une instace d'Etudiant
+    @para leCours une instance de Cours
+    """
+    # on s'assure de ne pas mettre plus d'une pré-inscription
+    # automatique par élève.
+    pre=None
+    try:
+        pre=PreInscription.objects.get(etudiant=e)
+        pre.cours=leCours
+    except:
+        pre=PreInscription(etudiant=e, cours=leCours)
+    pre.save()
+    return
+
 def pre(request):
     """
     Une page pour gérer les pré-inscriptions
@@ -1291,9 +1309,11 @@ def pre(request):
     barretteCourante=request.session.get("barrette")
     b=Barrette.objects.filter(nom=barretteCourante)[0]
     ## gestion des commandes du super-utilisateur
-    print("GRRRRR", request.POST)
+    print("GRRRR", request.POST)
     classe=request.POST.get("classe", "")
     if classe=="0": classe=""
+    delClasse=request.POST.get("delClasse", "")
+    if delClasse=="0": delClasse=""
     eleve=request.POST.get("eleve", "")
     cours=request.POST.get("cours", "")
     delPre=request.POST.get("delPre", "")
@@ -1302,14 +1322,16 @@ def pre(request):
         eleves=Etudiant.objects.filter(classe=classe)
         leCours=[c for c in Cours.objects.filter(barrette=b) if str(c)==cours][0]
         for e in eleves:
-            # on s'assure de ne pas mettre plus d'une pré-inscription
-            # automatique par élève.
-            pre=PreInscription.objects.get_or_create(etudiant=e)
-            pre.cours=leCours
-            pre.save()
+            preInscrire(e, leCours)
+    elif eleve and cours:
+        print("GRRRR préinscription de ", eleve, cours)
+        e=[e for e in Etudiant.objects.all() if "{} {} {}".format(e.nom, e.prenom, e.classe)==eleve][0]
+        leCours=[c for c in Cours.objects.filter(barrette=b) if str(c)==cours][0]
+        preInscrire(e, leCours)  
+    elif delClasse:
+        PreInscription.objects.filter(etudiant__classe=delClasse).delete()
     elif delPre:
         """ on supprime une pré-inscription """
-        print("GRRRR suppression de" , delPre)
         PreInscription.objects.get(pk=int(delPre)).delete()
     ## fabrication de la page
     preinscrits=PreInscription.objects.all().order_by('etudiant__classe','etudiant__nom', 'etudiant__prenom')

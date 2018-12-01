@@ -26,35 +26,67 @@
   <fieldset>
     <legend>Pré-inscription par classe </legend>
     {% csrf_token %}
-    <p>
-      <label> Classes</label>
-      <select name="classe">
-	<option value="0">-- Choisir --</option>
-	{% for c in classes %}
-	<option value="{{c}}">{{c}}</option>
-	{% endfor %}
-      </select>
-    </p>
-    <p>
-      <label>Cours</label>
-      <input class="cours" type="text" name="cours" placeholder="Taper au moins 3 caractères" style="width: 80em;"/>
-    </p>
-    <input type="submit" value="Inscrire la classe"/>
+    <table class="joli">
+      <tr>
+	<th><label> Classe</label></th>
+	<td>
+	  <select name="classe">
+	    <option value="0">-- Choisir --</option>
+	    {% for c in classes %}
+	    <option value="{{c}}">{{c}}</option>
+	    {% endfor %}
+	  </select>
+	</td>
+      <tr>
+      <tr>
+	<th><label>Cours</label></th>
+	<td><input class="cours" type="text" name="cours" placeholder="Taper au moins 3 caractères" style="width: 80em;"/></td>
+      </tr>
+      <tr>
+	<td colspan="2"><input type="submit" value="Inscrire la classe"/></td>
+      </tr>
+    </table>
   </fieldset>
 </form>
 <form method="post" style="margin: 1em;">
   <fieldset>
     <legend>Pré-inscription par élève</legend>
     {% csrf_token %}
-    <p>
-      <label>Élève</label>
-      <input id="eleve" type="text" name="eleve" placeholder="Taper au moins 3 caractères" style="width: 80em;"/>
-    </p>
-    <p>
-      <label>Cours</label>
-      <input class="cours" type="text" name="cours" placeholder="Taper au moins 3 caractères" style="width: 80em;"/>
-    </p>
-    <input type="submit" value="Inscrire l'élève"/>
+    <table class="joli">
+      <tr>
+	<th><label>Élève</label></th>
+	<td><input id="eleve" type="text" name="eleve" placeholder="Taper au moins 3 caractères" style="width: 80em;"/></td>
+      </tr>
+      <tr>
+	<th><label>Cours</label></th>
+	<td><input class="cours" type="text" name="cours" placeholder="Taper au moins 3 caractères" style="width: 80em;"/></td>
+      </tr>
+      <tr>
+	<td colspan="2"><input type="submit" value="Inscrire l'élève"/></td>
+      </tr>
+    </table>
+  </fieldset>
+</form>
+<form method="post" style="margin: 1em;">
+  <fieldset>
+    <legend>Suppression par classe</legend>
+    {% csrf_token %}
+    <table class="joli">
+      <tr>
+	<th><label> Classe</label></th>
+	<td>
+	  <select name="delClasse">
+	    <option value="0">-- Choisir --</option>
+	    {% for c in classes %}
+	    <option value="{{c}}">{{c}}</option>
+	    {% endfor %}
+	  </select>
+	</td>
+      </tr>
+      <tr>
+	<td colspan="2"><input type="submit" value="Effacer les pré-inscriptions de cette classe"/></td>
+      </tr>
+    </table>
   </fieldset>
 </form>
 {% if preinscrits %}

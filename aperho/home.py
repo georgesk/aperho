@@ -9,7 +9,7 @@ import json
 
 from votes.models import Cours, Inscription, Etudiant, Enseignant, \
     Orientation, Horaire, estProfesseur, barrettesPourUtilisateur, \
-    Barrette, Ouverture
+    Barrette, Ouverture, PreInscription
 
 def dicoBarrette(request):
     """
@@ -175,6 +175,13 @@ def index(request):
         nbInscrits = sum(
             [len(c.inscriptions) for c in cours if c.horaire==horaires[0]]
         )
+        ## on ajoute la pré-inscription éventuelle aux cours suivis
+        ## en évitant tout doublon
+        cours_suivis=set(cours_suivis)
+        pre=PreInscription.objects.filter(etudiant__uid=request.user.username)
+        if len(pre):
+            cours_suivis.add(pre[0].cours)
+        cours_suivis=list(cours_suivis)
         context={
             "tousLesCours": tousLesCours,
             "nbInscrits": nbInscrits,

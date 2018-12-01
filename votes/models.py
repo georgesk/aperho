@@ -429,7 +429,7 @@ class Cours(models.Model):
     invalide   = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{} {} {} (max={})".format(self.horaire, self.enseignant, self.formation, self.capacite)
+        return "{} {} {} {} (max={})".format(self.ouverture.nom_session, self.horaire, abrege(self.enseignant, 10), abrege(self.formation, 70), self.capacite)
 
     @property
     def estOuvert(self):
@@ -480,7 +480,7 @@ class PreInscription(models.Model):
     cours      = models.ForeignKey('Cours')
 
     def __str__(self):
-        return "{} {} {} {}".format(self.etudiant.classe, self.etudiant.nom, self.etudiant.prenom, str(self.cours)[:60]+" ...")
+        return "{} {} {} {}".format(self.etudiant.classe, self.etudiant.nom, self.etudiant.prenom, self.cours)
 
     
 class Inscription(models.Model):
@@ -515,3 +515,16 @@ def barrettesPourUtilisateur(user):
             result=[]
     return result
     
+def abrege(s, length, etc=" ..."):
+    """
+    abrège une chaîne longue
+    @param s la chaîne à abréger (ou un objet qui se convertit en chaîne)
+    @param length la longueur maximale du résultat
+    @param etc les caractère à marquer pour la continuation si on a abrégé
+    """
+    s=str(s)
+    if len(s) > length-len(etc):
+        return s[:length-len(etc)]+etc
+    else:
+        return s
+
