@@ -304,6 +304,8 @@ def addInscription(request):
                     inscription=Inscription(etudiant=etudiant, cours=classe)
                     inscription.save()
                     message+="« {}, {}» ... ".format(classe.formation.titre, classe.formation.contenu[:20])
+                ## effacement des pré-inscriptions pour cet élève
+                PreInscription.objects.filter(etudiant=etudiant).delete()
             else:
                 message="Désolé, mais :"+", ".join(complets)
     return JsonResponse({
@@ -570,14 +572,14 @@ def creeCoursParDefaut(barrette, ouverture, cours=None):
     enseignants=Enseignant.objects.filter(barrettes__id=b.pk)
     for e in enseignants:
         if b in e.indirects.all():
-            continue ## pas de création de cours sir le prof est indirect ici
+            continue ## pas de création de cours si le prof est indirect ici
         cours=Cours.objects.filter(enseignant=e, barrette=b, ouverture=ouverture).order_by("horaire")
         if not cours:
             coursAnciensTrouves=False
             ## on essaie d'abord de récupérer des cours donnés précédemment
             ## dans la même barrette, à l'ouvrture précédente
             try:
-                precOuverture=Ouverture.objects.filter(~Q(id = ouverture.pk)).latest('debut')
+                precOuverture=Ouverture.objects.filter(~Q(id = ouverture.pk), barrettes__in=[b]).latest('debut')
                 coursAnciens=Cours.objects.filter(enseignant=e, barrette=b, ouverture=precOuverture)
                 if coursAnciens:
                     coursAnciensTrouves=True
@@ -1309,7 +1311,6 @@ def pre(request):
     barretteCourante=request.session.get("barrette")
     b=Barrette.objects.filter(nom=barretteCourante)[0]
     ## gestion des commandes du super-utilisateur
-    print("GRRRR", request.POST)
     classe=request.POST.get("classe", "")
     if classe=="0": classe=""
     delClasse=request.POST.get("delClasse", "")
@@ -1324,7 +1325,6 @@ def pre(request):
         for e in eleves:
             preInscrire(e, leCours)
     elif eleve and cours:
-        print("GRRRR préinscription de ", eleve, cours)
         e=[e for e in Etudiant.objects.all() if "{} {} {}".format(e.nom, e.prenom, e.classe)==eleve][0]
         leCours=[c for c in Cours.objects.filter(barrette=b) if str(c)==cours][0]
         preInscrire(e, leCours)  
@@ -1336,7 +1336,7 @@ def pre(request):
     ## fabrication de la page
     preinscrits=PreInscription.objects.all().order_by('etudiant__classe','etudiant__nom', 'etudiant__prenom')
     classes=json.loads(b.classesJSON)
-    cours=json.dumps([str(c) for c in Cours.objects.filter(barrette=b)])
+    cours=json.dumps([str(c) for c in Cours.objects.filter(barrette=b, ouverture=Ouverture.derniere(barrette=b))])
     eleves=json.dumps(["{} {} {}".format(e.nom, e.prenom, e.classe) for e in Etudiant.objects.filter(barrette=b).order_by('nom', 'prenom', 'classe')])
     return render(
         request,
