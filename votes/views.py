@@ -1209,11 +1209,13 @@ def reinscription(request):
     ce qui est utile pour les formations à public désigné
     request.POST contient les arguments cours_id et ouverture_id
     """
+    barretteCourante=request.session.get("barrette")
+    b=Barrette.objects.filter(nom=barretteCourante)[0]
     cours_id=int(request.POST.get("cours_id"))
     cours=Cours.objects.get(pk=cours_id)
     ouverture_id=int(request.POST.get("ouverture_id"))
     derniere=Ouverture.objects.get(pk=ouverture_id)
-    avantDerniere=Ouverture.justeAvant(derniere)
+    avantDerniere=Ouverture.justeAvant(derniere,b)
     coursAvant=Cours.objects.filter(formation=cours.formation, ouverture=avantDerniere)
     if not coursAvant:
         return JsonResponse({
