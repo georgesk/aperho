@@ -1191,8 +1191,14 @@ def majElevesKwartz1(barrette):
             if not found:
                 e.delete()
         # on inscrit les nouveaux élèves et on rectifie les anciens
+        # mais seulement si la classe existe encore dans la barrette
         for c in classes:
-            inscritClasse(None, b, c)
+            if c in json.loads(b.classesJSON):
+                inscritClasse(None, b, c)
+            else:
+                # si la classe n'est plus dans la barrette, on détruit
+                # chaque élève de cette classe de la base de données
+                del0=Etudiant.objects.filter(classe=c).delete()
         return JsonResponse({
             "message" : "mise à jour OK",
             "ok"      : "ok",
