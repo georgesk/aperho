@@ -481,36 +481,23 @@ def enroler(request):
     Les profs du groupe d'AP peuvent enrôler des élèves non-inscrits
     grâce à cette page
     """
-    etudiant=""
+    etudiant=None
     warning=""
+    inscriptions=[]
     coursConnus={}
+    barrette=request.session.get("barrette","")
+    b=Barrette.objects.get(nom=barrette)
+    ouvertures=Ouverture.objects.filter(barrettes__in=[b]).order_by("debut")
+    derniereOuverture=ouvertures.last()
     if request.GET.get("c0",""): # appel de la page avec des cours connus
         c0=int(request.GET.get("c0"))
         c1=int(request.GET.get("c1"))
         coursConnus[0]=Cours.objects.get(pk=c0) if c0 > 0 else None
         coursConnus[1]=Cours.objects.get(pk=c1) if c1 > 0 else None
     if request.POST.get("uid",""): # appel de la page avec un élève et des cours
-        b=Barrette.objects.get(pk=request.POST.get("barrette"))
-        barrette=b.nom
-        derniereOuverture=Ouverture.objects.get(pk=request.POST.get("ouverture"))
         etudiant=Etudiant.objects.get(uid=request.POST.get("uid"))
-        inscriptions=sorted([ i for i in Inscription.objects.filter(
-            etudiant=etudiant,
-            cours__barrette=b,
-            cours__ouverture=derniereOuverture,
-        ) ], key=lambda i: i.cours.horaire)
-        warning="Par effet collatéral, {} {} est en ce moment désinscrit des cours".format(etudiant.prenom, etudiant.nom)
-        for i in range(len(inscriptions)):
-            coursConnus[i]=inscriptions[i].cours
-            ## on efface l'inscription
-            warning+=" -- {}...".format(str(inscriptions[i].cours.formation.titre))
-            inscriptions[i].delete()
-        warning+=" Ne pas oublier de valider la réinscription (si c'est ce qu'on veut)."
-    else:
-        barrette=request.session.get("barrette","")
-        b=Barrette.objects.get(nom=barrette)
-        ouvertures=Ouverture.objects.filter(barrettes__in=[b]).order_by("debut")
-        derniereOuverture=ouvertures.last()
+        inscriptions=Inscription.objects.filter(etudiant=etudiant, cours__ouverture=derniereOuverture).order_by('cours__horaire__heure')
+        coursConnus=[i.cours for i in inscriptions]
     cours=list(Cours.objects.filter(
         formation__barrette__id=b.id,
         ouverture=derniereOuverture.pk,
@@ -539,7 +526,6 @@ def enroler(request):
         "barrette": b.pk,
         "warning": warning,
     }
-    #context.update(dicoBarrette(request))
     return render(request, "enroler.html", context)
 
 def creeCoursParDefaut(barrette, ouverture, cours=None):
@@ -688,18 +674,27 @@ def enroleEleveCours(request):
             if len(eleve)==0:
                 msg="ERREUR : Élève inconnu."
             else:
+                ## on procède véritablement à l'inscription
+                ## tout en évitant toute double inscription
                 eleve=eleve[0]
-                ## vérifie que l'élève n'est pas déjà inscrit
-                inscr=len(Inscription.objects.filter(etudiant=eleve, cours__ouverture=Ouverture.derniere(barrette)))
-                if inscr:
-                    msg="ERREUR : {} {} {} est déjà inscrit.". format(eleve.nom, eleve.prenom, eleve.classe)
-                else:
-                    if c1:
-                        inscription=Inscription(etudiant=eleve,cours=c1[0])
-                        inscription.save()
-                    if c2:
-                        inscription=Inscription(etudiant=eleve,cours=c2[0])
-                        inscription.save()
+                for c in (c1,c2):
+                    if c:
+                        fait=False # inscription pas encore faite
+                        inscriptionDeja=Inscription.objects.filter(
+                            etudiant=eleve,
+                            cours__ouverture=c[0].ouverture,
+                            cours__horaire__heure=c[0].horaire.heure
+                        )
+                        if inscriptionDeja:
+                            # il existe une inscription, à la même heure
+                            if inscriptionDeja[0].cours != c[0]:
+                                # on l'efface si ce n'est pas la bonne
+                                inscriptionDeja[0].delete()
+                            else:
+                                fait=True # l'inscription était déjà faite
+                        if not fait:
+                            inscr=Inscription(etudiant=eleve,cours=c[0])
+                            inscr.save()
                     msg="OK : {} {} {} a été inscrit dans {} cours.".format(
                         eleve.nom, eleve.prenom, eleve.classe, len(c1+c2),
                     )
