@@ -478,6 +478,8 @@ class PreInscription(models.Model):
     """
     etudiant   = models.ForeignKey('Etudiant')
     cours      = models.ForeignKey('Cours')
+    barrette   = models.ForeignKey('Barrette', blank=True, null=True)
+    ouverture  = models.ForeignKey('Ouverture', blank=True, null=True)
 
     def __str__(self):
         return "{} {} {} {}".format(self.etudiant.classe, self.etudiant.nom, self.etudiant.prenom, self.cours)

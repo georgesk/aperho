@@ -89,6 +89,13 @@
     </table>
   </fieldset>
 </form>
+
+{% if leCours %}
+<script type="text/javascript">
+  $(".cours").val("{{leCours}}");
+</script>
+{% endif %}
+
 {% if preinscrits %}
 <h2>Pré-inscriptions déjà définies</h2>
 <ol>

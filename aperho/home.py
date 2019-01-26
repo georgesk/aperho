@@ -178,7 +178,7 @@ def index(request):
         ## on ajoute la pré-inscription éventuelle aux cours suivis
         ## en évitant tout doublon
         cours_suivis=set(cours_suivis)
-        pre=PreInscription.objects.filter(etudiant__uid=request.user.username)
+        pre=PreInscription.objects.filter(etudiant__uid=request.user.username, barrette=b, ouverture=od)
         if len(pre):
             cours_suivis.add(pre[0].cours)
         cours_suivis=list(cours_suivis)

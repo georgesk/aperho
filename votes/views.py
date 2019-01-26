@@ -1289,21 +1289,23 @@ def addEleves(request):
     context["barretteCourante"]=request.session.get("barrette")
     return render(request, "addEleves.html", context)
 
-def preInscrire(e,leCours):
+def preInscrire(e,leCours, b, o):
     """
     Crée une préinscription, tout en limitant à une préinscription
     par étudiant.
     @param e une instace d'Etudiant
     @para leCours une instance de Cours
+    @param b une instance de Barrette
+    @param o une instance d'Ouverture
     """
     # on s'assure de ne pas mettre plus d'une pré-inscription
     # automatique par élève.
     pre=None
     try:
-        pre=PreInscription.objects.get(etudiant=e)
+        pre=PreInscription.objects.get(etudiant=e, barrette=b, ouverture=o)
         pre.cours=leCours
     except:
-        pre=PreInscription(etudiant=e, cours=leCours)
+        pre=PreInscription(etudiant=e, cours=leCours, barrette=b, ouverture=o)
     pre.save()
     return
 
@@ -1313,6 +1315,7 @@ def pre(request):
     """
     barretteCourante=request.session.get("barrette")
     b=Barrette.objects.filter(nom=barretteCourante)[0]
+    od=Ouverture.derniere(barrette=b)
     ## gestion des commandes du super-utilisateur
     classe=request.POST.get("classe", "")
     if classe=="0": classe=""
@@ -1321,23 +1324,24 @@ def pre(request):
     eleve=request.POST.get("eleve", "")
     cours=request.POST.get("cours", "")
     delPre=request.POST.get("delPre", "")
+    leCours=None
     if classe and cours:
         """on pré-inscrit une classe"""
         eleves=Etudiant.objects.filter(classe=classe)
         leCours=[c for c in Cours.objects.filter(barrette=b) if str(c)==cours][0]
         for e in eleves:
-            preInscrire(e, leCours)
+            preInscrire(e, leCours, b, od)
     elif eleve and cours:
         e=[e for e in Etudiant.objects.all() if "{} {} {}".format(e.nom, e.prenom, e.classe)==eleve][0]
         leCours=[c for c in Cours.objects.filter(barrette=b) if str(c)==cours][0]
-        preInscrire(e, leCours)  
+        preInscrire(e, leCours, b, od)  
     elif delClasse:
         PreInscription.objects.filter(etudiant__classe=delClasse).delete()
     elif delPre:
         """ on supprime une pré-inscription """
         PreInscription.objects.get(pk=int(delPre)).delete()
     ## fabrication de la page
-    preinscrits=PreInscription.objects.all().order_by('etudiant__classe','etudiant__nom', 'etudiant__prenom')
+    preinscrits=PreInscription.objects.filter(barrette=b, ouverture=od).order_by('etudiant__classe','etudiant__nom', 'etudiant__prenom')
     classes=json.loads(b.classesJSON)
     cours=json.dumps([str(c) for c in Cours.objects.filter(barrette=b, ouverture=Ouverture.derniere(barrette=b))])
     eleves=json.dumps(["{} {} {}".format(e.nom, e.prenom, e.classe) for e in Etudiant.objects.filter(barrette=b).order_by('nom', 'prenom', 'classe')])
@@ -1349,4 +1353,5 @@ def pre(request):
             "classes"     : classes,
             "cours"       : cours,
             "eleves"      : eleves,
+            "leCours"     : leCours
         })
