@@ -23,8 +23,8 @@ from . import home
 
 urlpatterns = [
     url(r'^$', home.index, name='home'),
-    url(r'^login/$', django.contrib.auth.views.login, name='login'),
-    url(r'^logout/$', django.contrib.auth.views.logout, {'next_page': '/login'}),
+    url(r'^login/$',django.contrib.auth.views.LoginView.as_view(), name='login'),
+    url(r'^logout/$',django.contrib.auth.views.LogoutView.as_view(next_page='/login'), name='logout'),
     url(r'^admin/', admin.site.urls),
     url(r'^votes/', include('votes.urls')),
 ]
