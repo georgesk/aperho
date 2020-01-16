@@ -15,14 +15,14 @@ class CoursOrientation(models.Model):
     class Meta:
         verbose_name = "Séance d'orientation"
         verbose_name_plural = "Séances d'orientation"
-    cop = models.ForeignKey('Cop')
-    prof = models.ForeignKey('Enseignant', null=True, default=None)
+    cop = models.ForeignKey('Cop', on_delete=models.PROTECT)
+    prof = models.ForeignKey('Enseignant', null=True, default=None, on_delete=models.PROTECT)
     debut = models.DateTimeField()
     formation = models.IntegerField(choices=[
         (1,"Orientation en premières S, ES et L"),
         (2,"Orientation en premières STMG"),
         ], default=1)
-    barrette = models.ForeignKey('Barrette')
+    barrette = models.ForeignKey('Barrette', on_delete=models.PROTECT)
 
     def __str__(self):
         return "{} {} {} avec {}".format(timezone.localtime(self.debut), self.cop, self.formation, self.prof)
@@ -41,8 +41,8 @@ class InscriptionOrientation(models.Model):
     """
     Décrit l'affectation d'un étudiant à un cours d'orientation
     """
-    etudiant = models.ForeignKey('Etudiant')
-    cours    = models.ForeignKey('CoursOrientation')
+    etudiant = models.ForeignKey('Etudiant', on_delete=models.PROTECT)
+    cours    = models.ForeignKey('CoursOrientation', on_delete=models.PROTECT)
 
     def __str__(self):
         return "{} {}".format(self.etudiant, self.cours)
@@ -56,8 +56,8 @@ pour un créneau d'ouverture de l'AP donné
         (1, "S, ES, L (scientifique, économique & social, littéraire)"),
         (2,"STMG (sciences et techniques de management & gestion)"),
     ], default=1)
-    etudiant    = models.ForeignKey('Etudiant', null = True, default=None)
-    ouverture   = models.ForeignKey('Ouverture')
+    etudiant    = models.ForeignKey('Etudiant', null = True, default=None, on_delete=models.PROTECT)
+    ouverture   = models.ForeignKey('Ouverture', on_delete=models.PROTECT)
 
     def __str__(self):
         return "{} {} {}".format(self.etudiant, self.choix, self.ouverture)
@@ -262,8 +262,10 @@ INSCRIPTIONS « {0} » : {1} ↦ {2}<br/>Visible par les élèves dès le : 
         @param barrette un objet Barrette
         @return une instance d'Ouverture sinon None
         """
+        print("GRRRRR dernière ?")
         if not barrette: return None
         ouvertures=Ouverture.objects.filter(barrettes__in=[barrette]).order_by("debut")
+        print("GRRRRR", ouvertures)
         if ouvertures:
             return ouvertures.last()
         return None
@@ -319,10 +321,11 @@ class Formation(models.Model):
     contenu = models.TextField()
     duree   = models.IntegerField(default=1)
     public_designe = models.BooleanField(default=False, verbose_name="Public désigné")
-    barrette = models.ForeignKey('Barrette')
+    barrette = models.ForeignKey('Barrette', on_delete=models.PROTECT)
     auteur = models.ForeignKey(
         'Enseignant', null=True, blank=True,
-        help_text="le dernier prof à avoir modifié le titre ou le contenu"
+        help_text="le dernier prof à avoir modifié le titre ou le contenu",
+        on_delete=models.PROTECT
     )
 
     @property
@@ -378,7 +381,7 @@ class Horaire(models.Model):
         (5, "vendredi"),
         (6, "samedi"),
     ], default=1)
-    barrette = models.ForeignKey('Barrette')
+    barrette = models.ForeignKey('Barrette', on_delete=models.PROTECT)
 
     def __str__(self):
         return str("%s (%s %s)" %(self.barrette, self.get_jour_display(), self.hm))
@@ -405,7 +408,7 @@ class Etudiant(models.Model):
     nom       = models.CharField(max_length=50)
     prenom    = models.CharField(max_length=50)
     classe    = models.CharField(max_length=10)
-    barrette  = models.ForeignKey('Barrette')
+    barrette  = models.ForeignKey('Barrette', on_delete=models.PROTECT)
 
     def __str__(self):
         return "{nom} {prenom} {classe} {uid}, barrette={barrette_id}".format(**self.__dict__)
@@ -420,12 +423,12 @@ class Cours(models.Model):
     """
     class Meta:
         verbose_name_plural = "cours"
-    enseignant = models.ForeignKey('Enseignant')
-    horaire    = models.ForeignKey('Horaire')
-    formation  = models.ForeignKey('Formation')
+    enseignant = models.ForeignKey('Enseignant', on_delete=models.PROTECT)
+    horaire    = models.ForeignKey('Horaire', on_delete=models.PROTECT)
+    formation  = models.ForeignKey('Formation', on_delete=models.PROTECT)
     capacite   = models.IntegerField(default=18)
-    ouverture  = models.ForeignKey('Ouverture')
-    barrette   = models.ForeignKey('Barrette')
+    ouverture  = models.ForeignKey('Ouverture', on_delete=models.PROTECT)
+    barrette   = models.ForeignKey('Barrette', on_delete=models.PROTECT)
     invalide   = models.BooleanField(default=False)
 
     def __str__(self):
@@ -476,10 +479,10 @@ class PreInscription(models.Model):
     que l'élève se connectera en modifiant les cases à cliquer, et
     disparaîtra quand l'élève sera inscrit définitivement
     """
-    etudiant   = models.ForeignKey('Etudiant')
-    cours      = models.ForeignKey('Cours')
-    barrette   = models.ForeignKey('Barrette', blank=True, null=True)
-    ouverture  = models.ForeignKey('Ouverture', blank=True, null=True)
+    etudiant   = models.ForeignKey('Etudiant', on_delete=models.PROTECT)
+    cours      = models.ForeignKey('Cours', on_delete=models.PROTECT)
+    barrette   = models.ForeignKey('Barrette', blank=True, null=True, on_delete=models.PROTECT)
+    ouverture  = models.ForeignKey('Ouverture', blank=True, null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return "{} {} {} {}".format(self.etudiant.classe, self.etudiant.nom, self.etudiant.prenom, self.cours)
@@ -490,8 +493,8 @@ class Inscription(models.Model):
     La relation binaire entre un étudiant et un cours, qui résulte de
     son vote.
     """
-    etudiant   = models.ForeignKey('Etudiant')
-    cours      = models.ForeignKey('Cours')
+    etudiant   = models.ForeignKey('Etudiant', on_delete=models.PROTECT)
+    cours      = models.ForeignKey('Cours', on_delete=models.PROTECT)
 
     def __str__(self):
         return "{} {}".format(self.etudiant, self.cours)
