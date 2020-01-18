@@ -81,7 +81,7 @@ def coursDeBarretteCourante(request):
     return list(tousLesCours)
     
 def index(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         #########################################################
         #   GESTION DE LA BARRETTE COURANTE POUR LA SESSION     #
         #########################################################
