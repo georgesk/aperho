@@ -8,7 +8,7 @@ groupes d'accompagnement personnalisé, telle qu'on la pratique au
 lycée Jean Bart de Dunkerque. Cette gestion repose sur l'usage d'un
 serveur WIMS, selon un protocole mis au point par Benoît Markey, et
 mis en œuvre par lui-même et Gérard Dessingué durant les années
-2013-2015.
+2013-2018.
 
 La récolte des choix de groupes d'Accompagnement Personnalisé (AP) que
 font les élèves s'effectue quelques semaines avant le démarrage des
