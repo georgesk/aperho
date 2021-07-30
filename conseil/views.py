@@ -4,6 +4,9 @@ import collections
 
 from conseil.utils.readBulletin import *
 
+def protect(fieldname):
+    return fieldname.replace(" ", "_").replace(".","_")
+
 def csv2fields_and_data(csvfile):
     """
     @param csvfile: un fichier ouvert, sous-classe de io.IOBase
@@ -11,7 +14,7 @@ def csv2fields_and_data(csvfile):
     """
     h1 = csvfile.readline().strip().split(";")
     h2 = csvfile.readline().strip().split(";")
-    fieldnames = h2[:3] + h1[3:]
+    fieldnames = [ protect(f) for f in h2[:3] + h1[3:]]
     data = sorted(
         [l.strip().split(";") for l in csvfile.readlines()[:-2]],
         key = lambda x: x[0])
@@ -21,6 +24,7 @@ def index(request):
     fieldnames, data = csv2fields_and_data(
         open("conseil/1G09_3tri.csv", encoding="latin-1")
     )
+    
     uniqueFields = collections.OrderedDict()
     for i,f in enumerate(fieldnames):
         if f in uniqueFields:
@@ -34,10 +38,11 @@ def index(request):
             colonnes = uniqueFields[fieldnames[i]]
             if len(colonnes) > 1 and colonnes[0] == i:
                 ### on est juste avant une zone résumables
+                val = "".join([d[c] for c in colonnes])
                 dataline.append({
                     "cl": "resume",
                     "field": fieldnames[i],
-                    "val": "résumé",
+                    "val": val,
                     "disp": "none",
                     "cols": len(colonnes),
                 })
