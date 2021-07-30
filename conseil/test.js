@@ -18,30 +18,27 @@ function init(){
 	    uniqueHeaders[item.innerText].push(item);
     });
     firstDataLine = t.querySelector("td").parentElement;
+    var tbody = t.firstElementChild;
     var newLine = document.createElement("tr");
     var repeat = 0;
     headers.forEach(function(item, index){
 	var len = uniqueHeaders[item.innerText].length;
-	if (len == 1){
+	if (repeat == 0) {
+	    repeat = len;
 	    var td = document.createElement("td");
 	    var num = uniqueHeaders[item.innerText].indexOf(item);
-	    td.innerText ="Hello " + num;
-	    newLine.append(td);
-	} else {
-	    if (repeat == 0) {
-		repeat = len;
-		var td = document.createElement("td");
-		var num = uniqueHeaders[item.innerText].indexOf(item);
-		td.setAttribute("colspan", len);
+	    td.setAttribute("colspan", len);
+	    if (len == 1){
 		td.innerText ="Hello " + len;
-		newLine.append(td);
-		repeat -= 1;
 	    } else {
-		repeat -= 1;
+		td.innerText ="Collapse " + len;
 	    }
+	    newLine.append(td);
+	    repeat -= 1;
+	} else {
+	    repeat -= 1;
 	}
     });
-    var tbody = t.firstElementChild;
     tbody.insertBefore(newLine, firstDataLine);
     console.log(firstDataLine);
     console.log(uniqueHeaders);

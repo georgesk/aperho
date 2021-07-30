@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    {% block webTitle %}
+    <title>Conseil ..:: Web Titre ::..</title>
+    {% endblock %}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="icon" type="image/icon" href="/static/votes/ico/aperho.ico"/>
+    <script type="text/javascript" src="/static/votes/js/jquery/jquery.js">
+    </script>
+    <script type="text/javascript" src="/static/votes/js/jquery-ui/jquery-ui.js">
+    </script>
+    {% block localscripts %}
+    <!-- scripts to be used with this particular page -->
+    {% endblock %}
+  </head>
+  <body>
+    <div id="dialog" style="display: none;"></div>
+    {% block title %}
+    <h1 classe="pagetitre">..:: Titre ::..</h1>
+    {% endblock %}
+    {% block contents %}
+    les contenus de la page sont ici
+    {% endblock %}
+  </body>
+</html>

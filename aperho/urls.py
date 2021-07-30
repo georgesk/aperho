@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^logout/$',django.contrib.auth.views.LogoutView.as_view(next_page='/login'), name='logout'),
     url(r'^admin/', admin.site.urls),
     url(r'^votes/', include('votes.urls')),
+    url(r'^conseil/', include('conseil.urls')),
 ]
 
 if settings.DEBUG:
