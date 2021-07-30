@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-import csv, sys, io
+import sys, io
 
 def _visite_fichier(csvfile, head=None, body=None, foot=None):
     """
@@ -13,18 +13,19 @@ def _visite_fichier(csvfile, head=None, body=None, foot=None):
     """
     h1 = csvfile.readline().split(";")
     h2 = csvfile.readline().split(";")
-    h = h2[:3] + h1[3:]
-    r = csv.DictReader(csvfile, fieldnames = h, delimiter=";")
+    fieldnames = h2[:3] + h1[3:]
     result = ""
     if head:
-        result += head(r)
-    for row in r:
+        result += head(fieldnames)
+    for row in sorted(
+            [l.strip().split(";") for l in csvfile.readlines()[:-2]],
+            key = lambda x: x[0]):
         if body:
             result += body(row)
         else:
             result += str(row) + "\n"
     if foot:
-        result += foot(r)
+        result += foot()
     return result
 
 def visite_fichier(f, head=None, body=None, foot=None):
@@ -43,30 +44,33 @@ def visite_fichier(f, head=None, body=None, foot=None):
             return _visite_fichier(csvfile, head, body, foot)
 
 if __name__ == "__main__":
-    def head_table(r):
+    def head_table(fieldnames):
         result = """\
 <html>
 <head>
 <title>Test</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style>
 table {border-collapse: collapsed}
 th, td {border: 1px solid black; background: rgba(255,255,200,0.5);}
+tr { height: 52px;}
 tr:nth-child(odd) {background: lightcyan}
 </style>
+<script src="test.js"></script>
 </head>
 <body>
 <table class="matable">\n<tr>
 """
-        for h in r.fieldnames:
+        for h in fieldnames:
             result += f"<th>{h}</th>"
         result += "</tr>\n"
         return result
-    def foot_table(r):
+    def foot_table():
         return "</table>\n</body>\n</html>\n"
     def body_table(row):
         result = "<tr>"
-        for col, val in row.items():
-            result += f"<td class='{col}'>{val}</td>"
+        for val in row:
+            result += f"<td>{val}</td>"
         result += "</tr>\n"
         return result
     
