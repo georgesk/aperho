@@ -12,4 +12,24 @@
 {% endblock %}
 
 {% block contents %}
+<style>
+  table {border-collapse: collapsed}
+  th, td {border: 1px solid black; background: rgba(255,255,200,0.5);}
+  tr { height: 52px;}
+  tr:nth-child(odd) {background: lightcyan}
+</style>
+<table class="matable">
+  <tr>
+    {% for f in fieldnames %}
+    <th>{{ f }}</th>
+    {% endfor %}
+  </tr>
+  {% for d in data %}
+  <tr>
+    {% for col in d %}
+    <td>{{ col }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
 {% endblock %} <!-- end contents -->

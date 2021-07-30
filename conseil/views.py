@@ -45,7 +45,11 @@ def body_table(row):
     return result
 
 def index(request):
-    return render(request, "index1.html", context = {
-        "page": visite_fichier("conseil/1G09_3tri.csv", head_table, body_table, foot_table)
+    fieldnames, data = csv2fields_and_data(
+        open("conseil/1G09_3tri.csv", encoding="latin-1")
+    )
+    return render(request, "index.html", context = {
+        "fieldnames": fieldnames,
+        "data": data,
         })
 
