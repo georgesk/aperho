@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block title %}
-<h1>..:: Simplification du tableau de notes ::..</h1>
+<h1>..:: Tableau de notes à simplifier::..</h1>
 {% endblock %}
 
 {% block contents %}
@@ -18,6 +18,8 @@
   tr { height: 52px;}
   tr:nth-child(odd) {background: lightcyan}
 </style>
+<button onclick="resume_all()">Tout résumer</button> 
+<button onclick="download()">Télécharger au format ODS</button> <br/>
 <table class="matable">
   <tr>
     {% for u,l in uniqueFields.items %}
@@ -79,6 +81,20 @@
 	      }
 	  }
       });
+  }
+
+  function resume_all(){
+      toggled.forEach(function(item, index){
+	  resume(item.field);
+      });
+  }
+
+  function download(){
+      var upload = {
+	  csrf_token: "{{ csrf_token }}",
+	  data: JSON.stringify(toggled)
+      }
+      $.post("printable", upload);
   }
 </script>
 {% endblock %} <!-- end contents -->
