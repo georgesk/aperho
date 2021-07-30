@@ -1,0 +1,5 @@
+Les fichiers CVS issus de Pronote semblent :
+
+ - être encodés en iso-8859-1
+ - contenir des chiffres "français" (avec des virgules)
+ - les champs y sont séparés par des points-virgules.
