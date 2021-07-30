@@ -165,3 +165,7 @@ LDAP_AUTH_USER_LOOKUP_FIELDS = ("username",)
 # Override this to set custom field formatting for your
 # user model.
 LDAP_AUTH_CLEAN_USER_DATA = django_python3_ldap.utils.clean_user_data
+
+# TMP directory for conseil application
+
+TMP_CONSEIL_DIR = os.path.join(BASE_DIR, "conseil", "tmp")
