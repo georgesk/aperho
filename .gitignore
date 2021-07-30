@@ -77,3 +77,6 @@ db.sqlite3.bak
 
 # accréditations
 credentials
+
+# fichiers temporaires
+tmp/
