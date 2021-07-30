@@ -18,8 +18,13 @@
   tr { height: 52px;}
   tr:nth-child(odd) {background: lightcyan}
 </style>
-<button onclick="resume_all()">Tout résumer</button> 
-<button onclick="download()">Télécharger au format ODS</button> <br/>
+<p>
+  <button onclick="resume_all()">Tout résumer</button> 
+  <button onclick="window.location=printableURL()">Télécharger au format ODS</button> <br/>
+</p>
+<p>
+  <button onclick="window.location='/conseil'">Changer de fichier</button>
+</p>
 <table class="matable">
   <tr>
     {% for u,l in uniqueFields.items %}
@@ -89,12 +94,8 @@
       });
   }
 
-  function download(){
-      var upload = {
-	  csrf_token: "{{ csrf_token }}",
-	  data: JSON.stringify(toggled)
-      }
-      $.post("printable", upload);
+  function printableURL(){
+      return "/conseil/printable?data=" + JSON.stringify(toggled); 
   }
 </script>
 {% endblock %} <!-- end contents -->

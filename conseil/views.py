@@ -1,9 +1,8 @@
 from django.shortcuts import render
 
-import collections, io
+import collections, io, json
 
 from conseil.utils.readBulletin import *
-from .forms import UploadFileForm
 
 def protect(fieldname):
     return fieldname.replace(" ", "_").replace(".","_")
@@ -26,8 +25,7 @@ def index(request):
         csv_data = request.FILES['fichier'].read().decode("latin-1")
         request.session["csv_data"] = csv_data
     else:
-        form = UploadFileForm()
-        return render(request, 'index_getfilename.html', {'form': form})
+        return render(request, 'index_getfilename.html', {})
     csv_data = request.session["csv_data"]
     fieldnames, data = csv2fields_and_data(
         io.StringIO(csv_data)
@@ -70,3 +68,6 @@ def index(request):
         "data_supplemented": data_supplemented,
         })
 
+def printable(request):
+    debug = "data = " + str(json.loads(request.GET["data"]))
+    return render(request, 'index_getfilename.html', {"debug": debug,})
