@@ -20,8 +20,19 @@
 </style>
 <table class="matable">
   <tr>
-    {% for f in fieldnames %}
-    <th>{{ f }}</th>
+    {% for u,l in uniqueFields.items %}
+    {% if l|length == 1 %}
+    <th>{{ u }}</th>
+    {% else %}
+    <th class="resume" data-field="{{ u }}" style="display:none" colspan="{{ l|length }}">
+      {{ u }} résumé
+    </th>
+    {% for i in l %}
+    <th class="val" data-field="{{ u }}">
+      {{ u }}
+    </th>
+    {% endfor %}
+    {% endif %}
     {% endfor %}
   </tr>
   <tr>
