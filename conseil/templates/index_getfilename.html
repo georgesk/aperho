@@ -1,0 +1,35 @@
+{% extends "base2.html" %}
+
+{% block webTitle %}
+<title>Préparation des conseils de classe</title>
+{% endblock %}
+
+{% block localscripts %}
+{% endblock %}
+
+{% block title %}
+<h1>..:: Choisir un fichier CSV de notes pour le conseil de classe ::..</h1>
+{% endblock %}
+
+{% block contents %}
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <th><label for="id_fichier">Fichier CSV :</label></th>
+      <td><input type="file" name="fichier"
+		 id="id_fichier" onchange="checkandsubmit()"/>
+      </td>
+    </tr>
+  </table>
+</form>
+
+<script>
+  function checkandsubmit(){
+      var fileinput = $("#id_fichier");
+      if(fileinput.val().endsWith(".csv") || fileinput.val().endsWith(".CSV")){
+	  $("form").submit();
+      }
+  }
+</script>
+{% endblock %} <!-- end contents -->

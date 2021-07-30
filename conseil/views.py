@@ -1,8 +1,9 @@
 from django.shortcuts import render
 
-import collections
+import collections, io
 
 from conseil.utils.readBulletin import *
+from .forms import UploadFileForm
 
 def protect(fieldname):
     return fieldname.replace(" ", "_").replace(".","_")
@@ -21,8 +22,15 @@ def csv2fields_and_data(csvfile):
     return fieldnames, data
 
 def index(request):
+    if request.method == 'POST':
+        csv_data = request.FILES['fichier'].read().decode("latin-1")
+        request.session["csv_data"] = csv_data
+    else:
+        form = UploadFileForm()
+        return render(request, 'index_getfilename.html', {'form': form})
+    csv_data = request.session["csv_data"]
     fieldnames, data = csv2fields_and_data(
-        open("conseil/1G09_3tri.csv", encoding="latin-1")
+        io.StringIO(csv_data)
     )
     
     uniqueFields = collections.OrderedDict()
