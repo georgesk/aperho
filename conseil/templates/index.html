@@ -24,12 +24,50 @@
     <th>{{ f }}</th>
     {% endfor %}
   </tr>
-  {% for d in data %}
   <tr>
-    {% for col in d %}
-    <td>{{ col }}</td>
+    {% for u,l in uniqueFields.items %}
+    <td colspan="{{ l|length }}">
+      {% if l|length > 1 %}
+      <button onclick="resume('{{ u }}')">résumé {{ u }}</button>
+      {% endif %}
+    </td>
+    {% endfor %}
+  </tr>
+  {% for d in data_supplemented %}
+  <tr>
+    {% for c in d %}
+    <td class="{{ c.cl }}" data-field="{{ c.field }}" style="display:{{ c.disp }}" colspan="{{ c.cols }}">{{ c.val }}</td>
     {% endfor %}
   </tr>
   {% endfor %}
 </table>
+
+<script>
+  var toggled = [
+      {% for u,l in uniqueFields.items %}
+      {% if l|length > 1 %}
+      { field: "{{ u }}", short: false},
+      {% endif %}
+      {% endfor %}
+  ];
+  
+  function resume(field){
+      toggled.forEach(function(item, index){
+	  if (item.field == field){
+	      var resumes = $(".resume[data-field="+field+"]")
+	      console.log(resumes);
+	      var data = $(".val[data-field="+field+"]")
+	      console.log(data);
+	      item.short = ! (item.short);
+	      if (item.short){
+		  resumes.show();
+		  data.hide();
+	      } else {
+		  resumes.hide();
+		  data.show();
+	      }
+	  }
+      });
+  }
+</script>
 {% endblock %} <!-- end contents -->
