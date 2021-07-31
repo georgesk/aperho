@@ -12,19 +12,83 @@
 {% endblock %}
 
 {% block contents %}
-{{ debug }}
+<style>
+  dt {font-weight: bold; font-size: 140%; margin-top: 1ex;}
+  dd {padding-left: 1em;}
+</style>
+<div style="border: 2px grey solid; padding: 1ex; 
+	    border-radius: 1ex; margin: 1ex; display: inline-flex;
+	    background: lightyellow;">
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
-  <table>
-    <tr>
-      <th><label for="id_fichier">Fichier CSV :</label></th>
-      <td><input type="file" name="fichier"
-		 id="id_fichier" onchange="checkandsubmit()"/>
-      </td>
-    </tr>
-  </table>
+  <label for="id_fichier" style="font-weight: bold;">Fichier CSV :</label>
+  <input type="file" name="fichier"
+	 id="id_fichier" onchange="checkandsubmit()"/>
 </form>
-
+</div>
+<h1>Mode d'emploi</h1>
+<div style="float:right; border: 1.5px grey solid; padding: 1ex; 
+	    border-radius: 1ex; margin: 1ex;">
+  <img src="/static/conseil/shot1.png" alt="copie d'écran" />
+  <p>
+    Aperçu des boutons qui apparaissent après le choix initial.
+  </p>
+</div>
+<dl>
+  <dt>But de l'application :</dt>
+  <dd>
+    Le but de l'application est de faciliter la simplification des
+    tableaux de résultats trimestriels que Pronote permet d'obtenir,
+    en vue de la tenue d'un conseil de classe. Ces tableaux
+    contiennent de nombreuses colonnes voisines, quand les élèves
+    d'une classe sont répartis en plusieurs groupes pour un
+    enseignement donné. Le tableau est alors très «&nbsp;creux&nbsp;»,
+    et il peut être avantageux de regrouper en une seule colonne les
+    colonnes voisines qui correspondent aux mêmes enseignements.
+  </dd>
+  <dt>Pour débuter ...</dt>
+  <dd>
+    Pour commencer, utilisez le bouton «&nbsp;Parcourir ...&nbsp;» ci-dessus,
+    afin de sélectionner un fichier CSV, exporté depuis Pronote, et
+    contenant les résultats trimestriels d'une classe. Ceci constitue le
+    «&nbsp;choix initial&nbsp;»
+  </dd>
+  <dt>Et ensuite ...</dt>
+  <dd>
+    Si le fichier CSV est bien conformé, un tableau de notes sera affiché,
+    sous un group de boutons, comme dans l'aperçu ci-contre. Le rôle des
+    boutons est le suivant&nbsp;:
+    <ul>
+      <li>
+	«&nbsp;Télécharger au format PDF&nbsp;»&nbsp;:
+	permet d'obtenir le tableau visible dans la page web, sous
+	forme d'un tableau imprimable. Ouvre un onglet séparé.
+      </li>
+      <li>
+	«&nbsp;Tout déplier&nbsp;»&nbsp;:
+	les colonnes multiples sont résumées, dans un premier temps.
+	Si on veut les séparer selon les sous-groupes d'un même
+	enseignement, ce bouton permet de déplier toutes les colonnes
+	résumées.
+      </li>
+      <li>
+	«&nbsp;Tout replier&nbsp;»&nbsp;:
+	ce bouton a l'effet inverse du précédent : il permet de replier
+	chaque groupe de colonnes en une seule.
+      </li>
+      <li>
+	«&nbsp;Choisir un autre fichier&nbsp;»&nbsp;:
+	ce bouton permet de téléverser un nouveau fichier CSV issu de
+	Pronote.
+      </li>
+      <li>
+	Les boutons «&nbsp;étendre/résumer&nbsp;», qui apparaissent
+	dans la deuxième ligne du tableau&nbsp;: ceux-là permettent
+	de déplier ou de replier un groupe de colonnes indépendamment
+	des autres.
+      </li>
+    </ul>
+  </dd>
 <script>
   function checkandsubmit(){
       var fileinput = $("#id_fichier");
