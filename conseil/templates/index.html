@@ -13,13 +13,16 @@
 
 {% block contents %}
 <style>
-  table {border-collapse: collapsed}
-  th, td {border: 1px solid black; background: rgba(255,255,200,0.5);}
-  tr { height: 52px;}
-  tr:nth-child(odd) {background: lightcyan}
+  table.matable {border-collapse: collapse}
+  table.matable th, table.matable td {
+      border: 1px solid black; background: rgba(255,255,200,0.5);
+  }
+  table.matable tr { height: 52px;}
+  table.matable tr:nth-child(odd) {background: lightcyan}
   #tele {
       border: 1px solid #ccc;
-      padding: 3.58px 30px;
+      margin-right: 10px;
+      padding: 16px 30px;
       border-radius: 5px;
       background: #eee;
       color: black;
@@ -27,13 +30,29 @@
       font-size: 12px;
   }
 </style>
+<!---
 <p>
-  <button onclick="resume_all()">Tout résumer</button> 
   <a id="tele" href="" target="_new">Télécharger au format PDF</a> <br/>
+</p>
+<p>
+  <button onclick="resume_none()">Tout déplier</button> 
+  <button onclick="resume_all()">Tout résumer</button> 
 </p>
 <p>
   <button onclick="window.location='/conseil'">Changer de fichier</button>
 </p>
+-->
+<table class="commands">
+  <tr>
+    <td><a id="tele" href="" target="_new">Télécharger au format PDF</a></td>
+    <td>
+      <button onclick="resume_none()">Tout déplier</button> 
+      <button onclick="resume_all()">Tout résumer</button> 
+      <br/>
+      <button onclick="window.location='/conseil'">Changer de fichier</button>
+    </td>
+  </tr>
+</table>
 <table class="matable">
   <tr>
     {% for u,l in uniqueFields.items %}
@@ -55,7 +74,7 @@
     {% for u,l in uniqueFields.items %}
     <td colspan="{{ l|length }}">
       {% if l|length > 1 %}
-      <button onclick="resume('{{ u }}')">résumé {{ u }}</button>
+      <button class="toggle" data-field="{{ u }}" onclick="resume('{{ u }}')">résumé {{ u }}</button>
       {% endif %}
     </td>
     {% endfor %}
@@ -73,27 +92,40 @@
   var toggled = [
       {% for u,l in uniqueFields.items %}
       {% if l|length > 1 %}
-      { field: "{{ u }}", short: false},
+      { field: "{{ u }}", short: true},
       {% endif %}
       {% endfor %}
   ];
 
   var tele = $("#tele");
   tele.attr("href",printableURL());
-  
-  function resume(field){
+
+  /**
+   * résume ou déplie un champ multiple
+   * @param field le nom du champ
+   * @param newVal (optionnel) une valeur true ou false pour forcer
+   *        l'état de ce champ
+   **/
+  function resume(field, newVal){
       toggled.forEach(function(item, index){
 	  if (item.field == field){
-	      var resumes = $(".resume[data-field="+field+"]")
-	      console.log(resumes);
-	      var data = $(".val[data-field="+field+"]")
-	      console.log(data);
-	      item.short = ! (item.short);
+	      var resumes = $(".resume[data-field="+field+"]");
+	      var button = $(".toggle[data-field="+field+"]");
+	      var data = $(".val[data-field="+field+"]");
+	      if (typeof newVal !== 'undefined'){
+		  /* force l'état du champ */
+		  item.short = newVal || false;
+	      } else {
+		  /* inverse l'état du champ */
+		  item.short = ! (item.short);
+	      }
 	      if (item.short){
 		  resumes.show();
+		  button.text("étendre " + field);
 		  data.hide();
 	      } else {
 		  resumes.hide();
+		  button.text("résumer " + field);
 		  data.show();
 	      }
 	  }
@@ -103,12 +135,20 @@
 
   function resume_all(){
       toggled.forEach(function(item, index){
-	  resume(item.field);
+	  resume(item.field, true);
+      });
+  }
+
+  function resume_none(){
+      toggled.forEach(function(item, index){
+	  resume(item.field, false);
       });
   }
 
   function printableURL(){
       return "/conseil/printable?data=" + JSON.stringify(toggled); 
   }
+
+  resume_all();
 </script>
 {% endblock %} <!-- end contents -->
