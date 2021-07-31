@@ -1,10 +1,16 @@
 from django.shortcuts import render, HttpResponse
 
 import collections, io, json, tempfile
+from subprocess import run
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+pdfmetrics.registerFont(TTFont('LiberationSans-Regular', 'LiberationSans-Regular.ttf'))
+pdfmetrics.registerFont(TTFont('LiberationSans-Bold', 'LiberationSans-Bold.ttf'))
 
 from conseil.utils.readBulletin import *
 from aperho.settings import TMP_CONSEIL_DIR
@@ -76,25 +82,73 @@ def index(request):
         "data_supplemented": data_supplemented,
         })
 
+def is_toggled(toggled, f):
+    tg = False
+    for o in toggled:
+        if o["field"] == f:
+            tg = o["short"]
+    return tg
+    
 def printable(request):
-    ## debug = "data = " + str(json.loads(request.GET["data"]))
-    ## debug += request.session["csv_data"]
+    toggled = json.loads(request.GET["data"])
     csv_data = request.session["csv_data"]
     fieldnames, uniqueFields, data, data_supplemented = csv2fields_and_data(
         io.StringIO(csv_data)
     )
+    table_data = []
+    firstLine=[]
+    for f, l in uniqueFields.items():
+        if len(l) == 1:
+            firstLine.append(f)
+        else:
+            if is_toggled(toggled, f):
+                firstLine.append(f)
+            else:
+                for i in l:
+                    firstLine.append(f)
+    table_data.append(firstLine)
+    for dl in data_supplemented:
+        nextLine=[]
+        for d in dl:
+            f=d["field"]
+            if (is_toggled(toggled, f) and d["cl"] == "resume") or\
+               ((not is_toggled(toggled, f)) and d["cl"] == "val"):
+                    nextLine.append(d["val"])
+        table_data.append(nextLine)
+    ### fait le ménage dans les fichiers temporaires de plus de 5 minutes
+    cmd = f"find {TMP_CONSEIL_DIR} -cmin +5 | grep pdf | xargs rm -f"
+    run(cmd, shell=True)
     with tempfile.NamedTemporaryFile(
         dir=TMP_CONSEIL_DIR, suffix=".pdf", delete=False) as tmpfile:
         fname = tmpfile.name
+        # use the font: LiberationSans-Regular
         doc = SimpleDocTemplate(fname, pagesize=landscape(A4), )
         # container for the 'Flowable' objects
         elements = []
-        t=Table([fieldnames] + data)
+        t=Table(table_data)
         t.setStyle(TableStyle([
-            ('BACKGROUND',(0,0),(-1,0),colors.yellow),
-            ('TEXTCOLOR',(0,0),(1,-1),colors.red),
+            ('BACKGROUND',(0,0),(-1,0),colors.toColor("rgb(255,255,180)")),
+            ('TEXTCOLOR',(0,0),(-1,-0),colors.toColor("rgb(0,0,200)")),
+            ('TEXTFONT',(1,1),(-1,-1),'LiberationSans-Regular'),
+            ('TEXTFONT',(0,0),(-1,0),'LiberationSans-Bold'),
+            ('TEXTFONT',(0,1),(0,-1),'LiberationSans-Bold'),
+            ('SIZE',(0,0),(-1,-1),8),
+            ('LEFTPADDING',(0,0),(-1,-1),1),
+            ('RIGHTPADDING',(0,0),(-1,-1),1),
+            ('TOPPADDING',(0,0),(-1,-1),1),
+            ('BOTTOMPADDING',(0,0),(-1,-1),1),
+            ('LEADING',(0,0),(-1,-1),10),
             ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
             ('BOX', (0,0), (-1,-1), 0.25, colors.black),    ]))
+        for l in range(1, len(table_data)):
+            if l%2 == 0:
+                bgcolor = colors.toColor("rgb(255,255,230)")
+            else:
+                bgcolor = colors.toColor("rgb(230,255,255)")
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0, l), (-1, l), bgcolor)
+            ]))
+
         elements.append(t)
         # write the document to disk
         doc.build(elements)
