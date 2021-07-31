@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'votes.apps.VotesConfig',
+    'conseil.apps.ConseilConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -137,6 +138,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 # LDAP connection
 config = configparser.ConfigParser()
 config.read(os.path.join(BASE_DIR, "aperho", "credentials"))
+
 
 ############# for the LDAP AUTH BACKEND ########################
 # The URL of the LDAP server.
