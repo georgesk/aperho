@@ -29,19 +29,21 @@
       text-decoration: none;
       font-size: 12px;
   }
+  /* déplace le mot "parcourir" hors de notre vue */
+  label.label input[type="file"] {
+      position: absolute;
+      top: -1000px;
+  }
+  .label {
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px 15px;
+      margin: 5px;
+      background: #eee;
+      display: inline-block;
+  }
 </style>
-<!---
-<p>
-  <a id="tele" href="" target="_new">Télécharger au format PDF</a> <br/>
-</p>
-<p>
-  <button onclick="resume_none()">Tout déplier</button> 
-  <button onclick="resume_all()">Tout résumer</button> 
-</p>
-<p>
-  <button onclick="window.location='/conseil'">Changer de fichier</button>
-</p>
--->
 <table class="commands">
   <tr>
     <td><a id="tele" href="" target="_new">Télécharger au format PDF</a></td>
@@ -49,7 +51,14 @@
       <button onclick="resume_none()">Tout déplier</button> 
       <button onclick="resume_all()">Tout résumer</button> 
       <br/>
-      <button onclick="window.location='/conseil'">Changer de fichier</button>
+      <form method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+	<label class="label">
+	  <input type="file" name="fichier"
+		 id="id_fichier" onchange="checkandsubmit()"/>
+	  <span>Choisir un autre fichier ...</span>
+	</label>
+      </form>
     </td>
   </tr>
 </table>
@@ -147,6 +156,13 @@
 
   function printableURL(){
       return "/conseil/printable?data=" + JSON.stringify(toggled); 
+  }
+
+  function checkandsubmit(){
+      var fileinput = $("#id_fichier");
+      if(fileinput.val().endsWith(".csv") || fileinput.val().endsWith(".CSV")){
+	  $("form").submit();
+      }
   }
 
   resume_all();
