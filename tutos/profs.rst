@@ -58,8 +58,23 @@ l'AP doit se connecter une fois à https://aperho.lyceejeanbart.fr
 
 |image1|
 
+Après authentification (prenom.nom/mot de passe [des ordinateurs du lycée]),
+On arrive à une page qui contient les « cours d'AP », avec des intitulés
+provisoires.
+
+|image2|
+
+
+
+
+
 .. |image1| image::  snap1.png
    :width: 500
    :align: middle
-
+   :alt: écran de connexion
+   
+.. |image2| image::  snap2.png
+   :width: 500
+   :align: middle
+   :alt: page d'accueil
    
