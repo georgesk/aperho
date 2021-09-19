@@ -59,7 +59,7 @@ l'AP doit se connecter une fois à https://aperho.lyceejeanbart.fr
 |image1|
 
 .. |image1| image::  snap1.png
-   width: 500
-   align: middle
+   :width: 500
+   :align: middle
 
    
