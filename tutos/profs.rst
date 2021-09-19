@@ -64,8 +64,24 @@ provisoires.
 
 |image2|
 
+Il faut obligatoirement modifier les intitulés
+----------------------------------------------
 
+Et ce, 48 heures avant que les élèves ne soient autorisés à voir la page.
 
+Comment faire :
+
+  - on déroule le menu (les trois traits blanc, en haut à gauche si l'écran
+    est étroit comme celui d'un téléphone), puis
+    **MES ACTIONS ---> Mes Cours D'AP**
+
+.. list-table:: Édition de « Mes Cours D'AP »
+   :header-rows: 1
+
+   * - Écran étroit
+     - Écran large
+   * - |image3|
+     - |image4|
 
 
 .. |image1| image::  snap1.png
@@ -77,4 +93,15 @@ provisoires.
    :width: 500
    :align: middle
    :alt: page d'accueil
+   
+.. |image3| image::  snap3.png
+   :width: 250
+   :align: middle
+   :alt: écran étroit
+   
+.. |image4| image::  snap4.png
+   :width: 250
+   :align: middle
+   :alt: écran large
+	 
    
