@@ -70,6 +70,7 @@ Il faut obligatoirement modifier les intitulés
 Et ce, 48 heures avant que les élèves ne soient autorisés à voir la page.
 
 Comment faire :
+^^^^^^^^^^^^^^^
 
   - on déroule le menu (les trois traits blanc, en haut à gauche si l'écran
     est étroit comme celui d'un téléphone), puis
@@ -83,6 +84,17 @@ Comment faire :
    * - |image3|
      - |image4|
 
+Dans le contexte de « Mes Cours D'AP »
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Chaque professeur a deux lignes qui le concernent : on clique sur une
+des deux lignes, par exemple celle du premier cours. Des informations
+plus précises sont alors dépliées.
+
+À ce point-là, sans hésitation aucune,
+**ON CLIQUE SUR LE BOUTON ÉNORME SYMBOLISANT UN CRAYON SUR UN BLOC-NOTES**
+
+|image5|
 
 .. |image1| image::  snap1.png
    :width: 500
@@ -104,4 +116,9 @@ Comment faire :
    :align: middle
    :alt: écran large
 	 
+.. |image5| image::  snap5.png
+   :width: 500
+   :align: middle
+   :alt: cliquez là
+   
    
