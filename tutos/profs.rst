@@ -4,7 +4,7 @@ Aperho : le tutoriel des profs
 Préparation, en début d'année
 =============================
 
-Au début de l'année scolaire, idéalement, une rénion de concertation
+Au début de l'année scolaire, idéalement, une réunion de concertation
 permet de décider des dates de des consultations d'élèves, et de la
 politique générale de l'Accompagnement Personnalisé.
 
@@ -41,7 +41,7 @@ pour éviter au mieux des situations de blocage.
 Les travaux échéant aux professeurs, pour renseigner Aperho
 ===========================================================
 
-Entre le 20 septembre et le 25 octobreseptembre, les responsables d'Aperho
+Entre le 20 septembre et le 25 septembre, les responsables d'Aperho
 vérifient que chaque professeur a bien un compte dans l'annuaire Kwartz
 (réutilisé par Aperho), et les inscrivent les collègues de la liste
 avec le statut « Professeur ».
@@ -53,7 +53,7 @@ la visibilité par les élèves.
 Inscription du thème de l'atelier
 ---------------------------------
 
-La semaine du 2 octobre, 27 septembre au 2 octobre, chaque intervant de
+La semaine du 2 octobre, 27 septembre au 2 octobre, chaque intervenant de
 l'AP doit se connecter une fois à https://aperho.lyceejeanbart.fr
 
 |image1|
@@ -169,6 +169,6 @@ très simplement avec un éditeur de texte ordinaire.
 .. |image6| image::  snap6.png
    :width: 500
    :align: middle
-   :alt: dialoge d'édition de cours
+   :alt: dialogue d'édition de cours
    
    
