@@ -43,11 +43,11 @@ Les travaux échéant aux professeurs, pour renseigner Aperho
 
 Entre le 20 septembre et le 25 septembre, les responsables d'Aperho
 vérifient que chaque professeur a bien un compte dans l'annuaire Kwartz
-(réutilisé par Aperho), et les inscrivent les collègues de la liste
+(réutilisé par Aperho), et inscrivent les collègues de la liste
 avec le statut « Professeur ».
 
 Ils inscrivent aussi les classes de terminales concernées dans la « barrette »
-d'Apérho et créent la session en tenant compte des dates calendaires pour
+d'Apérho et créent la session en tenant compte des dates pour
 la visibilité par les élèves.
 
 Inscription du thème de l'atelier
