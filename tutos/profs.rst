@@ -96,6 +96,51 @@ plus précises sont alors dépliées.
 
 |image5|
 
+On obtient alors le **dialogue d'édition de cours**, voir la copie d'écran
+ci-dessous :
+
+|image6|
+
+Que fait-on alors ?
+^^^^^^^^^^^^^^^^^^^
+
+ 1. On modifie la description courte
+ 2. On modifie la description longue
+ 3. Ou alors, pour les experts : Aperho se souvient peut-être d'intitulés
+    que vous avez saisis dans le passé : il est possible de les réactiver
+    (ou de les supprimer définitivement)
+ 4. On valide alors.
+
+    - soit pour une heure de cours seulement
+    - soit pour tous les cours à la fois
+
+En revenant ensuite à *MES ACTIONS ---> Mes Cours D'AP*, on peut voir
+le résultat et modifier l'autre cours, si on n'a pas appliqué l'intitulé
+à tous le cours.
+
+Et c'est tout, c'est fini
+=========================
+
+Pour avoir le sentiment du devoir accompli, il est possible de revenir à la
+page d'accueil du site https://aperho.lyceejeanbart.fr/
+
+On y observe alors les modification qu'on y a faites et que les élèves
+verront bientôt.
+
+Il est toujours possible de revenir sur un choix. Mais quand les élèves
+commencent à participer au « vote », les intitulés ne sont pas modifiables.
+
+À propos de ce document
+#######################
+
+Ce document est modifiable, si vous voyez comment l'améliorer, n'hésitez pas !
+
+Sa source est téléchargeable depuis
+https://raw.githubusercontent.com/georgesk/aperho/master/tutos/profs.rst
+
+Et si vous voulez, vous verrez que la structure du document se modifie
+très simplement avec un éditeur de texte ordinaire.
+
 .. |image1| image::  snap1.png
    :width: 500
    :align: middle
@@ -120,5 +165,10 @@ plus précises sont alors dépliées.
    :width: 500
    :align: middle
    :alt: cliquez là
+   
+.. |image6| image::  snap6.png
+   :width: 500
+   :align: middle
+   :alt: dialoge d'édition de cours
    
    
